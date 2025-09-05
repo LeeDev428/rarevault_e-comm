@@ -134,6 +134,8 @@ export default {
         // Redirect based on role
         if (response.data.user.role === 'admin') {
           this.$router.push('/admin/dashboard')
+        } else if (response.data.user.role === 'seller') {
+          this.$router.push('/seller/dashboard')
         } else {
           this.$router.push('/user/dashboard')
         }
