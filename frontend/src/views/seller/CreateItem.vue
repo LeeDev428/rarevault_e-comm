@@ -69,15 +69,10 @@
                   <label class="form-label required">Category</label>
                   <select v-model="item.category" class="form-select" required>
                     <option value="">Select a category</option>
-                    <option value="Watches">Watches</option>
-                    <option value="Antiques">Antiques</option>
-                    <option value="Coins">Coins</option>
-                    <option value="Art">Art</option>
-                    <option value="Jewelry">Jewelry</option>
-                    <option value="Books">Books</option>
-                    <option value="Collectibles">Collectibles</option>
-                    <option value="Furniture">Furniture</option>
-                    <option value="Other">Other</option>
+                    <option value="antiques">Antiques</option>
+                    <option value="collectibles">Collectibles</option>
+                    <option value="coins">Coins</option>
+                    <option value="others">Others</option>
                   </select>
                 </div>
               </div>
@@ -289,6 +284,7 @@ export default {
         price: null,
         category: '',
         condition: '',
+        year: null,
         images: [],
         tags: [],
         isNegotiable: false,
@@ -420,12 +416,109 @@ export default {
       
       this.publishLoading = true;
       
-      setTimeout(() => {
-        console.log('Publishing item:', this.item);
+      // Prepare item data for API - ensure all required fields are present and valid
+      const itemData = {
+        title: this.item.title?.trim() || '',
+        description: this.item.description?.trim() || '',
+        price: parseFloat(this.item.price) || 0,
+        category: this.item.category ? this.item.category.toLowerCase() : '',
+        condition: this.item.condition ? this.item.condition.toLowerCase() : '',
+        year: this.item.year ? parseInt(this.item.year) : null,
+        image_url: this.item.images.length > 0 ? this.item.images[0].url : '',
+      };
+      
+      // Additional validation before sending
+      if (!itemData.title) {
+        this.showToast('Title is required', 'error', 'Validation Error');
+        this.publishLoading = false;
+        return;
+      }
+      if (!itemData.description) {
+        this.showToast('Description is required', 'error', 'Validation Error');
+        this.publishLoading = false;
+        return;
+      }
+      if (itemData.price <= 0) {
+        this.showToast('Valid price is required', 'error', 'Validation Error');
+        this.publishLoading = false;
+        return;
+      }
+      if (!itemData.category) {
+        this.showToast('Category is required', 'error', 'Validation Error');
+        this.publishLoading = false;
+        return;
+      }
+      if (!itemData.condition) {
+        this.showToast('Condition is required', 'error', 'Validation Error');
+        this.publishLoading = false;
+        return;
+      }
+      
+      // Get JWT token from localStorage (try different possible keys)
+      const token = localStorage.getItem('access_token') || localStorage.getItem('token') || localStorage.getItem('jwt_token');
+      
+      if (!token) {
+        this.showToast('Authentication required. Please log in again.', 'error', 'Authentication Error');
+        this.publishLoading = false;
+        this.$router.push('/login');
+        return;
+      }
+      
+      console.log('Sending item data:', itemData);
+      console.log('Using token:', token ? 'Token found' : 'No token found');
+      
+      fetch('http://localhost:5000/api/seller/items', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(itemData)
+      })
+      .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+          // Try to get the error response body for better debugging
+          return response.text().then(errorText => {
+            let errorMessage = `HTTP error! status: ${response.status}`;
+            try {
+              const errorData = JSON.parse(errorText);
+              console.error('Server error response:', errorData);
+              
+              // Handle specific JWT errors
+              if (errorData.msg && errorData.msg.includes('Subject must be a string')) {
+                errorMessage = 'Authentication token is invalid. Please log in again.';
+                // Clear invalid tokens
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('token');
+                localStorage.removeItem('jwt_token');
+                // Redirect to login
+                setTimeout(() => {
+                  this.$router.push('/login');
+                }, 2000);
+              } else {
+                errorMessage = errorData.error || errorData.msg || errorData.message || errorMessage;
+              }
+            } catch (e) {
+              // If it's not JSON, use the text as is
+              errorMessage = errorText || errorMessage;
+            }
+            throw new Error(errorMessage);
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Item created successfully:', data);
         this.showToast('Item published successfully and is now live!', 'success', 'Item Published');
         this.publishLoading = false;
         this.$router.push('/seller/items');
-      }, 2000);
+      })
+      .catch(error => {
+        console.error('Error creating item:', error);
+        this.showToast('Failed to publish item. Please try again.', 'error', 'Publish Failed');
+        this.publishLoading = false;
+      });
     },
     
     showToast(message, type = 'info', title = '') {

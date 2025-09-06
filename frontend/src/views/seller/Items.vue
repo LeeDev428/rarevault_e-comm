@@ -249,58 +249,8 @@ export default {
       categoryFilter: '',
       selectedItems: [],
       selectAll: false,
-      items: [
-        {
-          id: 1,
-          title: 'Vintage Rolex Watch',
-          description: 'Beautiful vintage Rolex from 1960s',
-          price: 2999.99,
-          category: 'Watches',
-          status: 'active',
-          views: 156,
-          created_at: '2024-01-15T10:30:00Z'
-        },
-        {
-          id: 2,
-          title: 'Ming Dynasty Vase',
-          description: 'Authentic Ming dynasty porcelain vase',
-          price: 1299.50,
-          category: 'Antiques',
-          status: 'pending',
-          views: 89,
-          created_at: '2024-01-14T14:20:00Z'
-        },
-        {
-          id: 3,
-          title: 'Rare Silver Dollar',
-          description: '1932 Morgan silver dollar in mint condition',
-          price: 189.99,
-          category: 'Coins',
-          status: 'sold',
-          views: 234,
-          created_at: '2024-01-13T09:15:00Z'
-        },
-        {
-          id: 4,
-          title: 'Art Deco Sculpture',
-          description: 'Bronze art deco sculpture from 1920s',
-          price: 899.00,
-          category: 'Art',
-          status: 'active',
-          views: 67,
-          created_at: '2024-01-12T16:45:00Z'
-        },
-        {
-          id: 5,
-          title: 'Victorian Diamond Ring',
-          description: 'Antique Victorian era diamond engagement ring',
-          price: 3499.99,
-          category: 'Jewelry',
-          status: 'removed',
-          views: 23,
-          created_at: '2024-01-11T11:30:00Z'
-        }
-      ],
+      items: [],
+      loading: true,
       showDeleteModal: false,
       itemToDelete: null,
       deleteLoading: false,
@@ -314,6 +264,15 @@ export default {
       messageText: ''
     }
   },
+  
+  mounted() {
+    this.fetchItems();
+  },
+  
+  mounted() {
+    this.fetchItems();
+  },
+  
   computed: {
     filteredItems() {
       let filtered = this.items;
@@ -338,12 +297,66 @@ export default {
       return filtered;
     }
   },
+  
   watch: {
     selectedItems() {
       this.selectAll = this.selectedItems.length === this.filteredItems.length && this.filteredItems.length > 0;
     }
   },
   methods: {
+    async fetchItems() {
+      try {
+        this.loading = true;
+        
+        // Get token and add better validation
+        const token = localStorage.getItem('token');
+        if (!token) {
+          this.showToast('Please log in to view your items.', 'error', 'Authentication Required');
+          this.$router.push('/login');
+          return;
+        }
+        
+        console.log('Fetching items with token:', token.substring(0, 20) + '...');
+        
+        const response = await fetch('http://localhost:5000/api/seller/items', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error('API Error:', errorData);
+          
+          if (response.status === 401 || response.status === 403) {
+            this.showToast('Authentication failed. Please log in again.', 'error', 'Authentication Error');
+            this.$router.push('/login');
+            return;
+          }
+          
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Fetched items:', data);
+        this.items = data.items || [];
+        
+        if (this.items.length === 0) {
+          this.showToast('No items found. Create your first item!', 'info', 'Getting Started');
+        }
+        
+      } catch (error) {
+        console.error('Error fetching items:', error);
+        this.showToast(`Failed to load items: ${error.message}`, 'error', 'Load Failed');
+      } finally {
+        this.loading = false;
+      }
+    },
+    
     goToCreateItem() {
       this.$router.push('/seller/create-product');
     },

@@ -38,7 +38,6 @@
                 <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
               </svg>
-              <span class="notification-badge">3</span>
             </button>
 
             <!-- Chat -->
@@ -49,29 +48,49 @@
               <span class="chat-text">Chat</span>
             </button>
 
-            <!-- User Profile -->
+            <!-- User Profile Dropdown -->
             <div class="user-profile" @click="toggleUserMenu">
               <div class="user-avatar">
                 <div class="avatar-circle">
                   <span>{{ userInitials }}</span>
                 </div>
               </div>
-              <div class="user-info">
-                <span class="user-name">{{ userName }}</span>
-                <span class="user-status">User</span>
-              </div>
+              <span class="user-name">{{ userName }}</span>
               <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <polyline points="6,9 12,15 18,9"/>
               </svg>
 
               <!-- User Dropdown -->
               <div v-if="showUserMenu" class="user-dropdown" @click.stop>
+                <div class="dropdown-item" @click="goToDashboard">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="3" y="3" width="7" height="7"/>
+                    <rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/>
+                    <rect x="3" y="14" width="7" height="7"/>
+                  </svg>
+                  Dashboard
+                </div>
                 <div class="dropdown-item" @click="goToProfile">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                     <circle cx="12" cy="7" r="4"/>
                   </svg>
                   Profile
+                </div>
+                <div class="dropdown-item" @click="goToOrders">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M9 12l2 2 4-4"/>
+                    <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"/>
+                    <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"/>
+                  </svg>
+                  My Orders
+                </div>
+                <div class="dropdown-item" @click="goToWishlist">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                  Wishlist
                 </div>
                 <div class="dropdown-item" @click="goToSettings">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -99,7 +118,11 @@
     <!-- Navigation Categories -->
     <nav class="category-nav">
       <div class="nav-container">
-        <div class="category-item" :class="{ active: activeCategory === 'all' }" @click="setCategory('all')">
+        <router-link 
+          to="/user/dashboard" 
+          class="category-item" 
+          :class="{ active: $route.path === '/user/dashboard' }"
+        >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <rect x="3" y="3" width="7" height="7"/>
             <rect x="14" y="3" width="7" height="7"/>
@@ -107,32 +130,48 @@
             <rect x="3" y="14" width="7" height="7"/>
           </svg>
           <span>Vintage Items</span>
-        </div>
+        </router-link>
 
-        <div class="category-item" :class="{ active: activeCategory === 'collectibles' }" @click="setCategory('collectibles')">
+        <router-link 
+          to="/user/collectibles" 
+          class="category-item" 
+          :class="{ active: $route.path === '/user/collectibles' }"
+        >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
           </svg>
           <span>Collectibles</span>
-        </div>
+        </router-link>
 
-        <div class="category-item" :class="{ active: activeCategory === 'antiques' }" @click="setCategory('antiques')">
+        <router-link 
+          to="/user/antiques" 
+          class="category-item" 
+          :class="{ active: $route.path === '/user/antiques' }"
+        >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <circle cx="12" cy="12" r="10"/>
             <polyline points="12,6 12,12 16,14"/>
           </svg>
           <span>Antiques</span>
-        </div>
+        </router-link>
 
-        <div class="category-item" :class="{ active: activeCategory === 'coins' }" @click="setCategory('coins')">
+        <router-link 
+          to="/user/coins" 
+          class="category-item" 
+          :class="{ active: $route.path === '/user/coins' }"
+        >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <circle cx="12" cy="12" r="10"/>
             <path d="M12 6v12M8 10l4-4 4 4"/>
           </svg>
           <span>Coins & Currency</span>
-        </div>
+        </router-link>
 
-        <div class="category-item" :class="{ active: activeCategory === 'others' }" @click="setCategory('others')">
+        <router-link 
+          to="/user/others" 
+          class="category-item" 
+          :class="{ active: $route.path === '/user/others' }"
+        >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <circle cx="12" cy="12" r="3"/>
             <circle cx="12" cy="4" r="1"/>
@@ -141,7 +180,7 @@
             <circle cx="20" cy="12" r="1"/>
           </svg>
           <span>Others</span>
-        </div>
+        </router-link>
       </div>
     </nav>
 
@@ -161,7 +200,6 @@ export default {
     return {
       searchQuery: '',
       showUserMenu: false,
-      activeCategory: 'all',
       userName: 'John Doe',
       userInitials: 'JD'
     }
@@ -178,11 +216,6 @@ export default {
       this.$emit('search', this.searchQuery)
     },
     
-    setCategory(category) {
-      this.activeCategory = category
-      this.$emit('category-change', category)
-    },
-    
     toggleUserMenu(event) {
       event.stopPropagation()
       this.showUserMenu = !this.showUserMenu
@@ -194,8 +227,23 @@ export default {
       }
     },
     
+    goToDashboard() {
+      this.$router.push('/user/dashboard')
+      this.showUserMenu = false
+    },
+    
     goToProfile() {
       this.$router.push('/user/profile')
+      this.showUserMenu = false
+    },
+    
+    goToOrders() {
+      this.$router.push('/user/orders')
+      this.showUserMenu = false
+    },
+    
+    goToWishlist() {
+      this.$router.push('/user/wishlist')
       this.showUserMenu = false
     },
     
@@ -324,19 +372,6 @@ export default {
   color: #374151;
 }
 
-.notification-badge {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  background: #ef4444;
-  color: white;
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 10px;
-  min-width: 16px;
-  text-align: center;
-}
-
 .chat-btn {
   display: flex;
   align-items: center;
@@ -354,7 +389,7 @@ export default {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   padding: 8px 12px;
   border-radius: 12px;
   cursor: pointer;
@@ -366,8 +401,8 @@ export default {
 }
 
 .user-avatar {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
 }
 
 .avatar-circle {
@@ -380,26 +415,13 @@ export default {
   justify-content: center;
   color: white;
   font-weight: 600;
-  font-size: 14px;
-}
-
-.user-info {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  font-size: 12px;
 }
 
 .user-name {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   color: #111827;
-  line-height: 1.2;
-}
-
-.user-status {
-  font-size: 12px;
-  color: #6b7280;
-  line-height: 1.2;
 }
 
 .dropdown-arrow {

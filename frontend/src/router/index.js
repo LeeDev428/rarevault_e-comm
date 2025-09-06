@@ -2,9 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Landing from '@/views/Landing.vue'
 import Login from '@/views/Login.vue'
 import Register from '@/views/Register.vue'
-import UserDashboard from '@/views/user/Dashboard.vue'
 import AdminDashboard from '@/views/admin/dashboard/Index.vue'
-import SellerDashboard from '@/views/seller/dashboard/Index.vue'
+import SellerDashboard from '@/views/seller/dashboard/TestIndex.vue'
 import SellerItems from '@/views/seller/Items.vue'
 import SellerProfile from '@/views/seller/Profile.vue'
 
@@ -24,10 +23,66 @@ const routes = [
     name: 'Register',
     component: Register
   },
+  // User Routes
   {
     path: '/user/dashboard',
     name: 'UserDashboard',
-    component: UserDashboard,
+    component: () => import('@/views/user/dashboard/Index.vue'),
+    meta: { requiresAuth: true, role: 'user' }
+  },
+  {
+    path: '/user/profile',
+    name: 'UserProfile',
+    component: () => import('@/views/user/dashboard/Profile.vue'),
+    meta: { requiresAuth: true, role: 'user' }
+  },
+  {
+    path: '/user/orders',
+    name: 'UserOrders',
+    component: () => import('@/views/user/dashboard/Orders.vue'),
+    meta: { requiresAuth: true, role: 'user' }
+  },
+  {
+    path: '/user/orders/:id',
+    name: 'UserOrderDetails',
+    component: () => import('@/views/user/dashboard/OrderDetails.vue'),
+    meta: { requiresAuth: true, role: 'user' }
+  },
+  {
+    path: '/user/wishlist',
+    name: 'UserWishlist',
+    component: () => import('@/views/user/dashboard/Wishlist.vue'),
+    meta: { requiresAuth: true, role: 'user' }
+  },
+  {
+    path: '/user/settings',
+    name: 'UserSettings',
+    component: () => import('@/views/user/dashboard/Settings.vue'),
+    meta: { requiresAuth: true, role: 'user' }
+  },
+  // Category Routes
+  {
+    path: '/user/collectibles',
+    name: 'UserCollectibles',
+    component: () => import('@/views/user/dashboard/Collectibles.vue'),
+    meta: { requiresAuth: true, role: 'user' }
+  },
+  {
+    path: '/user/antiques',
+    name: 'UserAntiques',
+    component: () => import('@/views/user/dashboard/Antiques.vue'),
+    meta: { requiresAuth: true, role: 'user' }
+  },
+  {
+    path: '/user/coins',
+    name: 'UserCoins',
+    component: () => import('@/views/user/dashboard/Coins.vue'),
+    meta: { requiresAuth: true, role: 'user' }
+  },
+  {
+    path: '/user/others',
+    name: 'UserOthers',
+    component: () => import('@/views/user/dashboard/Others.vue'),
     meta: { requiresAuth: true, role: 'user' }
   },
   {
