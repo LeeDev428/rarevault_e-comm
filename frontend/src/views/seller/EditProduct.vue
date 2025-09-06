@@ -7,7 +7,7 @@
           <!-- User Profile -->
           <div class="user-profile-section">
             <div class="user-avatar">
-              <img src="/api/placeholder/60/60" alt="Profile" class="avatar-img" />
+              <img src="https://via.placeholder.com/60" alt="Profile" class="avatar-img" />
             </div>
             <div class="user-info">
               <h3 class="user-name">Justine Memer</h3>

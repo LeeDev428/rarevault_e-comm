@@ -87,7 +87,20 @@ def login():
 @jwt_required()
 def get_profile():
     try:
-        user_id = get_jwt_identity()
+        user_identity = get_jwt_identity()
+        print(f"Profile route - JWT Identity: {user_identity}, type: {type(user_identity)}")
+        
+        # Handle both string and integer user IDs
+        if isinstance(user_identity, str):
+            try:
+                user_id = int(user_identity)
+            except ValueError:
+                return jsonify({'error': f'Invalid user ID format: {user_identity}'}), 400
+        elif isinstance(user_identity, int):
+            user_id = user_identity
+        else:
+            user_id = user_identity  # Let SQLAlchemy handle it
+            
         user = User.query.get(user_id)
         
         if not user:
@@ -96,6 +109,7 @@ def get_profile():
         return jsonify({'user': user.to_dict()}), 200
         
     except Exception as e:
+        print(f"Profile route error: {e}")
         return jsonify({'error': str(e)}), 500
 
 @auth_bp.route('/logout', methods=['POST'])

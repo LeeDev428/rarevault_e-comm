@@ -6,6 +6,20 @@ from sqlalchemy import or_, and_
 
 user_bp = Blueprint('user', __name__)
 
+@user_bp.route('/test-jwt', methods=['GET'])
+@jwt_required()
+def test_jwt():
+    """Simple JWT test endpoint"""
+    try:
+        user_identity = get_jwt_identity()
+        return jsonify({
+            'identity': user_identity,
+            'identity_type': str(type(user_identity)),
+            'message': 'JWT token is valid'
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @user_bp.route('/marketplace', methods=['GET'])
 @jwt_required()
 def get_marketplace_items():

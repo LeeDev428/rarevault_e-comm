@@ -1,83 +1,217 @@
 <template>
   <SellerLayout>
     <div class="view-item">
-      <!-- Page Header -->
-      <div class="page-header">
-        <div class="header-content">
-          <ActionButton
-            variant="secondary"
-            icon="←"
-            text="Back to Items"
-            @click="goBack"
-          />
-          <div class="item-status">
-            <span class="status-badge" :class="`status-${item.status}`">
-              {{ item.status }}
-            </span>
-          </div>
-        </div>
-        
-        <div class="header-actions">
-          <ActionButton
-            variant="secondary"
-            icon="✏️"
-            text="Edit Item"
-            @click="editItem"
-          />
-          <ActionButton
-            variant="danger"
-            icon="🗑️"
-            text="Delete Item"
-            @click="deleteItem"
-          />
-        </div>
+      <!-- Loading State -->
+      <div v-if="loading" class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>Loading item details...</p>
       </div>
 
-      <div class="item-container">
-        <!-- Image Gallery -->
-        <div class="image-section">
-          <div class="main-image">
-            <img 
-              :src="selectedImage?.url || '/api/placeholder/400/400'" 
-              :alt="item.title"
-              class="main-img"
-            >
+      <!-- Error State -->
+      <div v-else-if="error" class="error-container">
+        <div class="error-icon">⚠️</div>
+        <h3>{{ error }}</h3>
+        <ActionButton
+          variant="primary"
+          text="Go Back to Items"
+          @click="goBack"
+        />
+      </div>
+
+      <!-- Item Content -->
+      <div v-else-if="item">
+        <!-- Page Header -->
+        <div class="page-header">
+          <div class="header-content">
+            <ActionButton
+              variant="secondary"
+              icon="←"
+              text="Back to Items"
+              @click="goBack"
+            />
+            <div class="item-status">
+              <span class="status-badge" :class="`status-${item.status}`">
+                {{ item.status }}
+              </span>
+            </div>
+          <!-- End of v-else-if="item" -->
           </div>
           
-          <div v-if="item.images.length > 1" class="thumbnail-grid">
-            <div 
-              v-for="(image, index) in item.images" 
-              :key="index"
-              class="thumbnail"
-              :class="{ active: selectedImageIndex === index }"
-              @click="selectImage(index)"
-            >
-              <img :src="image.url" :alt="`${item.title} - Image ${index + 1}`">
+          <div class="header-actions">
+            <ActionButton
+              variant="secondary"
+              icon="✏️"
+              text="Edit Item"
+              @click="editItem"
+            />
+            <ActionButton
+              variant="danger"
+              icon="🗑️"
+              text="Delete Item"
+              @click="deleteItem"
+            />
+          </div>
+        </div>
+
+        <div class="item-container">
+          <!-- Image Gallery -->
+          <div class="image-section">
+            <div class="main-image">
+              <img 
+                :src="selectedImage?.url || '/api/placeholder/400/400'" 
+                :alt="item.title"
+                class="main-img"
+              >
+            </div>
+            
+            <div v-if="item.images && item.images.length > 1" class="thumbnail-grid">
+              <div 
+                v-for="(image, index) in item.images" 
+                :key="index"
+                class="thumbnail"
+                :class="{ active: selectedImageIndex === index }"
+                @click="selectImage(index)"
+              >
+                <img :src="image.url" :alt="`${item.title} - Image ${index + 1}`">
+              </div>
+            </div>
+          </div>
+
+          <!-- Item Details -->
+          <div class="details-section">
+            <div class="item-header">
+              <h1 class="item-title">{{ item.title }}</h1>
+              <div class="item-meta">
+                <span class="item-id">Item ID: #{{ item.id }}</span>
+                <span class="created-date">Listed {{ formatDate(item.created_at) }}</span>
+              </div>
+            </div>
+
+            <div class="price-section">
+              <div class="price">
+                ${{ parseFloat(item.price).toFixed(2) }}
+                <span v-if="item.isNegotiable" class="negotiable">OBO</span>
+              </div>
+              <div class="condition">
+                Condition: <strong>{{ conditionName }}</strong>
+              </div>
+            </div>
+
+                      <div class="details-grid">
+              <div class="detail-item">
+                <label>Category</label>
+                <span>{{ item.category }}</span>
+              </div>
+              
+              <div class="detail-item">
+                <label>Views</label>
+                <span>{{ item.views || 0 }}</span>
+              </div>
+              
+              <div class="detail-item">
+                <label>Favorites</label>
+                <span>{{ item.favorites || 0 }}</span>
+              </div>
+              
+              <div class="detail-item">
+                <label>Inquiries</label>
+                <span>{{ item.inquiries || 0 }}</span>
+              </div>
+            </div>
+
+            <div class="description-section">
+              <h3>Description</h3>
+              <p class="description">{{ item.description }}</p>
+            </div>
+
+            <div v-if="item.tags && item.tags.length" class="tags-section">
+              <h3>Tags</h3>
+              <div class="tags">
+                <span v-for="tag in item.tags" :key="tag" class="tag">
+                  {{ tag }}
+                </span>
+              </div>
+            </div>
+
+            <div class="badges-section">
+              <div v-if="item.isAuthenticated" class="badge authenticated">
+                ✅ Authenticated
+              </div>
+              <div v-if="item.isNegotiable" class="badge negotiable">
+                💬 Price Negotiable
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="item-actions">
+              <ActionButton
+                v-if="item.status === 'active'"
+                variant="warning"
+                icon="⏸️"
+                text="Pause Listing"
+                @click="pauseListing"
+              />
+              <ActionButton
+                v-if="item.status === 'paused'"
+                variant="success"
+                icon="▶️"
+                text="Resume Listing"
+                @click="resumeListing"
+              />
+              <ActionButton
+                variant="info"
+                icon="📊"
+                text="View Analytics"
+                @click="viewAnalytics"
+              />
+              <ActionButton
+                variant="secondary"
+                icon="📋"
+                text="Duplicate Item"
+                @click="duplicateItem"
+              />
             </div>
           </div>
         </div>
 
-        <!-- Item Details -->
-        <div class="details-section">
-          <div class="item-header">
-            <h1 class="item-title">{{ item.title }}</h1>
-            <div class="item-meta">
-              <span class="item-id">Item ID: #{{ item.id }}</span>
-              <span class="created-date">Listed {{ formatDate(item.created_at) }}</span>
+        <!-- Stats Section -->
+        <div class="stats-section">
+          <h2>Item Performance</h2>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon">👁️</div>
+              <div class="stat-content">
+                <h3>{{ item.views || 0 }}</h3>
+                <p>Views</p>
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon">❤️</div>
+              <div class="stat-content">
+                <h3>{{ item.favorites || 0 }}</h3>
+                <p>Favorites</p>
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon">💬</div>
+              <div class="stat-content">
+                <h3>{{ item.inquiries || 0 }}</h3>
+                <p>Inquiries</p>
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon">📈</div>
+              <div class="stat-content">
+                <h3>{{ item.engagement || 0 }}%</h3>
+                <p>Engagement Rate</p>
+              </div>
             </div>
           </div>
-
-          <div class="price-section">
-            <div class="price">
-              ${{ item.price.toFixed(2) }}
-              <span v-if="item.isNegotiable" class="negotiable">OBO</span>
-            </div>
-            <div class="condition">
-              Condition: <strong>{{ getConditionName(item.condition) }}</strong>
-            </div>
-          </div>
-
-          <div class="details-grid">
+        </div>
+      </div>
             <div class="detail-item">
               <label>Category</label>
               <span>{{ item.category }}</span>
@@ -191,27 +325,27 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Confirmation Modal -->
-    <ConfirmationModal
-      :show="showDeleteModal"
-      title="Delete Item"
-      :message="`Are you sure you want to delete '${item.title}'? This action cannot be undone.`"
-      type="danger"
-      :loading="deleteLoading"
-      @confirm="confirmDelete"
-      @cancel="cancelDelete"
-    />
+      <!-- Confirmation Modal -->
+      <ConfirmationModal
+        v-if="item"
+        :show="showDeleteModal"
+        title="Delete Item"
+        :message="`Are you sure you want to delete '${item.title}'? This action cannot be undone.`"
+        type="danger"
+        :loading="deleteLoading"
+        @confirm="confirmDelete"
+        @cancel="cancelDelete"
+      />
 
-    <!-- Message Toast -->
-    <MessageToast
-      :show="showMessage"
-      :type="messageType"
-      :title="messageTitle"
-      :message="messageText"
-      @close="hideMessage"
-    />
+      <!-- Message Toast -->
+      <MessageToast
+        :show="showMessage"
+        :type="messageType"
+        :title="messageTitle"
+        :message="messageText"
+        @close="hideMessage"
+      />
   </SellerLayout>
 </template>
 
@@ -232,29 +366,9 @@ export default {
   data() {
     return {
       selectedImageIndex: 0,
-      item: {
-        id: 1,
-        title: 'Vintage Rolex Submariner Watch',
-        description: 'This is a rare vintage Rolex Submariner from 1965 in excellent condition. The watch has been well-maintained and comes with original box and papers. Features automatic movement, date display, and is water resistant to 200 meters. This is a collectors item and perfect for investment or daily wear.',
-        price: 8500.00,
-        category: 'Watches',
-        condition: 'good',
-        status: 'active',
-        views: 234,
-        favorites: 18,
-        inquiries: 5,
-        engagement: 7.7,
-        isNegotiable: true,
-        isAuthenticated: true,
-        tags: ['vintage', 'rolex', 'submariner', 'collectible', 'luxury'],
-        images: [
-          { url: '/api/placeholder/400/400', isPrimary: true },
-          { url: '/api/placeholder/400/400', isPrimary: false },
-          { url: '/api/placeholder/400/400', isPrimary: false },
-          { url: '/api/placeholder/400/400', isPrimary: false }
-        ],
-        created_at: '2024-01-15T10:30:00Z'
-      },
+      item: null,
+      loading: true,
+      error: null,
       conditions: [
         { value: 'new', name: 'New' },
         { value: 'like_new', name: 'Like New' },
@@ -272,7 +386,11 @@ export default {
   },
   computed: {
     selectedImage() {
-      return this.item.images[this.selectedImageIndex];
+      return this.item?.images[this.selectedImageIndex];
+    },
+    conditionName() {
+      const condition = this.conditions.find(c => c.value === this.item?.condition);
+      return condition ? condition.name : '';
     }
   },
   mounted() {
@@ -281,10 +399,50 @@ export default {
     this.loadItem(itemId);
   },
   methods: {
-    loadItem(id) {
-      // Simulate loading item data
-      console.log('Loading item:', id);
-      // In real app, make API call here
+    async loadItem(id) {
+      try {
+        this.loading = true;
+        this.error = null;
+        
+        const token = localStorage.getItem('token');
+        if (!token) {
+          this.$router.push('/login');
+          return;
+        }
+
+        const response = await fetch(`http://localhost:5000/api/seller/items/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            localStorage.removeItem('token');
+            this.$router.push('/login');
+            return;
+          } else if (response.status === 404) {
+            this.error = 'Item not found';
+            return;
+          }
+          throw new Error('Failed to load item');
+        }
+
+        const data = await response.json();
+        this.item = data.item;
+        
+        // Ensure images array exists
+        if (!this.item.images) {
+          this.item.images = [];
+        }
+        
+      } catch (error) {
+        console.error('Error loading item:', error);
+        this.error = 'Failed to load item. Please try again.';
+      } finally {
+        this.loading = false;
+      }
     },
     
     goBack() {
@@ -302,12 +460,44 @@ export default {
     confirmDelete() {
       this.deleteLoading = true;
       
-      setTimeout(() => {
-        this.showToast('Item deleted successfully', 'success', 'Item Deleted');
-        this.deleteLoading = false;
-        this.showDeleteModal = false;
-        this.$router.push('/seller/items');
-      }, 1500);
+      const deleteItem = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            this.$router.push('/login');
+            return;
+          }
+
+          const response = await fetch(`http://localhost:5000/api/seller/items/${this.item.id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (!response.ok) {
+            if (response.status === 401) {
+              localStorage.removeItem('token');
+              this.$router.push('/login');
+              return;
+            }
+            throw new Error('Failed to delete item');
+          }
+
+          this.showToast('Item deleted successfully', 'success', 'Item Deleted');
+          this.deleteLoading = false;
+          this.showDeleteModal = false;
+          this.$router.push('/seller/items');
+          
+        } catch (error) {
+          console.error('Error deleting item:', error);
+          this.showToast('Failed to delete item. Please try again.', 'error', 'Delete Failed');
+          this.deleteLoading = false;
+        }
+      };
+
+      deleteItem();
     },
     
     cancelDelete() {

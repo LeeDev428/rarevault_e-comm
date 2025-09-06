@@ -199,10 +199,51 @@ export default {
     console.log('Component mounted, initial state:');
     console.log('  selectedCondition:', this.selectedCondition);
     console.log('  selectedCategory:', this.selectedCategory);
+    this.testJWT();
     this.fetchMarketplaceItems();
   },
   
   methods: {
+    async testJWT() {
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+        if (!token) {
+          console.error('No token for JWT test');
+          this.$router.push('/login');
+          return;
+        }
+        
+        console.log('Testing JWT token...');
+        const response = await fetch('http://localhost:5000/api/user/test-jwt', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('JWT Test Success:', data);
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          console.error('JWT Test Failed:', response.status, errorData);
+          
+          // If JWT test fails, likely need to re-login
+          if (response.status === 401 || response.status === 422) {
+            console.log('JWT token invalid, redirecting to login...');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('token');
+            this.$router.push('/login');
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('JWT Test Error:', error);
+        this.$router.push('/login');
+      }
+    },
+
     async fetchMarketplaceItems(isLoadMore = false) {
       try {
         if (!isLoadMore) {
