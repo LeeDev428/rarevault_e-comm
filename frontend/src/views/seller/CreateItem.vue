@@ -454,7 +454,7 @@ export default {
         return;
       }
       
-      // Get JWT token from localStorage (try different possible keys)
+      // Get JWT token from localStorage with proper priority (access_token is what login stores)
       const token = localStorage.getItem('access_token') || localStorage.getItem('token') || localStorage.getItem('jwt_token');
       
       if (!token) {

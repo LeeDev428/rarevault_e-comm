@@ -269,10 +269,6 @@ export default {
     this.fetchItems();
   },
   
-  mounted() {
-    this.fetchItems();
-  },
-  
   computed: {
     filteredItems() {
       let filtered = this.items;
@@ -308,9 +304,10 @@ export default {
       try {
         this.loading = true;
         
-        // Get token and add better validation
-        const token = localStorage.getItem('token');
+        // Get token with proper priority (access_token is what login stores)
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token') || localStorage.getItem('jwt_token');
         if (!token) {
+          console.error('No authentication token found');
           this.showToast('Please log in to view your items.', 'error', 'Authentication Required');
           this.$router.push('/login');
           return;
@@ -327,14 +324,47 @@ export default {
         });
         
         console.log('Response status:', response.status);
+        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
         
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          console.error('API Error:', errorData);
+          let errorData;
+          const contentType = response.headers.get('content-type');
           
-          if (response.status === 401 || response.status === 403) {
-            this.showToast('Authentication failed. Please log in again.', 'error', 'Authentication Error');
+          if (contentType && contentType.includes('application/json')) {
+            errorData = await response.json();
+          } else {
+            const textData = await response.text();
+            console.error('Non-JSON response:', textData);
+            errorData = { error: `Server returned: ${textData}` };
+          }
+          
+          console.error('API Error Details:', {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorData,
+            headers: Object.fromEntries(response.headers.entries())
+          });
+          
+          // Only redirect to login for actual authentication errors
+          if (response.status === 401) {
+            this.showToast('Session expired. Please log in again.', 'error', 'Authentication Error');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('token'); 
+            localStorage.removeItem('jwt_token');
+            localStorage.removeItem('user_role');
+            localStorage.removeItem('user_info');
             this.$router.push('/login');
+            return;
+          }
+          
+          if (response.status === 403) {
+            this.showToast('Access denied. Make sure you have seller permissions.', 'error', 'Access Denied');
+            return;
+          }
+          
+          if (response.status === 422) {
+            console.warn('422 Validation Error - but not redirecting to login');
+            this.showToast(`Request validation failed: ${errorData.error || 'Please check your request'}`, 'error', 'Validation Error');
             return;
           }
           
@@ -347,6 +377,8 @@ export default {
         
         if (this.items.length === 0) {
           this.showToast('No items found. Create your first item!', 'info', 'Getting Started');
+        } else {
+          console.log(`Successfully loaded ${this.items.length} items`);
         }
         
       } catch (error) {
@@ -389,29 +421,61 @@ export default {
       this.showDeleteModal = true;
     },
     
-    confirmDelete() {
-      this.deleteLoading = true;
-      
-      setTimeout(() => {
+    async confirmDelete() {
+      try {
+        this.deleteLoading = true;
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token') || localStorage.getItem('jwt_token');
+        
         if (this.bulkDeleteMode) {
-          // Remove selected items
+          // Delete multiple items
+          const deletePromises = this.selectedItems.map(itemId =>
+            fetch(`http://localhost:5000/api/seller/items/${itemId}`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            })
+          );
+          
+          await Promise.all(deletePromises);
+          
+          // Remove items from local state
           this.items = this.items.filter(item => !this.selectedItems.includes(item.id));
           this.showToast(`${this.selectedItems.length} items have been deleted.`, 'success', 'Items Deleted');
           this.selectedItems = [];
         } else {
-          // Remove single item
+          // Delete single item
+          const response = await fetch(`http://localhost:5000/api/seller/items/${this.itemToDelete.id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to delete item');
+          }
+          
+          // Remove item from local state
           const index = this.items.findIndex(item => item.id === this.itemToDelete.id);
           if (index > -1) {
             this.items.splice(index, 1);
-            this.showToast(`Item '${this.itemToDelete.title}' has been deleted.`, 'success', 'Item Deleted');
           }
+          this.showToast(`Item '${this.itemToDelete.title}' has been deleted.`, 'success', 'Item Deleted');
         }
         
+      } catch (error) {
+        console.error('Delete error:', error);
+        this.showToast(`Failed to delete: ${error.message}`, 'error', 'Delete Failed');
+      } finally {
         this.deleteLoading = false;
         this.showDeleteModal = false;
         this.itemToDelete = null;
         this.bulkDeleteMode = false;
-      }, 1500);
+      }
     },
     
     cancelDelete() {
@@ -420,11 +484,29 @@ export default {
       this.bulkDeleteMode = false;
     },
     
-    confirmBulkStatusUpdate() {
-      this.bulkLoading = true;
-      
-      setTimeout(() => {
-        // Update status for selected items
+    async confirmBulkStatusUpdate() {
+      try {
+        this.bulkLoading = true;
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token') || localStorage.getItem('jwt_token');
+        
+        // Update status for selected items via API
+        const updatePromises = this.selectedItems.map(itemId => {
+          const item = this.items.find(i => i.id === itemId);
+          return fetch(`http://localhost:5000/api/seller/items/${itemId}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              status: this.bulkStatus
+            })
+          });
+        });
+        
+        await Promise.all(updatePromises);
+        
+        // Update local state
         this.items.forEach(item => {
           if (this.selectedItems.includes(item.id)) {
             item.status = this.bulkStatus;
@@ -433,9 +515,14 @@ export default {
         
         this.showToast(`${this.selectedItems.length} items updated to ${this.bulkStatus}.`, 'success', 'Status Updated');
         this.selectedItems = [];
+        
+      } catch (error) {
+        console.error('Bulk update error:', error);
+        this.showToast(`Failed to update items: ${error.message}`, 'error', 'Update Failed');
+      } finally {
         this.bulkLoading = false;
         this.showBulkStatusModal = false;
-      }, 1000);
+      }
     },
     
     formatDate(dateString) {
