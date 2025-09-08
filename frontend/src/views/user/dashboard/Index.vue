@@ -402,9 +402,54 @@ export default {
       // TODO: Implement contact seller functionality
     },
     
-    handleSaveItem(item) {
-      console.log('Save item:', item);
-      // TODO: Implement save to wishlist functionality
+    async handleSaveItem(item) {
+      try {
+        console.log('Saving item to wishlist:', item);
+        
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+        if (!token) {
+          this.$router.push('/login');
+          return;
+        }
+        
+        const response = await fetch(`http://localhost:5000/api/user/wishlist/${item.id}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Wishlist response:', data);
+        
+        // Show success message
+        this.showToast('success', data.message || 'Item saved to wishlist!');
+        
+        // Optional: Update the item's wishlist status in the UI
+        const itemIndex = this.items.findIndex(i => i.id === item.id);
+        if (itemIndex !== -1) {
+          this.items[itemIndex].wishlisted = true;
+        }
+        
+      } catch (error) {
+        console.error('Error saving item to wishlist:', error);
+        this.showToast('error', `Failed to save item: ${error.message}`);
+      }
+    },
+    
+    showToast(type, message) {
+      // Simple toast notification - you can replace with a proper toast library
+      if (type === 'success') {
+        alert(`✅ ${message}`);
+      } else {
+        alert(`❌ ${message}`);
+      }
     }
   }
 }

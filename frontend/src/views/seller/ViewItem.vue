@@ -97,34 +97,34 @@
               </div>
             </div>
 
-                      <div class="details-grid">
+            <div class="details-grid">
               <div class="detail-item">
                 <label>Category</label>
-                <span>{{ item.category }}</span>
+                <span>{{ item?.category || 'N/A' }}</span>
               </div>
               
               <div class="detail-item">
                 <label>Views</label>
-                <span>{{ item.views || 0 }}</span>
+                <span>{{ item?.views || 0 }}</span>
               </div>
               
               <div class="detail-item">
                 <label>Favorites</label>
-                <span>{{ item.favorites || 0 }}</span>
+                <span>{{ item?.favorites || 0 }}</span>
               </div>
               
               <div class="detail-item">
                 <label>Inquiries</label>
-                <span>{{ item.inquiries || 0 }}</span>
+                <span>{{ item?.inquiries || 0 }}</span>
               </div>
             </div>
 
             <div class="description-section">
               <h3>Description</h3>
-              <p class="description">{{ item.description }}</p>
+              <p class="description">{{ item?.description || 'No description available' }}</p>
             </div>
 
-            <div v-if="item.tags && item.tags.length" class="tags-section">
+            <div v-if="item?.tags && item.tags.length" class="tags-section">
               <h3>Tags</h3>
               <div class="tags">
                 <span v-for="tag in item.tags" :key="tag" class="tag">
@@ -134,10 +134,10 @@
             </div>
 
             <div class="badges-section">
-              <div v-if="item.isAuthenticated" class="badge authenticated">
+              <div v-if="item?.isAuthenticated" class="badge authenticated">
                 ✅ Authenticated
               </div>
-              <div v-if="item.isNegotiable" class="badge negotiable">
+              <div v-if="item?.isNegotiable" class="badge negotiable">
                 💬 Price Negotiable
               </div>
             </div>
@@ -145,14 +145,14 @@
             <!-- Action Buttons -->
             <div class="item-actions">
               <ActionButton
-                v-if="item.status === 'active'"
+                v-if="item?.status === 'active'"
                 variant="warning"
                 icon="⏸️"
                 text="Pause Listing"
                 @click="pauseListing"
               />
               <ActionButton
-                v-if="item.status === 'paused'"
+                v-if="item?.status === 'paused'"
                 variant="success"
                 icon="▶️"
                 text="Resume Listing"
@@ -181,7 +181,7 @@
             <div class="stat-card">
               <div class="stat-icon">👁️</div>
               <div class="stat-content">
-                <h3>{{ item.views || 0 }}</h3>
+                <h3>{{ item?.views || 0 }}</h3>
                 <p>Views</p>
               </div>
             </div>
@@ -189,7 +189,7 @@
             <div class="stat-card">
               <div class="stat-icon">❤️</div>
               <div class="stat-content">
-                <h3>{{ item.favorites || 0 }}</h3>
+                <h3>{{ item?.favorites || 0 }}</h3>
                 <p>Favorites</p>
               </div>
             </div>
@@ -197,7 +197,7 @@
             <div class="stat-card">
               <div class="stat-icon">💬</div>
               <div class="stat-content">
-                <h3>{{ item.inquiries || 0 }}</h3>
+                <h3>{{ item?.inquiries || 0 }}</h3>
                 <p>Inquiries</p>
               </div>
             </div>
@@ -205,38 +205,13 @@
             <div class="stat-card">
               <div class="stat-icon">📈</div>
               <div class="stat-content">
-                <h3>{{ item.engagement || 0 }}%</h3>
+                <h3>{{ item?.engagement || 0 }}%</h3>
                 <p>Engagement Rate</p>
               </div>
             </div>
           </div>
         </div>
       </div>
-            <div class="detail-item">
-              <label>Category</label>
-              <span>{{ item.category }}</span>
-            </div>
-            
-            <div class="detail-item">
-              <label>Views</label>
-              <span>{{ item.views || 0 }}</span>
-            </div>
-            
-            <div class="detail-item">
-              <label>Favorites</label>
-              <span>{{ item.favorites || 0 }}</span>
-            </div>
-            
-            <div class="detail-item">
-              <label>Inquiries</label>
-              <span>{{ item.inquiries || 0 }}</span>
-            </div>
-          </div>
-
-          <div class="description-section">
-            <h3>Description</h3>
-            <p class="description">{{ item.description }}</p>
-          </div>
 
           <div v-if="item.tags.length" class="tags-section">
             <h3>Tags</h3>
@@ -285,8 +260,8 @@
               @click="duplicateItem"
             />
           </div>
-        </div>
-      </div>
+      
+   
 
       <!-- Stats Section -->
       <div class="stats-section">
@@ -346,6 +321,7 @@
         :message="messageText"
         @close="hideMessage"
       />
+    </div>
   </SellerLayout>
 </template>
 
@@ -558,6 +534,40 @@ export default {
 .view-item {
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e9ecef;
+  border-left: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-container .error-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.error-container h3 {
+  color: #dc3545;
+  margin-bottom: 24px;
 }
 
 .page-header {

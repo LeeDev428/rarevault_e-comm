@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..models.models import db, Item, User
+from ..models.models import db, Item, User, ItemImage, Order
 from datetime import datetime
 import os
 from werkzeug.utils import secure_filename
@@ -127,18 +127,23 @@ def create_seller_item():
         except ValueError:
             return jsonify({'error': 'Invalid price format'}), 400
         
-        # Create new item - dynamically handle different column names
+        # Create new item with all the new columns
         item_data = {
             'title': data['title'],
             'description': data['description'],
             'price': price,
             'category': data['category'],
             'seller_id': current_user_id,
-            'status': 'active'
+            'status': 'active',
+            'condition_status': data['condition'],
+            'views': 0,
+            'favorites': 0,
+            'inquiries': 0,
+            'engagement': 0.0,
+            'isNegotiable': data.get('isNegotiable', False),
+            'isAuthenticated': data.get('isAuthenticated', False),
+            'tags': data.get('tags', [])
         }
-        
-        # Handle condition field (maps to condition_status column)
-        item_data['condition_status'] = data['condition']
         
         # Handle optional fields
         if data.get('year'):
@@ -147,15 +152,34 @@ def create_seller_item():
             except (ValueError, TypeError):
                 pass
         
-        # Handle images as JSON field (matching your database schema)
-        if data.get('images'):
-            item_data['images'] = data['images']  # Store as JSON
-        elif data.get('image_url'):
-            # If single image_url provided, store as JSON array
-            item_data['images'] = [data['image_url']]
-        
+        # Create the item first
         item = Item(**item_data)
         db.session.add(item)
+        db.session.flush()  # Flush to get the item ID
+        
+        # Handle images - store in separate ItemImage table
+        if data.get('images'):
+            for idx, image_data in enumerate(data['images']):
+                if isinstance(image_data, str):
+                    # If it's just a URL string
+                    image_path = f"items/{item.id}/image_{idx}.jpg"  # Default path
+                    image_url = image_data
+                elif isinstance(image_data, dict):
+                    # If it's an object with url and other properties
+                    image_url = image_data.get('url', '')
+                    image_path = image_data.get('path', f"items/{item.id}/image_{idx}.jpg")
+                else:
+                    continue
+                
+                item_image = ItemImage(
+                    item_id=item.id,
+                    image_path=image_path,
+                    is_primary=(idx == 0),  # First image is primary
+                    display_order=idx,
+                    original_filename=f"image_{idx}.jpg"
+                )
+                db.session.add(item_image)
+        
         db.session.commit()
         
         return jsonify({
@@ -165,6 +189,7 @@ def create_seller_item():
         
     except Exception as e:
         db.session.rollback()
+        print(f"Error creating item: {str(e)}")  # Debug logging
         return jsonify({'error': str(e)}), 500
 
 @seller_bp.route('/seller/items/<int:item_id>', methods=['GET'])
@@ -354,6 +379,141 @@ def update_seller_profile():
         return jsonify({
             'message': 'Profile updated successfully',
             'profile': user.to_dict()
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# ORDER MANAGEMENT ENDPOINTS
+@seller_bp.route('/seller/orders', methods=['GET'])
+@jwt_required()
+def get_seller_orders():
+    """Get orders for the seller"""
+    try:
+        current_user_id = int(get_jwt_identity())
+        
+        # Verify user is a seller
+        user = User.query.get(current_user_id)
+        if not user or user.role not in ['seller', 'admin']:
+            return jsonify({'error': 'Access denied. Seller role required.'}), 403
+        
+        page = request.args.get('page', 1, type=int)
+        per_page = min(request.args.get('per_page', 20, type=int), 50)
+        status_filter = request.args.get('status', '')
+        
+        # Build query
+        query = Order.query.filter_by(seller_id=current_user_id)
+        
+        if status_filter:
+            query = query.filter_by(status=status_filter)
+        
+        query = query.order_by(Order.created_at.desc())
+        
+        total = query.count()
+        orders = query.offset((page - 1) * per_page).limit(per_page).all()
+        
+        # Format response with item and buyer details
+        orders_data = []
+        for order in orders:
+            order_data = order.to_dict()
+            
+            # Get item details
+            item = Item.query.get(order.item_id)
+            if item:
+                order_data['item'] = item.to_dict()
+                
+                # Get primary image
+                primary_image = ItemImage.query.filter_by(
+                    item_id=item.id, 
+                    is_primary=True
+                ).first()
+                
+                if primary_image:
+                    order_data['item']['primary_image'] = primary_image.to_dict()
+            
+            # Get buyer details (limited info for privacy)
+            buyer = User.query.get(order.buyer_id)
+            if buyer:
+                order_data['buyer'] = {
+                    'id': buyer.id,
+                    'username': buyer.username,
+                    'first_name': buyer.first_name,
+                    'last_name': buyer.last_name
+                }
+            
+            orders_data.append(order_data)
+        
+        return jsonify({
+            'orders': orders_data,
+            'pagination': {
+                'page': page,
+                'pages': (total + per_page - 1) // per_page,
+                'per_page': per_page,
+                'total': total,
+                'has_next': page * per_page < total,
+                'has_prev': page > 1
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@seller_bp.route('/seller/orders/<int:order_id>/status', methods=['PUT'])
+@jwt_required()
+def update_order_status(order_id):
+    """Update order status (confirm/decline/ship/etc.)"""
+    try:
+        current_user_id = int(get_jwt_identity())
+        
+        # Verify user is a seller
+        user = User.query.get(current_user_id)
+        if not user or user.role not in ['seller', 'admin']:
+            return jsonify({'error': 'Access denied. Seller role required.'}), 403
+        
+        data = request.get_json()
+        new_status = data.get('status')
+        seller_notes = data.get('seller_notes', '')
+        decline_reason = data.get('decline_reason', '')
+        
+        if new_status not in ['pending', 'confirmed', 'declined', 'shipped', 'delivered', 'cancelled']:
+            return jsonify({'error': 'Invalid status'}), 400
+        
+        # Find order
+        order = Order.query.filter_by(id=order_id, seller_id=current_user_id).first()
+        if not order:
+            return jsonify({'error': 'Order not found'}), 404
+        
+        # Update order status and timestamps
+        order.status = new_status
+        order.seller_notes = seller_notes
+        order.updated_at = datetime.utcnow()
+        
+        if new_status == 'confirmed':
+            order.confirmed_at = datetime.utcnow()
+        elif new_status == 'declined':
+            order.declined_at = datetime.utcnow()
+            order.decline_reason = decline_reason
+        elif new_status == 'shipped':
+            order.shipped_at = datetime.utcnow()
+        elif new_status == 'delivered':
+            order.delivered_at = datetime.utcnow()
+        
+        # Update item status based on order status
+        item = Item.query.get(order.item_id)
+        if item:
+            if new_status in ['confirmed', 'shipped']:
+                item.status = 'sold' if new_status == 'shipped' else 'pending'
+            elif new_status in ['declined', 'cancelled']:
+                item.status = 'active'
+            elif new_status == 'delivered':
+                item.status = 'sold'
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': f'Order status updated to {new_status}',
+            'order': order.to_dict()
         }), 200
         
     except Exception as e:

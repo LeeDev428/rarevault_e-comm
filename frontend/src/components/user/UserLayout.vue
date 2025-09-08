@@ -133,53 +133,12 @@
         </router-link>
 
         <router-link 
-          to="/user/collectibles" 
-          class="category-item" 
-          :class="{ active: $route.path === '/user/collectibles' }"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-          </svg>
-          <span>Collectibles</span>
-        </router-link>
-
-        <router-link 
-          to="/user/antiques" 
-          class="category-item" 
-          :class="{ active: $route.path === '/user/antiques' }"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12,6 12,12 16,14"/>
-          </svg>
-          <span>Antiques</span>
-        </router-link>
-
-        <router-link 
-          to="/user/coins" 
-          class="category-item" 
-          :class="{ active: $route.path === '/user/coins' }"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M12 6v12M8 10l4-4 4 4"/>
-          </svg>
-          <span>Coins & Currency</span>
-        </router-link>
-
-        <router-link 
           to="/user/others" 
           class="category-item" 
           :class="{ active: $route.path === '/user/others' }"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="12" cy="12" r="3"/>
-            <circle cx="12" cy="4" r="1"/>
-            <circle cx="12" cy="20" r="1"/>
-            <circle cx="4" cy="12" r="1"/>
-            <circle cx="20" cy="12" r="1"/>
-          </svg>
-          <span>Others</span>
+        
+        
         </router-link>
       </div>
     </nav>
