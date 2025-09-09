@@ -4,15 +4,21 @@
       <div class="wishlist-header">
         <h1 class="page-title">My Wishlist</h1>
         <div class="wishlist-info">
-          <span class="item-count">{{ wishlistItems.length }} item{{ wishlistItems.length !== 1 ? 's' : '' }}</span>
+          <span class="item-count">{{ totalItems }} item{{ totalItems !== 1 ? 's' : '' }}</span>
           <button v-if="wishlistItems.length > 0" @click="clearWishlist" class="clear-btn">
             Clear All
           </button>
         </div>
       </div>
 
+      <!-- Loading State -->
+      <div v-if="loading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading wishlist...</p>
+      </div>
+
       <!-- Wishlist Actions -->
-      <div v-if="wishlistItems.length > 0" class="wishlist-actions">
+      <div v-else-if="wishlistItems.length > 0" class="wishlist-actions">
         <div class="selection-controls">
           <label class="select-all">
             <input 
@@ -26,8 +32,8 @@
         </div>
         
         <div class="bulk-actions" v-if="selectedItems.length > 0">
-          <button @click="addSelectedToCart" class="action-btn primary">
-            Add to Cart ({{ selectedItems.length }})
+          <button @click="orderSelectedItems" class="action-btn primary">
+            Order Selected ({{ selectedItems.length }})
           </button>
           <button @click="removeSelectedItems" class="action-btn secondary">
             Remove Selected
@@ -36,7 +42,7 @@
       </div>
 
       <!-- Wishlist Grid -->
-      <div v-if="wishlistItems.length > 0" class="wishlist-grid">
+      <div v-if="!loading && wishlistItems.length > 0" class="wishlist-grid">
         <div 
           v-for="item in wishlistItems" 
           :key="item.id"
@@ -46,18 +52,20 @@
           <div class="item-selection">
             <input 
               type="checkbox" 
-              :checked="selectedItems.includes(item.id)"
-              @change="toggleItemSelection(item.id)"
+              :checked="selectedItems.includes(item.wishlist_id)"
+              @change="toggleItemSelection(item.wishlist_id)"
               class="selection-checkbox"
             />
           </div>
 
           <!-- Item Image -->
           <div class="item-image-container">
-            <img :src="item.image" :alt="item.title" class="item-image" />
+            <img :src="getItemImage(item)" 
+                 :alt="item.title || 'Item'" 
+                 class="item-image" />
             
             <!-- Remove Button -->
-            <button @click="removeFromWishlist(item.id)" class="remove-btn">
+            <button @click="removeFromWishlist(item.wishlist_id)" class="remove-btn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <line x1="18" y1="6" x2="6" y2="18"/>
                 <line x1="6" y1="6" x2="18" y2="18"/>
@@ -68,37 +76,34 @@
           <!-- Item Details -->
           <div class="item-details">
             <div class="seller-label">
-              <span>{{ item.seller }}</span>
+              <span>{{ getSellerName(item) }}</span>
             </div>
             
-            <h3 class="item-title">{{ item.title }}</h3>
+            <h3 class="item-title">{{ item.title || 'Item Deleted' }}</h3>
             
             <div class="item-price">
-              <span class="current-price">${{ item.price.toFixed(2) }}</span>
-              <span v-if="item.originalPrice && item.originalPrice > item.price" class="original-price">
-                ${{ item.originalPrice.toFixed(2) }}
-              </span>
+              <span class="current-price">₱{{ (item.price || 0).toFixed(2) }}</span>
             </div>
 
             <div class="item-status">
-              <span :class="['status-indicator', item.available ? 'available' : 'unavailable']">
-                {{ item.available ? 'Available' : 'Out of Stock' }}
+              <span class="status-indicator available">
+                {{ item.category || 'N/A' }}
               </span>
-              <span v-if="item.dateAdded" class="date-added">
-                Added {{ formatDate(item.dateAdded) }}
+              <span v-if="item.added_to_wishlist" class="date-added">
+                Added {{ formatDate(item.added_to_wishlist) }}
               </span>
             </div>
 
             <!-- Item Actions -->
             <div class="item-actions">
               <button 
-                @click="addToCart(item)" 
-                :disabled="!item.available"
+                @click="orderItem(item)" 
+                :disabled="!item.id"
                 class="action-btn primary"
               >
-                {{ item.available ? 'Add to Cart' : 'Unavailable' }}
+                {{ item.id ? 'Order Now' : 'Unavailable' }}
               </button>
-              <button @click="contactSeller(item)" class="action-btn secondary">
+              <button @click="contactSeller(item)" class="action-btn secondary" :disabled="!item.id">
                 Contact Seller
               </button>
             </div>
@@ -106,8 +111,16 @@
         </div>
       </div>
 
+      <!-- Pagination -->
+      <Pagination
+        v-if="!loading && totalPages > 1"
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        @page-changed="changePage"
+      />
+
       <!-- Empty Wishlist State -->
-      <div v-else class="empty-wishlist">
+      <div v-else-if="!loading && wishlistItems.length === 0" class="empty-wishlist">
         <div class="empty-icon">
           <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
@@ -119,70 +132,109 @@
           Browse Items
         </router-link>
       </div>
+
+      <!-- Order Confirmation Modal -->
+      <div v-if="showOrderModal" class="modal-overlay" @click="closeOrderModal">
+        <div class="modal-content" @click.stop>
+          <div class="modal-header">
+            <h2>Order Confirmation</h2>
+            <button @click="closeOrderModal" class="close-btn">&times;</button>
+          </div>
+          <div class="order-confirmation">
+            <div class="item-summary" v-if="selectedOrderItem">
+              <img 
+                :src="selectedOrderItem.primary_image ? selectedOrderItem.primary_image.image_url : (selectedOrderItem.image_url || '/api/placeholder/300/300')" 
+                :alt="selectedOrderItem.name || 'Item'"
+                class="summary-image"
+              />
+              <div class="summary-details">
+                <h3>{{ selectedOrderItem.name || 'Item' }}</h3>
+                <p class="summary-category">{{ selectedOrderItem.category || 'N/A' }}</p>
+                <p class="summary-price">₱{{ selectedOrderItem.price || '0.00' }}</p>
+                <p class="summary-condition">{{ selectedOrderItem.condition || 'N/A' }}</p>
+              </div>
+            </div>
+
+            <form @submit.prevent="submitOrder">
+              <div class="form-group">
+                <label for="customer_name">Full Name *</label>
+                <input type="text" id="customer_name" v-model="orderForm.customer_name" required />
+              </div>
+
+              <div class="form-group">
+                <label for="customer_email">Email *</label>
+                <input type="email" id="customer_email" v-model="orderForm.customer_email" required />
+              </div>
+
+              <div class="form-group">
+                <label for="customer_phone">Phone Number *</label>
+                <input type="tel" id="customer_phone" v-model="orderForm.customer_phone" required />
+              </div>
+
+              <div class="form-group">
+                <label for="customer_address">Address *</label>
+                <textarea id="customer_address" v-model="orderForm.customer_address" rows="3" required></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="payment_method">Payment Method *</label>
+                <select id="payment_method" v-model="orderForm.payment_method" required>
+                  <option value="">Select payment method</option>
+                  <option value="cash">Cash on Delivery</option>
+                  <option value="bank_transfer">Bank Transfer</option>
+                  <option value="other">Other (discuss with seller)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="notes">Additional Notes</label>
+                <textarea id="notes" v-model="orderForm.notes" rows="2" placeholder="Any special requests or notes for the seller"></textarea>
+              </div>
+
+              <div class="modal-actions">
+                <button type="button" @click="closeOrderModal" class="cancel-btn">Cancel</button>
+                <button type="submit" :disabled="submittingOrder" class="submit-btn">
+                  {{ submittingOrder ? 'Placing Order...' : 'Place Order' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   </UserLayout>
 </template>
 
 <script>
 import UserLayout from '@/components/user/UserLayout.vue'
+import Pagination from '@/components/user/Pagination.vue'
 
 export default {
   name: 'UserWishlist',
   components: {
-    UserLayout
+    UserLayout,
+    Pagination
   },
   data() {
     return {
       selectedItems: [],
-      wishlistItems: [
-        {
-          id: 1,
-          title: 'Vintage Pocket Watch',
-          price: 150.00,
-          originalPrice: 175.00,
-          image: '/api/placeholder/300/300',
-          seller: 'Vintage Items',
-          available: true,
-          dateAdded: '2024-03-15'
-        },
-        {
-          id: 2,
-          title: 'Antique Silver Spoons Set',
-          price: 85.00,
-          image: '/api/placeholder/300/300',
-          seller: 'Vintage Items',
-          available: true,
-          dateAdded: '2024-03-18'
-        },
-        {
-          id: 3,
-          title: 'Vintage Camera',
-          price: 220.00,
-          image: '/api/placeholder/300/300',
-          seller: 'Vintage Items',
-          available: false,
-          dateAdded: '2024-03-20'
-        },
-        {
-          id: 4,
-          title: 'Classic Wrist Watch',
-          price: 120.00,
-          originalPrice: 140.00,
-          image: '/api/placeholder/300/300',
-          seller: 'Vintage Items',
-          available: true,
-          dateAdded: '2024-03-22'
-        },
-        {
-          id: 5,
-          title: 'Vintage Typewriter',
-          price: 180.00,
-          image: '/api/placeholder/300/300',
-          seller: 'Vintage Items',
-          available: true,
-          dateAdded: '2024-03-25'
-        }
-      ]
+      wishlistItems: [],
+      currentPage: 1,
+      totalPages: 1,
+      totalItems: 0,
+      itemsPerPage: 12,
+      loading: false,
+      showOrderModal: false,
+      selectedOrderItem: null,
+      submittingOrder: false,
+      orderForm: {
+        customer_name: '',
+        customer_email: '',
+        customer_phone: '',
+        customer_address: '',
+        payment_method: '',
+        notes: ''
+      }
     }
   },
   computed: {
@@ -191,12 +243,60 @@ export default {
              this.selectedItems.length === this.wishlistItems.length
     }
   },
+  mounted() {
+    this.loadWishlist()
+  },
   methods: {
+    async loadWishlist() {
+      this.loading = true
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        if (!token) {
+          this.$router.push('/login')
+          return
+        }
+
+        const params = new URLSearchParams({
+          page: this.currentPage,
+          per_page: this.itemsPerPage
+        })
+
+        const response = await fetch(`http://localhost:5000/api/user/wishlist?${params}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch wishlist')
+        }
+
+        const data = await response.json()
+        this.wishlistItems = data.items || []
+        this.totalItems = data.pagination?.total || 0
+        this.totalPages = data.pagination?.pages || 1
+        this.selectedItems = []
+      } catch (error) {
+        console.error('Error loading wishlist:', error)
+        this.wishlistItems = []
+        this.totalItems = 0
+        this.totalPages = 1
+      } finally {
+        this.loading = false
+      }
+    },
+
+    changePage(page) {
+      this.currentPage = page
+      this.loadWishlist()
+    },
+
     toggleSelectAll() {
       if (this.allSelected) {
         this.selectedItems = []
       } else {
-        this.selectedItems = this.wishlistItems.map(item => item.id)
+        this.selectedItems = this.wishlistItems.map(item => item.wishlist_id)
       }
     },
     
@@ -209,44 +309,204 @@ export default {
       }
     },
     
-    addSelectedToCart() {
+    async orderSelectedItems() {
       const items = this.wishlistItems.filter(item => 
-        this.selectedItems.includes(item.id) && item.available
+        this.selectedItems.includes(item.wishlist_id) && item.id
       )
-      console.log('Adding to cart:', items)
-      // Handle add to cart logic
+      
+      if (items.length === 0) {
+        alert('No valid items selected for ordering.')
+        return
+      }
+
+      // For multiple items, we could implement batch ordering
+      // For now, let's order them one by one
+      for (const item of items) {
+        await this.orderItem(item, false)
+      }
+      
       this.selectedItems = []
+      alert(`Successfully placed orders for ${items.length} items!`)
     },
     
-    removeSelectedItems() {
-      this.wishlistItems = this.wishlistItems.filter(item => 
-        !this.selectedItems.includes(item.id)
-      )
-      this.selectedItems = []
-    },
-    
-    removeFromWishlist(itemId) {
-      this.wishlistItems = this.wishlistItems.filter(item => item.id !== itemId)
-      this.selectedItems = this.selectedItems.filter(id => id !== itemId)
-    },
-    
-    clearWishlist() {
-      if (confirm('Are you sure you want to clear your entire wishlist?')) {
-        this.wishlistItems = []
+    async removeSelectedItems() {
+      if (this.selectedItems.length === 0) return
+      
+      if (!confirm(`Are you sure you want to remove ${this.selectedItems.length} item(s) from your wishlist?`)) {
+        return
+      }
+
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        const removePromises = this.selectedItems.map(wishlistId => {
+          const item = this.wishlistItems.find(item => item.wishlist_id === wishlistId);
+          const itemId = item ? item.id : null;
+          if (itemId) {
+            return fetch(`http://localhost:5000/api/user/wishlist/${itemId}`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            });
+          }
+          return Promise.resolve();
+        }).filter(Boolean)
+
+        await Promise.all(removePromises)
+        await this.loadWishlist()
         this.selectedItems = []
+      } catch (error) {
+        console.error('Error removing items:', error)
+        alert('Failed to remove some items. Please try again.')
       }
     },
     
-    addToCart(item) {
-      if (item.available) {
-        console.log('Adding to cart:', item)
-        // Handle add to cart logic
+    async removeFromWishlist(wishlistId) {
+      if (!confirm('Are you sure you want to remove this item from your wishlist?')) {
+        return
+      }
+
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        const item = this.wishlistItems.find(item => item.wishlist_id === wishlistId);
+        const itemId = item ? item.id : null;
+        
+        if (!itemId) {
+          alert('Unable to remove item. Please refresh and try again.');
+          return;
+        }
+        
+        const response = await fetch(`http://localhost:5000/api/user/wishlist/${itemId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to remove item')
+        }
+
+        await this.loadWishlist()
+        this.selectedItems = this.selectedItems.filter(id => id !== wishlistId)
+      } catch (error) {
+        console.error('Error removing item:', error)
+        alert('Failed to remove item. Please try again.')
+      }
+    },
+    
+    async clearWishlist() {
+      if (!confirm('Are you sure you want to clear your entire wishlist?')) {
+        return
+      }
+
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        const response = await fetch('http://localhost:5000/api/user/wishlist/clear', {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to clear wishlist')
+        }
+
+        await this.loadWishlist()
+        this.selectedItems = []
+      } catch (error) {
+        console.error('Error clearing wishlist:', error)
+        alert('Failed to clear wishlist. Please try again.')
+      }
+    },
+    
+    orderItem(item, showModal = true) {
+      if (!item.id) {
+        alert('This item is no longer available.')
+        return
+      }
+
+      if (showModal) {
+        this.selectedOrderItem = item
+        this.showOrderModal = true
+        this.resetOrderForm()
+      } else {
+        // For batch ordering, use default values
+        return this.submitOrder(item)
+      }
+    },
+
+    async submitOrder(batchItem = null) {
+      const item = batchItem || this.selectedOrderItem
+      if (!item || !item.id) return
+
+      this.submittingOrder = true
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        const response = await fetch('http://localhost:5000/api/user/orders', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            item_id: item.id,
+            customer_name: this.orderForm.customer_name || 'Customer',
+            customer_email: this.orderForm.customer_email || 'customer@example.com',
+            customer_phone: this.orderForm.customer_phone || 'N/A',
+            customer_address: this.orderForm.customer_address || 'N/A',
+            payment_method: this.orderForm.payment_method || 'cash',
+            notes: this.orderForm.notes || ''
+          })
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to place order')
+        }
+
+        if (!batchItem) {
+          alert('Order placed successfully! The seller will contact you soon.')
+          this.closeOrderModal()
+        }
+      } catch (error) {
+        console.error('Error placing order:', error)
+        if (!batchItem) {
+          alert('Failed to place order. Please try again.')
+        }
+      } finally {
+        this.submittingOrder = false
+      }
+    },
+
+    closeOrderModal() {
+      this.showOrderModal = false
+      this.selectedOrderItem = null
+      this.resetOrderForm()
+    },
+
+    resetOrderForm() {
+      this.orderForm = {
+        customer_name: '',
+        customer_email: '',
+        customer_phone: '',
+        customer_address: '',
+        payment_method: '',
+        notes: ''
       }
     },
     
     contactSeller(item) {
-      console.log('Contact seller for:', item.title)
+      if (!item.id) {
+        alert('This item is no longer available.')
+        return
+      }
+      console.log('Contact seller for:', item.name)
       // Handle contact seller logic
+      alert('Contact seller functionality will be implemented soon.')
     },
     
     formatDate(dateString) {
@@ -268,6 +528,46 @@ export default {
           day: 'numeric' 
         })
       }
+    },
+
+    getItemImage(item) {
+      // Handle primary image from API
+      if (item?.primary_image?.url) {
+        return item.primary_image.url;
+      }
+      
+      // Handle primary_image as string (direct URL)
+      if (item?.primary_image && typeof item.primary_image === 'string') {
+        return item.primary_image;
+      }
+      
+      // Handle images array from API  
+      if (item?.images && Array.isArray(item.images) && item.images.length > 0) {
+        const primaryImage = item.images.find(img => img.isPrimary);
+        if (primaryImage?.url) {
+          return primaryImage.url;
+        }
+        if (item.images[0]?.url) {
+          return item.images[0].url;
+        }
+      }
+      
+      // Handle image_url property
+      if (item?.image_url) {
+        return item.image_url;
+      }
+      
+      // Handle single image property
+      if (item?.image) {
+        return item.image;
+      }
+      
+      // Default placeholder
+      return 'http://localhost:5000/uploads/placeholder.svg';
+    },
+
+    getSellerName(item) {
+      return item.seller_name || item.seller?.username || 'Unknown Seller';
     }
   }
 }
@@ -612,5 +912,186 @@ export default {
   .item-actions {
     flex-direction: column;
   }
+}
+
+/* Loading State */
+.loading-state {
+  text-align: center;
+  padding: 48px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: #333;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.order-confirmation {
+  padding: 24px;
+}
+
+.item-summary {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.summary-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.summary-details h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 1.25rem;
+}
+
+.summary-category {
+  color: #666;
+  margin: 0 0 4px 0;
+  font-size: 0.9rem;
+}
+
+.summary-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #007bff;
+  margin: 0 0 4px 0;
+}
+
+.summary-condition {
+  color: #666;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cancel-btn,
+.submit-btn {
+  flex: 1;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.cancel-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #545b62;
+}
+
+.submit-btn {
+  background: #007bff;
+  color: white;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.submit-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 </style>

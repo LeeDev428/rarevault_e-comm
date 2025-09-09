@@ -52,8 +52,8 @@
         >
           <div class="order-header">
             <div class="order-info">
-              <h3 class="order-id">Order #{{ order.id }}</h3>
-              <p class="order-date">{{ formatDate(order.orderDate) }}</p>
+              <h3 class="order-id">Order #{{ order.order_number || order.id }}</h3>
+              <p class="order-date">{{ formatDate(order.created_at) }}</p>
             </div>
             <div class="order-status">
               <span :class="['status-badge', order.status]">
@@ -64,13 +64,11 @@
 
           <div class="order-items">
             <div class="item-preview">
-              <img :src="order.items[0].image" :alt="order.items[0].title" class="item-image" />
+              <img :src="getItemImage(order.item)" :alt="order.item?.title || 'Item'" class="item-image" />
               <div class="item-details">
-                <h4 class="item-title">{{ order.items[0].title }}</h4>
-                <p class="item-seller">Sold by {{ order.items[0].seller }}</p>
-                <span v-if="order.items.length > 1" class="more-items">
-                  +{{ order.items.length - 1 }} more item{{ order.items.length > 2 ? 's' : '' }}
-                </span>
+                <h4 class="item-title">{{ order.item?.title || 'Item not available' }}</h4>
+                <p class="item-seller">Sold by {{ getSellerName(order.item) }}</p>
+                <span class="item-quantity">Qty: {{ order.quantity || 1 }}</span>
               </div>
             </div>
           </div>
@@ -78,7 +76,7 @@
           <div class="order-footer">
             <div class="order-total">
               <span class="total-label">Total:</span>
-              <span class="total-amount">${{ order.total.toFixed(2) }}</span>
+              <span class="total-amount">₱{{ (order.total_amount || 0).toFixed(2) }}</span>
             </div>
             <div class="order-actions">
               <button 
@@ -94,6 +92,13 @@
                 @click.stop="trackOrder(order)"
               >
                 Track Order
+              </button>
+              <button 
+                v-if="order.status === 'confirmed'" 
+                class="action-btn success"
+                @click.stop="markAsReceived(order)"
+              >
+                Order Received
               </button>
               <button 
                 class="action-btn primary"
@@ -137,96 +142,35 @@ export default {
     return {
       selectedStatus: 'all',
       searchQuery: '',
+      loading: true,
+      orders: [],
       orderStatuses: [
         { value: 'all', label: 'All Orders' },
         { value: 'pending', label: 'Pending' },
-        { value: 'processing', label: 'Processing' },
+        { value: 'confirmed', label: 'Confirmed' },
         { value: 'shipped', label: 'Shipped' },
         { value: 'delivered', label: 'Delivered' },
         { value: 'cancelled', label: 'Cancelled' }
-      ],
-      orders: [
-        {
-          id: '20240001',
-          orderDate: '2024-03-15',
-          status: 'delivered',
-          total: 345.00,
-          items: [
-            {
-              title: 'Vintage Pocket Watch',
-              seller: 'Vintage Items',
-              image: '/api/placeholder/60/60'
-            },
-            {
-              title: 'Antique Silver Spoons',
-              seller: 'Vintage Items',
-              image: '/api/placeholder/60/60'
-            }
-          ]
-        },
-        {
-          id: '20240002',
-          orderDate: '2024-03-18',
-          status: 'shipped',
-          total: 120.00,
-          items: [
-            {
-              title: 'Vintage Wrist Watch',
-              seller: 'Vintage Items',
-              image: '/api/placeholder/60/60'
-            }
-          ]
-        },
-        {
-          id: '20240003',
-          orderDate: '2024-03-20',
-          status: 'processing',
-          total: 85.00,
-          items: [
-            {
-              title: 'Vintage Cola Sign',
-              seller: 'Vintage Items',
-              image: '/api/placeholder/60/60'
-            }
-          ]
-        },
-        {
-          id: '20240004',
-          orderDate: '2024-03-22',
-          status: 'pending',
-          total: 200.00,
-          items: [
-            {
-              title: 'Vintage Camera',
-              seller: 'Vintage Items',
-              image: '/api/placeholder/60/60'
-            }
-          ]
-        }
       ]
     }
   },
   computed: {
     filteredOrders() {
       let filtered = this.orders
-
-      // Filter by status
+      
       if (this.selectedStatus !== 'all') {
         filtered = filtered.filter(order => order.status === this.selectedStatus)
       }
-
-      // Filter by search query
+      
       if (this.searchQuery) {
         const query = this.searchQuery.toLowerCase()
         filtered = filtered.filter(order => 
-          order.id.toLowerCase().includes(query) ||
-          order.items.some(item => 
-            item.title.toLowerCase().includes(query) ||
-            item.seller.toLowerCase().includes(query)
-          )
+          order.order_number?.toLowerCase().includes(query) ||
+          order.item?.title?.toLowerCase().includes(query) ||
+          order.customer_name?.toLowerCase().includes(query)
         )
       }
-
+      
       return filtered
     },
     
@@ -235,17 +179,49 @@ export default {
     },
     
     pendingOrders() {
-      return this.orders.filter(order => 
-        order.status === 'pending' || order.status === 'processing'
-      ).length
+      return this.orders.filter(order => order.status === 'pending').length
     },
     
     completedOrders() {
       return this.orders.filter(order => order.status === 'delivered').length
     }
   },
+  mounted() {
+    this.fetchOrders()
+  },
   methods: {
+    async fetchOrders() {
+      try {
+        this.loading = true
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        if (!token) {
+          this.$router.push('/login')
+          return
+        }
+
+        const response = await fetch('http://localhost:5000/api/user/orders', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch orders')
+        }
+
+        const data = await response.json()
+        this.orders = data.orders || []
+      } catch (error) {
+        console.error('Error fetching orders:', error)
+        this.orders = []
+      } finally {
+        this.loading = false
+      }
+    },
+    
     formatDate(dateString) {
+      if (!dateString) return 'N/A'
       const date = new Date(dateString)
       return date.toLocaleDateString('en-US', { 
         year: 'numeric', 
@@ -257,7 +233,8 @@ export default {
     getStatusText(status) {
       const statusMap = {
         pending: 'Pending',
-        processing: 'Processing',
+        confirmed: 'Confirmed',
+        declined: 'Declined',
         shipped: 'Shipped',
         delivered: 'Delivered',
         cancelled: 'Cancelled'
@@ -265,16 +242,81 @@ export default {
       return statusMap[status] || status
     },
     
+    getItemImage(item) {
+      if (item?.primary_image?.url) {
+        return item.primary_image.url;
+      }
+      
+      // Handle primary_image as string (direct URL)
+      if (item?.primary_image && typeof item.primary_image === 'string') {
+        return item.primary_image;
+      }
+      
+      if (item?.images && Array.isArray(item.images) && item.images.length > 0) {
+        const primaryImage = item.images.find(img => img.isPrimary);
+        if (primaryImage?.url) {
+          return primaryImage.url;
+        }
+        if (item.images[0]?.url) {
+          return item.images[0].url;
+        }
+      }
+      
+      if (item?.image_url || item?.image) {
+        return item.image_url || item.image;
+      }
+      
+      return 'http://localhost:5000/uploads/placeholder.svg';
+    },
+
+    getSellerName(item) {
+      return item?.seller?.username || item?.seller_name || 'Unknown Seller';
+    },
+    
     viewOrderDetails(order) {
       this.$router.push(`/user/orders/${order.id}`)
     },
     
+    async markAsReceived(order) {
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        if (!token) {
+          this.$router.push('/login')
+          return
+        }
+
+        const response = await fetch(`http://localhost:5000/api/user/orders/${order.id}/received`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to mark order as received')
+        }
+
+        // Update the order status locally
+        const orderIndex = this.orders.findIndex(o => o.id === order.id)
+        if (orderIndex !== -1) {
+          this.orders[orderIndex].status = 'delivered'
+        }
+
+        // Show success message
+        alert('Order marked as received successfully!')
+      } catch (error) {
+        console.error('Error marking order as received:', error)
+        alert('Failed to mark order as received. Please try again.')
+      }
+    },
+    
     trackOrder(order) {
-      console.log('Track order:', order.id)
+      console.log('Track order:', order.order_number)
     },
     
     reorderItems(order) {
-      console.log('Reorder items from order:', order.id)
+      console.log('Reorder items from order:', order.order_number)
     }
   }
 }

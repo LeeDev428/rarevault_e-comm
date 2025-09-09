@@ -103,7 +103,11 @@
                 <td>
                   <div class="item-info">
                     <div class="item-image">
-                      <div class="image-placeholder">📷</div>
+                      <img 
+                        :src="getItemImage(item)" 
+                        :alt="item.title"
+                        @error="handleImageError"
+                      />
                     </div>
                     <div class="item-details">
                       <h4 class="item-title">{{ item.title }}</h4>
@@ -111,7 +115,7 @@
                     </div>
                   </div>
                 </td>
-                <td class="price">${{ item.price.toFixed(2) }}</td>
+                <td class="price">₱{{ item.price.toFixed(2) }}</td>
                 <td class="category">{{ item.category }}</td>
                 <td>
                   <span class="status-badge" :class="`status-${item.status}`">
@@ -543,6 +547,46 @@ export default {
     
     hideMessage() {
       this.showMessage = false;
+    },
+
+    getItemImage(item) {
+      // Handle primary image from API - priority to primary image
+      if (item?.images && Array.isArray(item.images) && item.images.length > 0) {
+        const primaryImage = item.images.find(img => img.is_primary || img.isPrimary);
+        if (primaryImage?.image_url) {
+          return primaryImage.image_url;
+        }
+        if (primaryImage?.url) {
+          return primaryImage.url;
+        }
+        // Fallback to first image
+        if (item.images[0]?.image_url) {
+          return item.images[0].image_url;
+        }
+        if (item.images[0]?.url) {
+          return item.images[0].url;
+        }
+      }
+      // Handle primary_image object from API
+      if (item?.primary_image?.image_url) {
+        return item.primary_image.image_url;
+      }
+      if (item?.primary_image?.url) {
+        return item.primary_image.url;
+      }
+      // Handle direct image_url property
+      if (item?.image_url) {
+        return item.image_url;
+      }
+      // Handle single image property
+      if (item?.image) {
+        return item.image;
+      }
+      return 'http://localhost:5000/uploads/placeholder.svg';
+    },
+
+    handleImageError(event) {
+      event.target.src = 'http://localhost:5000/uploads/placeholder.svg';
     }
   }
 }
@@ -673,6 +717,16 @@ th {
   width: 64px;
   height: 64px;
   flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e9ecef;
+}
+
+.item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 7px;
 }
 
 .image-placeholder {

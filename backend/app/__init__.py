@@ -46,6 +46,7 @@ def create_app():
     from app.admin.routes import admin_bp
     from app.user.routes import user_bp
     from app.seller.routes import seller_bp
+    from app.debug_routes import debug_bp
     
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(main_bp, url_prefix='/api')
@@ -53,5 +54,6 @@ def create_app():
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
     app.register_blueprint(user_bp, url_prefix='/api/user')
     app.register_blueprint(seller_bp, url_prefix='/api')
+    app.register_blueprint(debug_bp, url_prefix='/api')
     
     return app

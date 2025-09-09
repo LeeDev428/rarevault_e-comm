@@ -50,9 +50,9 @@
 
               <div class="form-row">
                 <div class="form-group">
-                  <label class="form-label required">Price (USD)</label>
+                  <label class="form-label required">Price (PHP)</label>
                   <div class="price-input">
-                    <span class="currency-symbol">$</span>
+                    <span class="currency-symbol">₱</span>
                     <input 
                       v-model.number="item.price"
                       type="number"
@@ -115,14 +115,24 @@
               <h2 class="section-title">Photos</h2>
               <p class="section-subtitle">Manage your item photos</p>
               
-              <div class="images-upload">
+              <div v-if="loading" class="images-loading">
+                <div class="spinner"></div>
+                <p>Loading images...</p>
+              </div>
+              
+              <div v-else class="images-upload">
                 <div class="upload-grid">
                   <div 
                     v-for="(image, index) in item.images" 
-                    :key="index"
+                    :key="image.id || index"
                     class="image-slot"
                   >
-                    <img :src="image.url" :alt="`Item photo ${index + 1}`" class="uploaded-image">
+                    <img 
+                      :src="image.url" 
+                      :alt="`Item photo ${index + 1}`" 
+                      class="uploaded-image"
+                      @error="handleImageError"
+                    >
                     <button 
                       type="button"
                       class="remove-image"
@@ -244,7 +254,7 @@
               <div class="preview-content">
                 <h4 class="preview-item-title">{{ item.title || 'Item Title' }}</h4>
                 <p class="preview-price">
-                  ${{ item.price ? item.price.toFixed(2) : '0.00' }}
+                  ₱{{ item.price ? item.price.toFixed(2) : '0.00' }}
                   <span v-if="item.isNegotiable" class="negotiable">OBO</span>
                 </p>
                 <p class="preview-category">{{ item.category || 'No category' }}</p>
@@ -306,21 +316,17 @@ export default {
   data() {
     return {
       item: {
-        id: 1,
-        title: 'Vintage Rolex Submariner Watch',
-        description: 'This is a rare vintage Rolex Submariner from 1965 in excellent condition. The watch has been well-maintained and comes with original box and papers.',
-        price: 8500.00,
-        category: 'Watches',
-        condition: 'good',
+        id: null,
+        title: '',
+        description: '',
+        price: 0,
+        category: '',
+        condition: '',
         status: 'active',
-        images: [
-          { url: '/api/placeholder/400/400', isPrimary: true },
-          { url: '/api/placeholder/400/401', isPrimary: false },
-          { url: '/api/placeholder/400/402', isPrimary: false }
-        ],
-        tags: ['vintage', 'rolex', 'submariner', 'collectible'],
-        isNegotiable: true,
-        isAuthenticated: true
+        images: [],
+        tags: [],
+        isNegotiable: false,
+        isAuthenticated: false
       },
       originalItem: {},
       tagInput: '',
@@ -331,6 +337,7 @@ export default {
         { value: 'fair', name: 'Fair', description: 'Some wear and tear, still functional' },
         { value: 'poor', name: 'Poor', description: 'Heavy wear, may need repair' }
       ],
+      loading: true,
       saveLoading: false,
       showMessage: false,
       messageType: 'info',
@@ -361,17 +368,83 @@ export default {
     }
   },
   mounted() {
-    // In a real app, load item data based on route params
     const itemId = this.$route.params.id;
-    this.loadItem(itemId);
-    // Store original for comparison
-    this.originalItem = JSON.parse(JSON.stringify(this.item));
+    if (itemId) {
+      this.loadItem(itemId);
+    } else {
+      this.showToast('No item ID provided', 'error', 'Error');
+      this.$router.push('/seller/items');
+    }
   },
   methods: {
-    loadItem(id) {
-      // Simulate loading item data
-      console.log('Loading item for edit:', id);
-      // In real app, make API call here
+    async loadItem(id) {
+      try {
+        this.loading = true;
+        
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token') || localStorage.getItem('jwt_token');
+        if (!token) {
+          this.showToast('Please log in to edit items.', 'error', 'Authentication Required');
+          this.$router.push('/login');
+          return;
+        }
+        
+        const response = await fetch(`http://localhost:5000/api/seller/items/${id}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            this.showToast('Session expired. Please log in again.', 'error', 'Authentication Error');
+            this.$router.push('/login');
+            return;
+          } else if (response.status === 404) {
+            this.showToast('Item not found.', 'error', 'Not Found');
+            this.$router.push('/seller/items');
+            return;
+          }
+          throw new Error('Failed to load item');
+        }
+        
+        const data = await response.json();
+        console.log('Loaded item data:', data);
+        
+        // Map API data to component structure
+        this.item = {
+          id: data.id,
+          title: data.title || '',
+          description: data.description || '',
+          price: parseFloat(data.price) || 0,
+          category: data.category || '',
+          condition: data.condition || '',
+          status: data.status || 'active',
+          images: this.mapImages(data.images || []),
+          tags: data.tags || [],
+          isNegotiable: data.is_negotiable || false,
+          isAuthenticated: data.is_authenticated || false
+        };
+        
+        // Store original for comparison
+        this.originalItem = JSON.parse(JSON.stringify(this.item));
+        
+      } catch (error) {
+        console.error('Error loading item:', error);
+        this.showToast(`Failed to load item: ${error.message}`, 'error', 'Load Failed');
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    mapImages(apiImages) {
+      return apiImages.map(img => ({
+        id: img.id,
+        url: img.image_url || img.url,
+        isPrimary: img.is_primary || img.isPrimary || false,
+        existing: true // Mark as existing to handle updates vs new uploads
+      }));
     },
     
     goBack() {
@@ -405,11 +478,16 @@ export default {
         reader.onload = (e) => {
           this.item.images.push({
             url: e.target.result,
-            isPrimary: this.item.images.length === 0 // First image is primary
+            isPrimary: this.item.images.length === 0, // First image is primary
+            existing: false // Mark as new upload
           });
         };
         reader.readAsDataURL(file);
       });
+    },
+
+    handleImageError(event) {
+      event.target.src = 'http://localhost:5000/uploads/placeholder.svg';
     },
     
     removeImage(index) {
@@ -469,25 +547,64 @@ export default {
       }
     },
     
-    saveChanges() {
+    async saveChanges() {
       const errors = this.validateForm();
       if (errors.length > 0) {
         this.showToast(errors.join(', '), 'error', 'Validation Error');
         return;
       }
       
-      this.saveLoading = true;
-      
-      setTimeout(() => {
-        console.log('Saving item changes:', this.item);
+      try {
+        this.saveLoading = true;
+        
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token') || localStorage.getItem('jwt_token');
+        if (!token) {
+          this.showToast('Please log in to save changes.', 'error', 'Authentication Required');
+          this.$router.push('/login');
+          return;
+        }
+        
+        // Prepare item data for API
+        const itemData = {
+          title: this.item.title,
+          description: this.item.description,
+          price: this.item.price,
+          category: this.item.category,
+          condition: this.item.condition,
+          status: this.item.status,
+          tags: this.item.tags,
+          is_negotiable: this.item.isNegotiable,
+          is_authenticated: this.item.isAuthenticated
+        };
+        
+        const response = await fetch(`http://localhost:5000/api/seller/items/${this.item.id}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(itemData)
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to save changes');
+        }
+        
         this.showToast('Item updated successfully!', 'success', 'Changes Saved');
-        this.saveLoading = false;
         this.originalItem = JSON.parse(JSON.stringify(this.item));
-        // Redirect to view item
+        
+        // Redirect to items list after a short delay
         setTimeout(() => {
-          this.$router.push(`/seller/items/${this.item.id}`);
-        }, 1000);
-      }, 2000);
+          this.$router.push('/seller/items');
+        }, 1500);
+        
+      } catch (error) {
+        console.error('Error saving item:', error);
+        this.showToast(`Failed to save changes: ${error.message}`, 'error', 'Save Failed');
+      } finally {
+        this.saveLoading = false;
+      }
     },
     
     showToast(message, type = 'info', title = '') {
@@ -704,6 +821,29 @@ export default {
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 16px;
   margin-bottom: 16px;
+}
+
+.images-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px;
+  color: #6c757d;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .image-slot {

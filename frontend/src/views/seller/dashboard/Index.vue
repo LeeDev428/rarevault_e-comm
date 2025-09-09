@@ -174,7 +174,7 @@ export default {
                       </div>
                     </div>
                   </td>
-                  <td class="price">${{ item.price.toFixed(2) }}</td>
+                  <td class="price">₱{{ item.price.toFixed(2) }}</td>
                   <td>
                     <span class="status-badge" :class="`status-${item.status}`">
                       {{ item.status }}

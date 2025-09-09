@@ -62,6 +62,58 @@ class Item(db.Model):
     seller = db.relationship('User', backref='items')
     
     def to_dict(self):
+        # Try to get images, but handle the case where table doesn't exist
+        images_list = []
+        primary_image = None
+        
+        try:
+            # First, ensure the item_images table exists
+            from sqlalchemy import text
+            # Check if item_images table exists and create it if not
+            try:
+                db.engine.execute(text("SELECT 1 FROM item_images LIMIT 1"))
+            except Exception as table_error:
+                # Table doesn't exist, create it
+                print(f"Creating item_images table...")
+                db.engine.execute(text("""
+                    CREATE TABLE IF NOT EXISTS `item_images` (
+                      `id` int NOT NULL AUTO_INCREMENT,
+                      `item_id` int NOT NULL,
+                      `image_url` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
+                      `is_primary` tinyint(1) DEFAULT '0',
+                      `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+                      PRIMARY KEY (`id`),
+                      KEY `idx_item_id` (`item_id`),
+                      CONSTRAINT `item_images_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`) ON DELETE CASCADE
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+                """))
+                
+            # Now try to get images from the relationship
+            images_list = [image.to_dict() for image in self.images.all()]
+            # Find primary image or use first image
+            if images_list:
+                primary_image = next((img for img in images_list if img.get('isPrimary')), images_list[0])
+        except Exception as e:
+            # If still can't access images, check file system
+            print(f"Warning: Could not load images for item {self.id}: {e}")
+            
+            # Check if there are images in the uploads directory
+            import os
+            upload_dir = f"uploads/items/{self.id}"
+            if os.path.exists(upload_dir):
+                image_files = [f for f in os.listdir(upload_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
+                if image_files:
+                    # Create image objects from files
+                    for i, image_file in enumerate(image_files):
+                        image_url = f"http://localhost:5000/uploads/items/{self.id}/{image_file}"
+                        images_list.append({
+                            'id': i + 1,
+                            'url': image_url,
+                            'isPrimary': i == 0,
+                            'created_at': None
+                        })
+                    primary_image = images_list[0] if images_list else None
+        
         return {
             'id': self.id,
             'title': self.title,
@@ -79,7 +131,8 @@ class Item(db.Model):
             'isNegotiable': self.isNegotiable,
             'isAuthenticated': self.isAuthenticated,
             'tags': self.tags or [],
-            'images': [image.to_dict() for image in self.images],
+            'images': images_list,
+            'primary_image': primary_image,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
@@ -89,26 +142,29 @@ class ItemImage(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     item_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=False)
-    image_path = db.Column(db.String(500), nullable=False)  # Store file path
+    image_url = db.Column(db.String(500), nullable=False)
     is_primary = db.Column(db.Boolean, default=False)
-    display_order = db.Column(db.Integer, default=0)
-    original_filename = db.Column(db.String(255))  # Store original filename
-    file_size = db.Column(db.Integer)  # Store file size in bytes
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def to_dict(self):
-        # Convert file path to URL for frontend
-        base_url = "http://localhost:5000/uploads"
-        image_url = f"{base_url}/{self.image_path}" if self.image_path else None
+        # Construct the proper image URL
+        if self.image_url:
+            # If it's already a full URL, use it as is
+            if self.image_url.startswith('http'):
+                full_url = self.image_url
+            # If it starts with 'items/', prepend the uploads path
+            elif self.image_url.startswith('items/'):
+                full_url = f"http://localhost:5000/uploads/{self.image_url}"
+            # Otherwise, assume it's a filename and construct the full path
+            else:
+                full_url = f"http://localhost:5000/uploads/items/{self.item_id}/{self.image_url}"
+        else:
+            full_url = None
         
         return {
             'id': self.id,
-            'url': image_url,  # Frontend expects 'url'
-            'path': self.image_path,  # Raw path for backend use
+            'url': full_url,
             'isPrimary': self.is_primary,
-            'displayOrder': self.display_order,
-            'originalFilename': self.original_filename,
-            'fileSize': self.file_size,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
@@ -120,7 +176,7 @@ class Order(db.Model):
     buyer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     seller_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     item_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False, default=1)
+    quantity = db.Column(db.Integer, default=1)
     price_per_item = db.Column(Numeric(10, 2), nullable=False)
     total_amount = db.Column(Numeric(10, 2), nullable=False)
     status = db.Column(db.Enum('pending', 'confirmed', 'declined', 'shipped', 'delivered', 'cancelled'), default='pending')
@@ -141,13 +197,15 @@ class Order(db.Model):
     decline_reason = db.Column(db.Text)
     tracking_number = db.Column(db.String(100))
     
-    # Timestamps
+    # Timestamps - exact match to your database schema
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     confirmed_at = db.Column(db.DateTime)
     declined_at = db.Column(db.DateTime)
     shipped_at = db.Column(db.DateTime)
     delivered_at = db.Column(db.DateTime)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    cancelled_at = db.Column(db.DateTime)
+    completed_at = db.Column(db.DateTime)
     
     # Relationships
     buyer = db.relationship('User', foreign_keys=[buyer_id], backref='purchases')
@@ -188,7 +246,9 @@ class Order(db.Model):
             'declined_at': self.declined_at.isoformat() if self.declined_at else None,
             'shipped_at': self.shipped_at.isoformat() if self.shipped_at else None,
             'delivered_at': self.delivered_at.isoformat() if self.delivered_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'cancelled_at': self.cancelled_at.isoformat() if self.cancelled_at else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None
         }
 
 class Wishlist(db.Model):

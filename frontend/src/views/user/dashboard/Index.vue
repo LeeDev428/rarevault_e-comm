@@ -113,6 +113,7 @@
             :item="formatItemForCard(item)"
             @contact-seller="handleContactSeller"
             @save-item="handleSaveItem"
+            @order-item="handleOrderItem"
           ></VintageItemCard>
         </div>
 
@@ -128,6 +129,114 @@
         <div v-if="pagination.total > 0" class="pagination-info">
           Showing {{ items.length }} of {{ pagination.total }} items
         </div>
+
+        <!-- Pagination Component -->
+        <Pagination
+          v-if="pagination.pages > 1"
+          :current-page="pagination.page"
+          :total-pages="pagination.pages"
+          :total-items="pagination.total"
+          :has-previous="pagination.has_prev"
+          :has-next="pagination.has_next"
+          item-label="items"
+          @page-changed="handlePageChange"
+        />
+      </div>
+    </div>
+
+    <!-- Order Confirmation Modal -->
+    <div v-if="showOrderModal" class="modal-overlay" @click="closeOrderModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h2>Confirm Order</h2>
+          <button @click="closeOrderModal" class="close-btn">✕</button>
+        </div>
+        
+        <div class="order-confirmation">
+          <div class="item-summary">
+            <img :src="getItemImage(selectedItem)" :alt="selectedItem?.title" class="summary-image">
+            <div class="summary-details">
+              <h3>{{ selectedItem?.title }}</h3>
+              <p class="summary-category">{{ selectedItem?.category }}</p>
+              <p class="summary-price">₱{{ selectedItem?.price?.toFixed(2) }}</p>
+              <p class="summary-condition">Condition: {{ selectedItem?.condition }}</p>
+            </div>
+          </div>
+
+          <div class="order-form">
+            <form @submit.prevent="submitOrder">
+              <div class="form-group">
+                <label for="customerName">Full Name *</label>
+                <input 
+                  type="text" 
+                  id="customerName"
+                  v-model="orderForm.customerName" 
+                  required
+                  placeholder="Enter your full name"
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="customerPhone">Phone Number</label>
+                <input 
+                  type="tel" 
+                  id="customerPhone"
+                  v-model="orderForm.customerPhone" 
+                  placeholder="Enter your phone number"
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="customerEmail">Email</label>
+                <input 
+                  type="email" 
+                  id="customerEmail"
+                  v-model="orderForm.customerEmail" 
+                  placeholder="Enter your email"
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="shippingAddress">Shipping Address *</label>
+                <textarea 
+                  id="shippingAddress"
+                  v-model="orderForm.shippingAddress" 
+                  required
+                  placeholder="Enter your complete shipping address"
+                  rows="3"
+                ></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="paymentMethod">Payment Method</label>
+                <select id="paymentMethod" v-model="orderForm.paymentMethod">
+                  <option value="cash_on_delivery">Cash on Delivery</option>
+                  <option value="bank_transfer">Bank Transfer</option>
+                  <option value="gcash">GCash</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="customerNotes">Additional Notes</label>
+                <textarea 
+                  id="customerNotes"
+                  v-model="orderForm.customerNotes" 
+                  placeholder="Any special instructions or notes"
+                  rows="2"
+                ></textarea>
+              </div>
+
+              <div class="modal-actions">
+                <button type="button" @click="closeOrderModal" class="cancel-btn">
+                  Cancel
+                </button>
+                <button type="submit" :disabled="orderLoading" class="submit-btn">
+                  {{ orderLoading ? 'Placing Order...' : 'Confirm Order' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   </UserLayout>
@@ -136,12 +245,14 @@
 <script>
 import UserLayout from '@/components/user/UserLayout.vue'
 import VintageItemCard from '@/components/user/VintageItemCard.vue'
+import Pagination from '@/components/user/Pagination.vue'
 
 export default {
   name: 'UserMarketplace',
   components: {
     UserLayout,
-    VintageItemCard
+    VintageItemCard,
+    Pagination
   },
   data() {
     return {
@@ -174,7 +285,20 @@ export default {
       },
       
       // Debounce timer
-      searchTimeout: null
+      searchTimeout: null,
+      
+      // Order Modal
+      showOrderModal: false,
+      selectedItem: null,
+      orderLoading: false,
+      orderForm: {
+        customerName: '',
+        customerPhone: '',
+        customerEmail: '',
+        shippingAddress: '',
+        paymentMethod: 'cash_on_delivery',
+        customerNotes: ''
+      }
     }
   },
   
@@ -373,19 +497,14 @@ export default {
         title: item.title,
         price: item.price,
         image: this.getItemImage(item),
-        seller: item.seller_id, // Could be enhanced to get seller name
+        seller: item.seller_name || item.seller_id || 'Unknown Seller', 
         category: item.category,
         condition: item.condition_status || item.condition,
         year: item.year,
-        description: item.description
+        description: item.description,
+        // Keep original item data for reference
+        _originalItem: item
       };
-    },
-    
-    getItemImage(item) {
-      if (item.images && Array.isArray(item.images) && item.images.length > 0) {
-        return item.images[0];
-      }
-      return '/api/placeholder/300/300'; // Fallback image
     },
     
     formatCategoryName(category) {
@@ -450,6 +569,131 @@ export default {
       } else {
         alert(`❌ ${message}`);
       }
+    },
+    
+    // Order Modal Methods
+    handleOrderItem(item) {
+      this.selectedItem = item;
+      this.showOrderModal = true;
+      
+      // Reset form
+      this.orderForm = {
+        customerName: '',
+        customerPhone: '',
+        customerEmail: '',
+        shippingAddress: '',
+        paymentMethod: 'cash_on_delivery',
+        customerNotes: ''
+      };
+    },
+    
+    closeOrderModal() {
+      this.showOrderModal = false;
+      this.selectedItem = null;
+      this.orderLoading = false;
+    },
+    
+    async submitOrder() {
+      try {
+        this.orderLoading = true;
+        
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+        if (!token) {
+          this.$router.push('/login');
+          return;
+        }
+        
+        const orderData = {
+          item_id: this.selectedItem.id,
+          quantity: 1,
+          customer_name: this.orderForm.customerName,
+          customer_phone: this.orderForm.customerPhone,
+          customer_email: this.orderForm.customerEmail,
+          shipping_address: this.orderForm.shippingAddress,
+          payment_method: this.orderForm.paymentMethod,
+          customer_notes: this.orderForm.customerNotes
+        };
+        
+        const response = await fetch('http://localhost:5000/api/user/orders', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(orderData)
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Order created:', data);
+        
+        this.showToast('success', 'Order placed successfully! The seller will contact you soon.');
+        this.closeOrderModal();
+        
+      } catch (error) {
+        console.error('Error creating order:', error);
+        this.showToast('error', `Failed to place order: ${error.message}`);
+      } finally {
+        this.orderLoading = false;
+      }
+    },
+    
+    // Pagination Methods
+    handlePageChange(page) {
+      this.currentPage = page;
+      this.fetchMarketplaceItems();
+    },
+    
+    getItemImage(item) {
+      // Debug logging to see what we're getting
+      if (item?.id === 7 || item?.id === 8) {
+        console.log('Debug item structure:', {
+          id: item.id,
+          title: item.title,
+          primary_image: item.primary_image,
+          images: item.images
+        });
+      }
+      
+      // Handle primary image from API
+      if (item?.primary_image?.url) {
+        return item.primary_image.url;
+      }
+      
+      // Handle primary_image as string (direct URL)
+      if (item?.primary_image && typeof item.primary_image === 'string') {
+        return item.primary_image;
+      }
+      
+      // Handle images array from API  
+      if (item?.images && Array.isArray(item.images) && item.images.length > 0) {
+        // Find primary image first
+        const primaryImage = item.images.find(img => img.isPrimary);
+        if (primaryImage?.url) {
+          return primaryImage.url;
+        }
+        // Fall back to first image
+        if (item.images[0]?.url) {
+          return item.images[0].url;
+        }
+      }
+      
+      // Handle single image property
+      if (item?.image) {
+        return item.image;
+      }
+      
+      // Handle image_url property
+      if (item?.image_url) {
+        return item.image_url;
+      }
+      
+      // Default placeholder
+      return 'http://localhost:5000/uploads/placeholder.svg';
     }
   }
 }
@@ -755,5 +999,165 @@ export default {
   .marketplace-container {
     margin: 0 16px;
   }
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: #333;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.order-confirmation {
+  padding: 24px;
+}
+
+.item-summary {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.summary-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.summary-details h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 1.25rem;
+}
+
+.summary-category {
+  color: #666;
+  margin: 0 0 4px 0;
+  font-size: 0.9rem;
+}
+
+.summary-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #007bff;
+  margin: 0 0 4px 0;
+}
+
+.summary-condition {
+  color: #666;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cancel-btn,
+.submit-btn {
+  flex: 1;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.cancel-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #545b62;
+}
+
+.submit-btn {
+  background: #007bff;
+  color: white;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.submit-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 </style>

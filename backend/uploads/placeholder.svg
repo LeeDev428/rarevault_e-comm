@@ -1,0 +1,5 @@
+<!-- This is a placeholder SVG that will be served as an image -->
+<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="400" fill="#f0f0f0"/>
+  <text x="200" y="200" font-family="Arial, sans-serif" font-size="16" fill="#666" text-anchor="middle">No Image Available</text>
+</svg>

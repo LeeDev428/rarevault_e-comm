@@ -50,9 +50,9 @@
 
               <div class="form-row">
                 <div class="form-group">
-                  <label class="form-label required">Price (USD)</label>
+                  <label class="form-label required">Price (PHP)</label>
                   <div class="price-input">
-                    <span class="currency-symbol">$</span>
+                    <span class="currency-symbol">₱</span>
                     <input 
                       v-model.number="item.price"
                       type="number"
@@ -231,7 +231,7 @@
               <div class="preview-content">
                 <h4 class="preview-item-title">{{ item.title || 'Item Title' }}</h4>
                 <p class="preview-price">
-                  ${{ item.price ? item.price.toFixed(2) : '0.00' }}
+                  ₱{{ item.price ? item.price.toFixed(2) : '0.00' }}
                   <span v-if="item.isNegotiable" class="negotiable">OBO</span>
                 </p>
                 <p class="preview-category">{{ item.category || 'No category' }}</p>
@@ -424,7 +424,14 @@ export default {
         category: this.item.category ? this.item.category.toLowerCase() : '',
         condition: this.item.condition ? this.item.condition.toLowerCase() : '',
         year: this.item.year ? parseInt(this.item.year) : null,
-        image_url: this.item.images.length > 0 ? this.item.images[0].url : '',
+        isNegotiable: this.item.isNegotiable || false,
+        isAuthenticated: this.item.isAuthenticated || false,
+        tags: this.item.tags || [],
+        images: this.item.images.map((img, index) => ({
+          url: img.url,
+          isPrimary: img.isPrimary || index === 0,
+          displayOrder: index
+        }))
       };
       
       // Additional validation before sending

@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..models.models import db, Item, User, ItemImage, Order
 from datetime import datetime
 import os
+import base64
 from werkzeug.utils import secure_filename
 
 seller_bp = Blueprint('seller', __name__)
@@ -160,25 +161,50 @@ def create_seller_item():
         # Handle images - store in separate ItemImage table
         if data.get('images'):
             for idx, image_data in enumerate(data['images']):
-                if isinstance(image_data, str):
-                    # If it's just a URL string
-                    image_path = f"items/{item.id}/image_{idx}.jpg"  # Default path
-                    image_url = image_data
-                elif isinstance(image_data, dict):
-                    # If it's an object with url and other properties
-                    image_url = image_data.get('url', '')
-                    image_path = image_data.get('path', f"items/{item.id}/image_{idx}.jpg")
-                else:
-                    continue
-                
-                item_image = ItemImage(
-                    item_id=item.id,
-                    image_path=image_path,
-                    is_primary=(idx == 0),  # First image is primary
-                    display_order=idx,
-                    original_filename=f"image_{idx}.jpg"
-                )
-                db.session.add(item_image)
+                if isinstance(image_data, dict) and 'url' in image_data:
+                    image_url = image_data['url']
+                    
+                    # Handle base64 images
+                    if image_url.startswith('data:image/'):
+                        try:
+                            # Extract base64 data
+                            header, base64_data = image_url.split(',', 1)
+                            image_format = header.split('/')[1].split(';')[0]
+                            
+                            # Create directory for item images
+                            item_dir = os.path.join(UPLOAD_FOLDER, str(item.id))
+                            os.makedirs(item_dir, exist_ok=True)
+                            
+                            # Generate filename
+                            filename = f"image_{idx}.{image_format}"
+                            file_path = os.path.join(item_dir, filename)
+                            
+                            # Decode and save image
+                            import base64
+                            with open(file_path, 'wb') as f:
+                                f.write(base64.b64decode(base64_data))
+                            
+                            # Store relative path for database
+                            relative_path = f"{item.id}/{filename}"
+                            
+                            item_image = ItemImage(
+                                item_id=item.id,
+                                image_url=relative_path,
+                                is_primary=image_data.get('isPrimary', idx == 0)
+                            )
+                            db.session.add(item_image)
+                            
+                        except Exception as e:
+                            print(f"Error processing image {idx}: {str(e)}")
+                            continue
+                    else:
+                        # Handle regular URL (if uploading from URL)
+                        item_image = ItemImage(
+                            item_id=item.id,
+                            image_url=image_url,
+                            is_primary=image_data.get('isPrimary', idx == 0)
+                        )
+                        db.session.add(item_image)
         
         db.session.commit()
         
@@ -397,21 +423,39 @@ def get_seller_orders():
         user = User.query.get(current_user_id)
         if not user or user.role not in ['seller', 'admin']:
             return jsonify({'error': 'Access denied. Seller role required.'}), 403
-        
+
         page = request.args.get('page', 1, type=int)
         per_page = min(request.args.get('per_page', 20, type=int), 50)
         status_filter = request.args.get('status', '')
         
-        # Build query
-        query = Order.query.filter_by(seller_id=current_user_id)
-        
-        if status_filter:
-            query = query.filter_by(status=status_filter)
-        
-        query = query.order_by(Order.created_at.desc())
-        
-        total = query.count()
-        orders = query.offset((page - 1) * per_page).limit(per_page).all()
+        # Build query using your database schema
+        try:
+            query = Order.query.filter_by(seller_id=current_user_id)
+            
+            if status_filter:
+                query = query.filter_by(status=status_filter)
+            
+            query = query.order_by(Order.created_at.desc())  # Use created_at to match schema
+            
+            total = query.count()
+            orders = query.offset((page - 1) * per_page).limit(per_page).all()
+            
+            print(f"Found {total} orders for seller {current_user_id}")
+            
+        except Exception as query_error:
+            print(f"Error querying orders: {query_error}")
+            # If query fails, return empty result
+            return jsonify({
+                'orders': [],
+                'pagination': {
+                    'page': 1,
+                    'pages': 0,
+                    'per_page': 20,
+                    'total': 0,
+                    'has_next': False,
+                    'has_prev': False
+                }
+            }), 200
         
         # Format response with item and buyer details
         orders_data = []
@@ -422,15 +466,8 @@ def get_seller_orders():
             item = Item.query.get(order.item_id)
             if item:
                 order_data['item'] = item.to_dict()
-                
-                # Get primary image
-                primary_image = ItemImage.query.filter_by(
-                    item_id=item.id, 
-                    is_primary=True
-                ).first()
-                
-                if primary_image:
-                    order_data['item']['primary_image'] = primary_image.to_dict()
+                # The item.to_dict() method already handles image loading safely
+                # including primary image, so we don't need to query ItemImage separately
             
             # Get buyer details (limited info for privacy)
             buyer = User.query.get(order.buyer_id)
@@ -513,6 +550,133 @@ def update_order_status(order_id):
         
         return jsonify({
             'message': f'Order status updated to {new_status}',
+            'order': order.to_dict()
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@seller_bp.route('/seller/orders/<int:order_id>/confirm', methods=['PUT'])
+@jwt_required()
+def confirm_order(order_id):
+    """Confirm an order"""
+    try:
+        current_user_id = int(get_jwt_identity())
+        
+        # Verify user is a seller
+        user = User.query.get(current_user_id)
+        if not user or user.role not in ['seller', 'admin']:
+            return jsonify({'error': 'Access denied. Seller role required.'}), 403
+        
+        # Find order
+        order = Order.query.filter_by(id=order_id, seller_id=current_user_id).first()
+        if not order:
+            return jsonify({'error': 'Order not found'}), 404
+        
+        if order.status != 'pending':
+            return jsonify({'error': 'Only pending orders can be confirmed'}), 400
+        
+        # Update order status
+        order.status = 'confirmed'
+        order.confirmed_at = datetime.utcnow()
+        order.updated_at = datetime.utcnow()
+        
+        # Update item status
+        item = Item.query.get(order.item_id)
+        if item:
+            item.status = 'pending'
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Order confirmed successfully',
+            'order': order.to_dict()
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@seller_bp.route('/seller/orders/<int:order_id>/cancel', methods=['PUT'])
+@jwt_required()
+def cancel_order(order_id):
+    """Cancel an order"""
+    try:
+        current_user_id = int(get_jwt_identity())
+        
+        # Verify user is a seller
+        user = User.query.get(current_user_id)
+        if not user or user.role not in ['seller', 'admin']:
+            return jsonify({'error': 'Access denied. Seller role required.'}), 403
+        
+        data = request.get_json() or {}
+        cancel_reason = data.get('reason', '')
+        
+        # Find order
+        order = Order.query.filter_by(id=order_id, seller_id=current_user_id).first()
+        if not order:
+            return jsonify({'error': 'Order not found'}), 404
+        
+        if order.status not in ['pending', 'confirmed']:
+            return jsonify({'error': 'Only pending or confirmed orders can be cancelled'}), 400
+        
+        # Update order status
+        order.status = 'cancelled'
+        order.cancelled_at = datetime.utcnow()
+        order.updated_at = datetime.utcnow()
+        order.seller_notes = cancel_reason
+        
+        # Update item status back to active
+        item = Item.query.get(order.item_id)
+        if item:
+            item.status = 'active'
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Order cancelled successfully',
+            'order': order.to_dict()
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@seller_bp.route('/seller/orders/<int:order_id>/complete', methods=['PUT'])
+@jwt_required()
+def complete_order(order_id):
+    """Mark an order as completed"""
+    try:
+        current_user_id = int(get_jwt_identity())
+        
+        # Verify user is a seller
+        user = User.query.get(current_user_id)
+        if not user or user.role not in ['seller', 'admin']:
+            return jsonify({'error': 'Access denied. Seller role required.'}), 403
+        
+        # Find order
+        order = Order.query.filter_by(id=order_id, seller_id=current_user_id).first()
+        if not order:
+            return jsonify({'error': 'Order not found'}), 404
+        
+        if order.status != 'confirmed':
+            return jsonify({'error': 'Only confirmed orders can be completed'}), 400
+        
+        # Update order status
+        order.status = 'completed'
+        order.completed_at = datetime.utcnow()
+        order.updated_at = datetime.utcnow()
+        
+        # Update item status to sold
+        item = Item.query.get(order.item_id)
+        if item:
+            item.status = 'sold'
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Order completed successfully',
             'order': order.to_dict()
         }), 200
         

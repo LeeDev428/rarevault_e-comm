@@ -2,11 +2,32 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import db
 from app.models.models import User, Item, Wishlist, Order, ItemImage
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, text
 import uuid
 from datetime import datetime
 
 user_bp = Blueprint('user', __name__)
+
+def ensure_item_images_table():
+    """Ensure item_images table exists"""
+    try:
+        # Try to create the table if it doesn't exist
+        create_table_sql = text("""
+        CREATE TABLE IF NOT EXISTS `item_images` (
+          `id` int NOT NULL AUTO_INCREMENT,
+          `item_id` int NOT NULL,
+          `image_url` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
+          `is_primary` tinyint(1) DEFAULT '0',
+          `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+          PRIMARY KEY (`id`),
+          KEY `idx_item_id` (`item_id`),
+          CONSTRAINT `item_images_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        """)
+        db.engine.execute(create_table_sql)
+        print("✓ item_images table ensured")
+    except Exception as e:
+        print(f"Warning: Could not ensure item_images table: {e}")
 
 @user_bp.route('/test-jwt', methods=['GET'])
 @jwt_required()
@@ -109,8 +130,26 @@ def get_marketplace_items():
         ).distinct().all()
         categories = [cat[0] for cat in categories if cat[0]]
         
+        # Format items with seller information
+        items_data = []
+        for item in items.items:
+            item_data = item.to_dict()
+            
+            # Get seller information
+            seller = User.query.get(item.seller_id)
+            if seller:
+                item_data['seller'] = {
+                    'id': seller.id,
+                    'username': seller.username,
+                    'first_name': seller.first_name,
+                    'last_name': seller.last_name
+                }
+                item_data['seller_name'] = seller.username
+            
+            items_data.append(item_data)
+        
         return jsonify({
-            'items': [item.to_dict() for item in items.items],
+            'items': items_data,
             'pagination': {
                 'page': items.page,
                 'pages': items.pages,
@@ -211,9 +250,11 @@ def update_item(item_id):
 # WISHLIST ENDPOINTS
 @user_bp.route('/wishlist', methods=['GET'])
 @jwt_required()
-def get_user_wishlist():
+def get_wishlist():
     """Get user's wishlist items"""
     try:
+        ensure_item_images_table()  # Ensure table exists
+        
         user_id = get_jwt_identity()
         if isinstance(user_id, str):
             user_id = int(user_id)
@@ -239,14 +280,29 @@ def get_user_wishlist():
             item_data['added_to_wishlist'] = wishlist.created_at.isoformat()
             item_data['wishlist_id'] = wishlist.id
             
-            # Get primary image
-            primary_image = ItemImage.query.filter_by(
-                item_id=item.id, 
-                is_primary=True
-            ).first()
+            # Get primary image safely
+            try:
+                primary_image = ItemImage.query.filter_by(
+                    item_id=item.id, 
+                    is_primary=True
+                ).first()
+                
+                if primary_image:
+                    item_data['primary_image'] = primary_image.to_dict()
+            except Exception as img_error:
+                print(f"Warning: Could not load primary image for item {item.id}: {img_error}")
+                # Continue without images
             
-            if primary_image:
-                item_data['primary_image'] = primary_image.to_dict()
+            # Get seller information
+            seller = User.query.get(item.seller_id)
+            if seller:
+                item_data['seller'] = {
+                    'id': seller.id,
+                    'username': seller.username,
+                    'first_name': seller.first_name,
+                    'last_name': seller.last_name
+                }
+                item_data['seller_name'] = seller.username
             
             items.append(item_data)
         
@@ -310,24 +366,21 @@ def add_to_wishlist(item_id):
 @user_bp.route('/wishlist/<int:item_id>', methods=['DELETE'])
 @jwt_required()
 def remove_from_wishlist(item_id):
-    """Remove item from user's wishlist"""
+    """Remove item from wishlist"""
     try:
         user_id = get_jwt_identity()
         if isinstance(user_id, str):
             user_id = int(user_id)
         
-        # Find and remove wishlist item
+        # Find wishlist item by user_id and item_id
         wishlist_item = Wishlist.query.filter_by(user_id=user_id, item_id=item_id).first()
         if not wishlist_item:
-            return jsonify({'error': 'Item not in wishlist'}), 404
+            return jsonify({'error': 'Wishlist item not found'}), 404
         
         db.session.delete(wishlist_item)
         db.session.commit()
         
-        return jsonify({
-            'message': 'Item removed from wishlist successfully',
-            'wishlisted': False
-        }), 200
+        return jsonify({'message': 'Item removed from wishlist successfully'}), 200
         
     except Exception as e:
         db.session.rollback()
@@ -336,9 +389,11 @@ def remove_from_wishlist(item_id):
 # ORDER ENDPOINTS
 @user_bp.route('/orders', methods=['GET'])
 @jwt_required()
-def get_user_orders():
+def get_orders():
     """Get user's orders"""
     try:
+        ensure_item_images_table()  # Ensure table exists
+        
         user_id = get_jwt_identity()
         if isinstance(user_id, str):
             user_id = int(user_id)
@@ -368,14 +423,29 @@ def get_user_orders():
             if item:
                 order_data['item'] = item.to_dict()
                 
-                # Get primary image
-                primary_image = ItemImage.query.filter_by(
-                    item_id=item.id, 
-                    is_primary=True
-                ).first()
+                # Get primary image safely
+                try:
+                    primary_image = ItemImage.query.filter_by(
+                        item_id=item.id, 
+                        is_primary=True
+                    ).first()
+                    
+                    if primary_image:
+                        order_data['item']['primary_image'] = primary_image.to_dict()
+                except Exception as img_error:
+                    print(f"Warning: Could not load primary image for item {item.id}: {img_error}")
+                    # Continue without images
                 
-                if primary_image:
-                    order_data['item']['primary_image'] = primary_image.to_dict()
+                # Get seller information
+                seller = User.query.get(order.seller_id)
+                if seller:
+                    order_data['item']['seller'] = {
+                        'id': seller.id,
+                        'username': seller.username,
+                        'first_name': seller.first_name,
+                        'last_name': seller.last_name
+                    }
+                    order_data['item']['seller_name'] = seller.username
             
             orders_data.append(order_data)
         
@@ -454,6 +524,77 @@ def create_order():
             'message': 'Order created successfully',
             'order': order.to_dict()
         }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@user_bp.route('/orders/<int:order_id>', methods=['GET'])
+@jwt_required()
+def get_order_details(order_id):
+    """Get details of a specific order"""
+    try:
+        current_user_id = get_jwt_identity()
+        
+        # Find the order and verify it belongs to the current user
+        order = Order.query.filter_by(id=order_id, buyer_id=current_user_id).first()
+        if not order:
+            return jsonify({'error': 'Order not found'}), 404
+        
+        # Get the order data with item details
+        order_data = order.to_dict()
+        
+        # Ensure we have item details
+        if order.item:
+            item_data = order.item.to_dict()
+            # Get item images
+            try:
+                images = ItemImage.query.filter_by(item_id=order.item.id).all()
+                if images:
+                    item_data['images'] = [img.to_dict() for img in images]
+                    # Find primary image
+                    primary_image = next((img for img in images if img.is_primary), images[0] if images else None)
+                    if primary_image:
+                        item_data['primary_image'] = primary_image.to_dict()
+            except Exception as img_error:
+                print(f"Error loading images for item {order.item.id}: {img_error}")
+                item_data['images'] = []
+            
+            order_data['item'] = item_data
+        
+        return jsonify({'order': order_data}), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@user_bp.route('/orders/<int:order_id>/received', methods=['PUT'])
+@jwt_required()
+def mark_order_received(order_id):
+    """Mark an order as received (delivered)"""
+    try:
+        current_user_id = get_jwt_identity()
+        
+        # Find the order and verify it belongs to the current user
+        order = Order.query.filter_by(id=order_id, buyer_id=current_user_id).first()
+        if not order:
+            return jsonify({'error': 'Order not found'}), 404
+        
+        # Check if order status is confirmed
+        if order.status != 'confirmed':
+            return jsonify({'error': 'Order must be confirmed to mark as received'}), 400
+        
+        # Update order status to delivered
+        order.status = 'delivered'
+        order.delivered_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Order marked as received successfully',
+            'order': order.to_dict()
+        }), 200
         
     except Exception as e:
         db.session.rollback()

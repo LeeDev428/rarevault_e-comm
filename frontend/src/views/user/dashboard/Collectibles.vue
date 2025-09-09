@@ -41,7 +41,7 @@
           <button @click="clearConditionFilter" class="filter-remove">×</button>
         </span>
         <span v-if="minPrice !== null || maxPrice !== null" class="filter-tag">
-          Price: ${{ minPrice || 0 }} - ${{ maxPrice || '∞' }}
+          Price: ₱{{ minPrice || 0 }} - ₱{{ maxPrice || '∞' }}
           <button @click="clearPriceFilter" class="filter-remove">×</button>
         </span>
         <button @click="clearAllFilters" class="clear-all-btn">Clear All</button>

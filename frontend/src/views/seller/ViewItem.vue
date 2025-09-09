@@ -58,8 +58,9 @@
           <div class="image-section">
             <div class="main-image">
               <img 
-                :src="selectedImage?.url || '/api/placeholder/400/400'" 
+                :src="getItemImage(item)" 
                 :alt="item.title"
+                @error="$event.target.src = '/api/placeholder/400/400'"
                 class="main-img"
               >
             </div>
@@ -375,6 +376,21 @@ export default {
     this.loadItem(itemId);
   },
   methods: {
+    getItemImage(item) {
+      // Use primary_image from the item object
+      if (item?.primary_image) {
+        return item.primary_image;
+      }
+      
+      // Fallback to images array if available
+      if (item?.images && item.images.length > 0) {
+        return item.images[0].url || item.images[0];
+      }
+      
+      // Default placeholder
+      return '/api/placeholder/400/400';
+    },
+    
     async loadItem(id) {
       try {
         this.loading = true;
