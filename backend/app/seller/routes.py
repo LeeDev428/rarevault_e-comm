@@ -102,11 +102,11 @@ def get_seller_items():
                 item_data['average_rating'] = None
                 item_data['rating_count'] = 0
             
-            # Get sold count for this item (orders with delivered status)
-            sold_count = Order.query.filter_by(
+            # Get sold count for this item (sum of quantities from delivered orders)
+            sold_count = db.session.query(db.func.sum(Order.quantity)).filter_by(
                 item_id=item.id, 
                 status='delivered'
-            ).count()
+            ).scalar() or 0
             item_data['sold_count'] = sold_count
             
             items_with_ratings.append(item_data)
