@@ -64,7 +64,12 @@
 
           <div class="order-items">
             <div class="item-preview">
-              <img :src="getItemImage(order.item)" :alt="order.item?.title || 'Item'" class="item-image" />
+              <img 
+                :src="getItemImage(order.item)" 
+                :alt="order.item?.title || 'Item'" 
+                class="item-image"
+                @error="handleImageError"
+              />
               <div class="item-details">
                 <h4 class="item-title">{{ order.item?.title || 'Item not available' }}</h4>
                 <p class="item-seller">Sold by {{ getSellerName(order.item) }}</p>
@@ -262,30 +267,50 @@ export default {
     },
     
     getItemImage(item) {
+      console.log('Orders.vue - getItemImage called with item:', item);
+      
       if (item?.primary_image?.url) {
+        console.log('Using primary_image.url:', item.primary_image.url);
         return item.primary_image.url;
       }
       
       // Handle primary_image as string (direct URL)
       if (item?.primary_image && typeof item.primary_image === 'string') {
+        console.log('Using primary_image string:', item.primary_image);
         return item.primary_image;
       }
       
       if (item?.images && Array.isArray(item.images) && item.images.length > 0) {
         const primaryImage = item.images.find(img => img.isPrimary);
         if (primaryImage?.url) {
+          console.log('Using images array primary url:', primaryImage.url);
           return primaryImage.url;
         }
         if (item.images[0]?.url) {
+          console.log('Using images array first url:', item.images[0].url);
           return item.images[0].url;
         }
       }
       
       if (item?.image_url || item?.image) {
+        console.log('Using image_url or image:', item.image_url || item.image);
         return item.image_url || item.image;
       }
       
+      // Try to construct image URL from item ID if available
+      if (item?.id) {
+        const constructedUrl = `http://localhost:5000/uploads/items/${item.id}/image_0.jpeg`;
+        console.log('Attempting constructed URL:', constructedUrl);
+        return constructedUrl;
+      }
+      
+      console.log('Using placeholder image for item:', item?.id);
       return 'http://localhost:5000/uploads/placeholder.svg';
+    },
+
+    handleImageError(event) {
+      console.log('Image failed to load, using placeholder');
+      event.target.src = 'http://localhost:5000/uploads/placeholder.svg';
     },
 
     getSellerName(item) {

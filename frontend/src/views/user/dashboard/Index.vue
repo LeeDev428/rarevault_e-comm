@@ -299,7 +299,7 @@ export default {
         // Build query parameters
         const params = new URLSearchParams({
           page: this.currentPage.toString(),
-          per_page: '20',
+          per_page: '50',  // Increased to ensure all items are loaded
           sort_by: this.sortBy
         });
         
@@ -412,9 +412,9 @@ export default {
         condition: item.condition_status || item.condition,
         year: item.year,
         description: item.description,
-        rating: item.average_rating || 0,
-        ratingCount: item.rating_count || 0,
-        soldCount: item.sold_count || 0,
+        rating: item.rating || 0,  // Backend provides 'rating'
+        ratingCount: item.ratingCount || 0,  // Backend provides 'ratingCount'
+        soldCount: item.soldCount || 0,  // Backend provides 'soldCount'
         stock: item.stock || 0,
         // Keep original item data for reference
         _originalItem: item
@@ -517,9 +517,19 @@ export default {
           return;
         }
         
+        // Debug logging
+        console.log('Order data received:', orderData);
+        console.log('Selected item:', this.selectedItem);
+        
+        // Use selectedItem as fallback if orderData.item is undefined
+        const item = orderData.item || this.selectedItem;
+        if (!item || !item.id) {
+          throw new Error('Item information is missing. Please try again.');
+        }
+        
         const submitData = {
-          item_id: orderData.item.id,
-          quantity: 1,
+          item_id: item.id,
+          quantity: orderData.quantity || 1,
           customer_name: orderData.customerName,
           customer_phone: orderData.customerPhone,
           customer_email: orderData.customerEmail,
@@ -527,6 +537,17 @@ export default {
           payment_method: orderData.paymentMethod,
           customer_notes: orderData.customerNotes
         };
+        
+        // Validate shipping address on frontend
+        if (!orderData.shippingAddress || orderData.shippingAddress.trim() === '') {
+          throw new Error('Shipping address is required');
+        }
+        
+        // Debug logging for troubleshooting
+        console.log('Raw orderData:', orderData);
+        console.log('orderData.shippingAddress value:', orderData.shippingAddress);
+        console.log('orderData.shippingAddress length:', orderData.shippingAddress?.length);
+        console.log('Submitting order data:', submitData);
         
         const response = await fetch('http://localhost:5000/api/user/orders', {
           method: 'POST',
@@ -547,6 +568,9 @@ export default {
         
         this.showToast('success', 'Order placed successfully! The seller will contact you soon.');
         this.closeOrderModal();
+        
+        // Refresh the marketplace to show updated stock
+        await this.fetchMarketplaceItems();
         
       } catch (error) {
         console.error('Error creating order:', error);

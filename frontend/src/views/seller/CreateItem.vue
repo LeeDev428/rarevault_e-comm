@@ -66,6 +66,23 @@
                 </div>
 
                 <div class="form-group">
+                  <label class="form-label required">Stock Quantity</label>
+                  <div class="stock-input">
+                    <input 
+                      v-model.number="item.stock"
+                      type="number"
+                      min="0"
+                      class="form-input"
+                      placeholder="Enter available stock quantity"
+                      required
+                    >
+                  </div>
+                  <small class="form-hint">Number of items available for sale</small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
                   <label class="form-label required">Category</label>
                   <select v-model="item.category" class="form-select" required>
                     <option value="">Select a category</option>
@@ -282,6 +299,7 @@ export default {
         title: '',
         description: '',
         price: null,
+        stock: null,
         category: '',
         condition: '',
         year: null,
@@ -389,6 +407,7 @@ export default {
       if (!this.item.title?.trim()) errors.push('Title is required');
       if (!this.item.description?.trim()) errors.push('Description is required');
       if (!this.item.price || this.item.price <= 0) errors.push('Valid price is required');
+      if (!this.item.stock || this.item.stock < 0) errors.push('Valid stock quantity is required');
       if (!this.item.category) errors.push('Category is required');
       if (!this.item.condition) errors.push('Condition is required');
       if (this.item.images.length === 0) errors.push('At least one image is required');
@@ -421,11 +440,13 @@ export default {
         title: this.item.title?.trim() || '',
         description: this.item.description?.trim() || '',
         price: parseFloat(this.item.price) || 0,
+        stock: parseInt(this.item.stock) || 0,
         category: this.item.category ? this.item.category.toLowerCase() : '',
         condition: this.item.condition ? this.item.condition.toLowerCase() : '',
         year: this.item.year ? parseInt(this.item.year) : null,
         isNegotiable: this.item.isNegotiable || false,
         isAuthenticated: this.item.isAuthenticated || false,
+        status: 'active',  // Set status to active by default
         tags: this.item.tags || [],
         images: this.item.images.map((img, index) => ({
           url: img.url,
@@ -447,6 +468,11 @@ export default {
       }
       if (itemData.price <= 0) {
         this.showToast('Valid price is required', 'error', 'Validation Error');
+        this.publishLoading = false;
+        return;
+      }
+      if (itemData.stock < 0) {
+        this.showToast('Valid stock quantity is required', 'error', 'Validation Error');
         this.publishLoading = false;
         return;
       }
@@ -681,6 +707,34 @@ export default {
 
 .price-input {
   position: relative;
+}
+
+.price-input .form-input {
+  padding-left: 32px;
+}
+
+.currency-symbol {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.stock-input {
+  position: relative;
+}
+
+.stock-input .form-input {
+  padding: 12px 16px;
+}
+
+.form-hint {
+  color: #6c757d;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
 }
 
 .currency-symbol {

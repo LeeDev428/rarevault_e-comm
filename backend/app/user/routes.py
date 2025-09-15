@@ -18,11 +18,15 @@ def ensure_item_images_table():
         CREATE TABLE IF NOT EXISTS `item_images` (
           `id` int NOT NULL AUTO_INCREMENT,
           `item_id` int NOT NULL,
-          `image_url` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
+          `image_path` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
           `is_primary` tinyint(1) DEFAULT '0',
+          `display_order` int DEFAULT '0',
+          `original_filename` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+          `file_size` int DEFAULT NULL,
           `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
           PRIMARY KEY (`id`),
           KEY `idx_item_id` (`item_id`),
+          KEY `idx_primary` (`item_id`,`is_primary`),
           CONSTRAINT `item_images_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         """)
@@ -506,12 +510,18 @@ def create_order():
         item = Item.query.filter_by(id=item_id, status='active').first()
         if not item:
             return jsonify({'error': 'Item not found or not available'}), 404
-        
+
         # Check if user is trying to buy their own item
         if item.seller_id == user_id:
             return jsonify({'error': 'Cannot order your own item'}), 400
         
-        # Generate unique order number
+        # Validate quantity and check stock
+        quantity = data.get('quantity', 1)
+        if quantity <= 0:
+            return jsonify({'error': 'Quantity must be greater than 0'}), 400
+        
+        if quantity > item.stock:
+            return jsonify({'error': f'Insufficient stock. Only {item.stock} items available'}), 400        # Generate unique order number
         order_number = f"ORD{datetime.now().strftime('%Y%m%d')}{str(uuid.uuid4())[:8].upper()}"
         
         # Create order
@@ -520,9 +530,9 @@ def create_order():
             buyer_id=user_id,
             seller_id=item.seller_id,
             item_id=item_id,
-            quantity=data.get('quantity', 1),
+            quantity=quantity,
             price_per_item=item.price,
-            total_amount=item.price * data.get('quantity', 1),
+            total_amount=item.price * quantity,
             status='pending',
             
             # Customer information
@@ -535,6 +545,13 @@ def create_order():
             payment_method=data.get('payment_method', 'cash_on_delivery'),
             customer_notes=data.get('customer_notes', '')
         )
+        
+        # Reserve stock (deduct from available stock)
+        item.stock -= quantity
+        
+        # If stock reaches 0, set item status to out_of_stock
+        if item.stock <= 0:
+            item.status = 'out_of_stock'
         
         db.session.add(order)
         db.session.commit()

@@ -23,6 +23,31 @@
           </div>
         </div>
 
+        <!-- Quantity Selection -->
+        <div class="quantity-section">
+          <div class="quantity-selector">
+            <label for="quantity">Quantity:</label>
+            <div class="quantity-controls">
+              <button type="button" @click="decreaseQuantity" :disabled="orderForm.quantity <= 1" class="qty-btn">-</button>
+              <input 
+                type="number" 
+                id="quantity"
+                v-model.number="orderForm.quantity" 
+                :min="1" 
+                :max="item?.stock || 1"
+                @input="validateQuantity"
+                class="qty-input"
+              >
+              <button type="button" @click="increaseQuantity" :disabled="orderForm.quantity >= (item?.stock || 1)" class="qty-btn">+</button>
+            </div>
+            <span class="stock-info">{{ item?.stock || 0 }} available</span>
+          </div>
+          <div class="total-price">
+            <span class="total-label">Total:</span>
+            <span class="total-value">₱{{ formatPrice((item?.price || 0) * orderForm.quantity) }}</span>
+          </div>
+        </div>
+
         <!-- Order Form -->
         <div class="order-form">
           <form @submit.prevent="submitOrder">
@@ -127,8 +152,10 @@ export default {
         customerEmail: '',
         shippingAddress: '',
         paymentMethod: 'cash_on_delivery',
-        customerNotes: ''
-      }
+        customerNotes: '',
+        quantity: 1
+      },
+      loading: false
     }
   },
   watch: {
@@ -149,7 +176,8 @@ export default {
         customerEmail: userInfo.email || '',
         shippingAddress: userInfo.address || '',
         paymentMethod: 'cash_on_delivery',
-        customerNotes: ''
+        customerNotes: '',
+        quantity: 1
       }
     },
     
@@ -219,7 +247,34 @@ export default {
       return condition.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
     },
     
+    increaseQuantity() {
+      const maxStock = this.item?.stock || 1
+      if (this.orderForm.quantity < maxStock) {
+        this.orderForm.quantity++
+      }
+    },
+    
+    decreaseQuantity() {
+      if (this.orderForm.quantity > 1) {
+        this.orderForm.quantity--
+      }
+    },
+    
+    validateQuantity() {
+      const maxStock = this.item?.stock || 1
+      if (this.orderForm.quantity > maxStock) {
+        this.orderForm.quantity = maxStock
+      } else if (this.orderForm.quantity < 1) {
+        this.orderForm.quantity = 1
+      }
+    },
+    
     submitOrder() {
+      // Debug logging
+      console.log('ConfirmOrderModal: Submitting order with form data:', this.orderForm);
+      console.log('ConfirmOrderModal: Item data:', this.item);
+      console.log('ConfirmOrderModal: Selected quantity:', this.orderForm.quantity);
+      
       // Emit the form data back to the parent component
       this.$emit('submit', {
         ...this.orderForm,
@@ -348,6 +403,100 @@ export default {
   margin: 0;
   font-size: 14px;
   color: #6b7280;
+}
+
+.quantity-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border: 1px solid #e2e8f0;
+}
+
+.quantity-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quantity-selector label {
+  font-weight: 500;
+  color: #374151;
+  margin: 0;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.qty-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #f9fafb;
+  color: #374151;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.qty-btn:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.qty-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.qty-input {
+  width: 50px;
+  height: 32px;
+  border: none;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  background: white;
+}
+
+.qty-input:focus {
+  outline: none;
+  background: #f9fafb;
+}
+
+.stock-info {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.total-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.total-label {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.total-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #059669;
 }
 
 .order-form {

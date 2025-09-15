@@ -302,10 +302,12 @@ export default {
         this.loading = true
         const token = localStorage.getItem('access_token') || localStorage.getItem('token')
         if (!token) {
+          console.error('No authentication token found')
           this.$router.push('/login')
           return
         }
 
+        console.log('Fetching ratings with token:', token ? 'Token exists' : 'No token')
         const response = await fetch('http://localhost:5000/api/seller/ratings', {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -313,12 +315,23 @@ export default {
           }
         })
 
+        console.log('Ratings API response status:', response.status)
+        
         if (response.ok) {
           const data = await response.json()
+          console.log('Ratings data received:', data)
           this.ratings = data.ratings || []
           this.filteredRatings = [...this.ratings]
+          
+          // Update statistics
+          if (data.statistics) {
+            this.overallRating = data.statistics.average_rating || 0
+            this.totalRatings = data.statistics.total_ratings || 0
+          }
         } else {
-          throw new Error('Failed to fetch ratings')
+          const errorData = await response.json().catch(() => ({}))
+          console.error('Error response from ratings API:', errorData)
+          throw new Error(errorData.error || 'Failed to fetch ratings')
         }
       } catch (error) {
         console.error('Error fetching ratings:', error)

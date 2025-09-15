@@ -144,29 +144,37 @@ class ItemImage(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     item_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=False)
-    image_url = db.Column(db.String(500), nullable=False)
+    image_path = db.Column(db.String(500), nullable=False)
     is_primary = db.Column(db.Boolean, default=False)
+    display_order = db.Column(db.Integer, default=0)
+    original_filename = db.Column(db.String(255))
+    file_size = db.Column(db.Integer)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def to_dict(self):
         # Construct the proper image URL
-        if self.image_url:
+        if self.image_path:
             # If it's already a full URL, use it as is
-            if self.image_url.startswith('http'):
-                full_url = self.image_url
+            if self.image_path.startswith('http'):
+                full_url = self.image_path
             # If it starts with 'items/', prepend the uploads path
-            elif self.image_url.startswith('items/'):
-                full_url = f"http://localhost:5000/uploads/{self.image_url}"
+            elif self.image_path.startswith('items/'):
+                full_url = f"http://localhost:5000/uploads/{self.image_path}"
             # Otherwise, assume it's a filename and construct the full path
             else:
-                full_url = f"http://localhost:5000/uploads/items/{self.item_id}/{self.image_url}"
+                full_url = f"http://localhost:5000/uploads/items/{self.item_id}/{self.image_path}"
         else:
             full_url = None
         
         return {
             'id': self.id,
             'url': full_url,
+            'image_url': full_url,  # For backward compatibility
             'isPrimary': self.is_primary,
+            'is_primary': self.is_primary,  # For backward compatibility
+            'display_order': self.display_order,
+            'original_filename': self.original_filename,
+            'file_size': self.file_size,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 

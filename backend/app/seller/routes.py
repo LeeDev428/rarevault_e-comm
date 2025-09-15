@@ -222,8 +222,10 @@ def create_seller_item():
                             
                             item_image = ItemImage(
                                 item_id=item.id,
-                                image_url=relative_path,
-                                is_primary=image_data.get('isPrimary', idx == 0)
+                                image_path=relative_path,
+                                is_primary=image_data.get('isPrimary', idx == 0),
+                                display_order=idx,
+                                original_filename=filename
                             )
                             db.session.add(item_image)
                             
@@ -234,8 +236,9 @@ def create_seller_item():
                         # Handle regular URL (if uploading from URL)
                         item_image = ItemImage(
                             item_id=item.id,
-                            image_url=image_url,
-                            is_primary=image_data.get('isPrimary', idx == 0)
+                            image_path=image_url,
+                            is_primary=image_data.get('isPrimary', idx == 0),
+                            display_order=idx
                         )
                         db.session.add(item_image)
         
@@ -577,12 +580,14 @@ def update_order_status(order_id):
         elif new_status == 'delivered':
             order.delivered_at = datetime.utcnow()
         
-        # Update item status based on order status
+        # Update item status based on order status and handle stock changes
         item = Item.query.get(order.item_id)
         if item:
             if new_status in ['confirmed', 'shipped']:
                 item.status = 'sold' if new_status == 'shipped' else 'pending'
             elif new_status in ['declined', 'cancelled']:
+                # Restore stock when order is declined or cancelled
+                item.stock += order.quantity
                 item.status = 'active'
             elif new_status == 'delivered':
                 item.status = 'sold'
@@ -623,10 +628,8 @@ def confirm_order(order_id):
         order.confirmed_at = datetime.utcnow()
         order.updated_at = datetime.utcnow()
         
-        # Update item status
-        item = Item.query.get(order.item_id)
-        if item:
-            item.status = 'pending'
+        # Note: Item status should remain 'active' to allow other customers to order
+        # Only the order status changes, not the item status
         
         db.session.commit()
         
@@ -668,10 +671,11 @@ def cancel_order(order_id):
         order.updated_at = datetime.utcnow()
         order.seller_notes = cancel_reason
         
-        # Update item status back to active
+        # Restore stock when order is cancelled
         item = Item.query.get(order.item_id)
         if item:
-            item.status = 'active'
+            item.stock += order.quantity
+            item.status = 'active'  # Make item available again
         
         db.session.commit()
         
@@ -709,10 +713,9 @@ def complete_order(order_id):
         order.completed_at = datetime.utcnow()
         order.updated_at = datetime.utcnow()
         
-        # Update item status to sold
-        item = Item.query.get(order.item_id)
-        if item:
-            item.status = 'sold'
+        # Note: Item status should remain 'active' unless stock is depleted
+        # Only the order status changes, not the item status
+        # Item stock was already decremented when the order was placed
         
         db.session.commit()
         

@@ -91,6 +91,18 @@
             </svg>
             <span>{{ item.soldCount }} sold</span>
           </div>
+          
+          <!-- Stock Count -->
+          <div class="stock-count" :class="{ 'low-stock': item.stock < 5, 'out-of-stock': item.stock === 0 }">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span v-if="item.stock > 0">{{ item.stock }} in stock</span>
+            <span v-else>Out of stock</span>
+          </div>
         </div>
         
         <div class="item-price">
@@ -446,6 +458,27 @@ export default {
 
 .sold-count svg {
   color: #9ca3af;
+}
+
+.stock-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #16a34a;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.stock-count.low-stock {
+  color: #f59e0b;
+}
+
+.stock-count.out-of-stock {
+  color: #dc2626;
+}
+
+.stock-count svg {
+  color: inherit;
 }
 
 .item-price {

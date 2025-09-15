@@ -105,15 +105,7 @@
             />
           </div>
           
-          <div class="order-actions" v-else-if="order.status === 'confirmed'">
-            <ActionButton
-              variant="primary"
-              icon="✓"
-              text="Mark as Completed"
-              @click="completeOrder(order.id)"
-              :loading="updatingOrder === order.id"
-            />
-          </div>
+        
         </div>
       </div>
 

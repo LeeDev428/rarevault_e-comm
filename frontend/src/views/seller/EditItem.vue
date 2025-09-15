@@ -66,6 +66,23 @@
                 </div>
 
                 <div class="form-group">
+                  <label class="form-label required">Stock Quantity</label>
+                  <div class="stock-input">
+                    <input 
+                      v-model.number="item.stock"
+                      type="number"
+                      min="0"
+                      class="form-input"
+                      placeholder="Enter available stock quantity"
+                      required
+                    >
+                  </div>
+                  <small class="form-hint">Number of items available for sale</small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
                   <label class="form-label required">Category</label>
                   <select v-model="item.category" class="form-select" required>
                     <option value="">Select a category</option>
@@ -320,6 +337,7 @@ export default {
         title: '',
         description: '',
         price: 0,
+        stock: 0,
         category: '',
         condition: '',
         status: 'active',
@@ -357,6 +375,7 @@ export default {
       if (this.item.title !== this.originalItem.title) changes.push('Title updated');
       if (this.item.description !== this.originalItem.description) changes.push('Description updated');
       if (this.item.price !== this.originalItem.price) changes.push('Price updated');
+      if (this.item.stock !== this.originalItem.stock) changes.push('Stock updated');
       if (this.item.category !== this.originalItem.category) changes.push('Category updated');
       if (this.item.condition !== this.originalItem.condition) changes.push('Condition updated');
       if (this.item.status !== this.originalItem.status) changes.push('Status updated');
@@ -418,6 +437,7 @@ export default {
           title: data.title || '',
           description: data.description || '',
           price: parseFloat(data.price) || 0,
+          stock: parseInt(data.stock) || 0,
           category: data.category || '',
           condition: data.condition || '',
           status: data.status || 'active',
@@ -529,6 +549,7 @@ export default {
       if (!this.item.title?.trim()) errors.push('Title is required');
       if (!this.item.description?.trim()) errors.push('Description is required');
       if (!this.item.price || this.item.price <= 0) errors.push('Valid price is required');
+      if (!this.item.stock || this.item.stock < 0) errors.push('Valid stock quantity is required');
       if (!this.item.category) errors.push('Category is required');
       if (!this.item.condition) errors.push('Condition is required');
       if (!this.item.status) errors.push('Status is required');
@@ -569,6 +590,7 @@ export default {
           title: this.item.title,
           description: this.item.description,
           price: this.item.price,
+          stock: this.item.stock,
           category: this.item.category,
           condition: this.item.condition,
           status: this.item.status,
