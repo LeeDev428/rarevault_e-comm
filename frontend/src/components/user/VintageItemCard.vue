@@ -43,12 +43,7 @@
           >
             Order Now
           </button>
-          <button 
-            class="action-btn contact-btn"
-            @click="$emit('contact-seller', item)"
-          >
-            Contact seller
-          </button>
+         
           <button 
             class="action-btn save-btn"
             @click="$emit('save-item', item)"

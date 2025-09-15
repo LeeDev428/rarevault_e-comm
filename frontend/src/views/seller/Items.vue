@@ -7,15 +7,7 @@
           <h1 class="page-title">My Items</h1>
           <p class="page-subtitle">Manage your item listings</p>
         </div>
-        
-        <div class="header-actions">
-          <ActionButton
-            variant="primary"
-            icon="➕"
-            text="Add New Item"
-            @click="goToCreateItem"
-          />
-        </div>
+     
       </div>
 
       <!-- Filters and Search -->

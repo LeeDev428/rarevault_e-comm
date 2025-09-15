@@ -470,17 +470,41 @@ export default {
         // Find primary image first, then fallback to first image
         const primaryImage = item.images.find(img => img.is_primary || img.isPrimary) || item.images[0];
         if (primaryImage?.url) {
-          console.log('Using images array primary/first url:', primaryImage.url);
-          // The backend already provides full URLs, don't add prefix
-          return primaryImage.url;
+          let imageUrl = primaryImage.url;
+          
+          // Fix duplicate path issue (e.g., /uploads/items/13/13/image_0.png)
+          if (imageUrl.includes('/uploads/items/')) {
+            const regex = /\/uploads\/items\/(\d+)\/\1\//;
+            const match = imageUrl.match(regex);
+            if (match) {
+              const itemId = match[1];
+              imageUrl = imageUrl.replace(`/uploads/items/${itemId}/${itemId}/`, `/uploads/items/${itemId}/`);
+              console.log('Fixed duplicate path, corrected URL:', imageUrl);
+            }
+          }
+          
+          console.log('Using images array primary/first url:', imageUrl);
+          return imageUrl;
         }
       }
       
       // Handle primary_image object from API
       if (item?.primary_image?.url) {
-        console.log('Using primary_image.url:', item.primary_image.url);
-        // The backend already provides full URLs, don't add prefix
-        return item.primary_image.url;
+        let imageUrl = item.primary_image.url;
+        
+        // Fix duplicate path issue
+        if (imageUrl.includes('/uploads/items/')) {
+          const regex = /\/uploads\/items\/(\d+)\/\1\//;
+          const match = imageUrl.match(regex);
+          if (match) {
+            const itemId = match[1];
+            imageUrl = imageUrl.replace(`/uploads/items/${itemId}/${itemId}/`, `/uploads/items/${itemId}/`);
+            console.log('Fixed duplicate path in primary_image, corrected URL:', imageUrl);
+          }
+        }
+        
+        console.log('Using primary_image.url:', imageUrl);
+        return imageUrl;
       }
       
       // Handle legacy primary image with image_path property

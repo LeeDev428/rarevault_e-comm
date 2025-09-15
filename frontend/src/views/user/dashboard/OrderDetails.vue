@@ -27,9 +27,7 @@
             </button>
             
             <div class="order-actions">
-              <button v-if="order.status === 'delivered'" @click="downloadInvoice" class="action-btn secondary">
-                Download Invoice
-              </button>
+           
               <button v-if="order.status === 'pending' || order.status === 'processing'" @click="trackOrder" class="action-btn primary">
                 Track Order
               </button>
@@ -52,11 +50,14 @@
             <h2 class="section-title">Order Items</h2>
             <div class="items-list">
               <div class="order-item">
+              
+                
                 <img 
                   :src="getItemImage(order.item)" 
                   :alt="order.item.title" 
                   class="item-image"
                   @error="handleImageError"
+                  style="border: 2px solid red;"
                 />
                 
                 <div class="item-details">
@@ -322,28 +323,51 @@ export default {
     getItemImage(item) {
       console.log('=== getItemImage Debug ===')
       console.log('Item received:', item);
-      console.log('Item type:', typeof item);
-      console.log('Item keys:', item ? Object.keys(item) : 'No item');
       
       // Handle images array from API (most common case)
       if (item?.images && Array.isArray(item.images) && item.images.length > 0) {
         console.log('Found images array with length:', item.images.length);
-        console.log('Images data:', item.images);
         
         // Find primary image first, then fallback to first image
         const primaryImage = item.images.find(img => img.is_primary || img.isPrimary) || item.images[0];
         console.log('Selected primary/first image:', primaryImage);
         
         if (primaryImage?.url) {
-          console.log('✓ Using images array primary/first url:', primaryImage.url);
-          return primaryImage.url;
+          let imageUrl = primaryImage.url;
+          
+          // Fix duplicate path issue (e.g., /uploads/items/13/13/image_0.png)
+          if (imageUrl.includes('/uploads/items/')) {
+            const regex = /\/uploads\/items\/(\d+)\/\1\//;
+            const match = imageUrl.match(regex);
+            if (match) {
+              const itemId = match[1];
+              imageUrl = imageUrl.replace(`/uploads/items/${itemId}/${itemId}/`, `/uploads/items/${itemId}/`);
+              console.log('✓ Fixed duplicate path, corrected URL:', imageUrl);
+            }
+          }
+          
+          console.log('✓ Using images array url:', imageUrl);
+          return imageUrl;
         }
       }
       
       // Handle primary_image object from API
       if (item?.primary_image?.url) {
-        console.log('✓ Using primary_image.url:', item.primary_image.url);
-        return item.primary_image.url;
+        let imageUrl = item.primary_image.url;
+        
+        // Fix duplicate path issue
+        if (imageUrl.includes('/uploads/items/')) {
+          const regex = /\/uploads\/items\/(\d+)\/\1\//;
+          const match = imageUrl.match(regex);
+          if (match) {
+            const itemId = match[1];
+            imageUrl = imageUrl.replace(`/uploads/items/${itemId}/${itemId}/`, `/uploads/items/${itemId}/`);
+            console.log('✓ Fixed duplicate path in primary_image, corrected URL:', imageUrl);
+          }
+        }
+        
+        console.log('✓ Using primary_image.url:', imageUrl);
+        return imageUrl;
       }
       
       // Handle primary_image as string
@@ -371,13 +395,21 @@ export default {
         return constructedUrl;
       }
       
-      console.log('❌ No image source found, using placeholder for item:', item?.id);
+      console.log('❌ No image source found, using placeholder');
       return 'http://localhost:5000/uploads/placeholder.svg';
     },
 
     handleImageError(event) {
-      console.log('OrderDetails.vue - Image failed to load, using placeholder');
+      console.log('❌ OrderDetails.vue - Image failed to load');
+      console.log('Failed URL:', event.target.src);
       event.target.src = 'http://localhost:5000/uploads/placeholder.svg';
+      
+      // Try to diagnose the issue
+      setTimeout(() => {
+        console.log('=== Image Error Diagnosis ===');
+        console.log('Order data at error time:', this.order);
+        console.log('Item data at error time:', this.order?.item);
+      }, 100);
     },
 
     getSellerName(item) {
