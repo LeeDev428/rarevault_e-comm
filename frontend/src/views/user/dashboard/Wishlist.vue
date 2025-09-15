@@ -134,73 +134,13 @@
       </div>
 
       <!-- Order Confirmation Modal -->
-      <div v-if="showOrderModal" class="modal-overlay" @click="closeOrderModal">
-        <div class="modal-content" @click.stop>
-          <div class="modal-header">
-            <h2>Order Confirmation</h2>
-            <button @click="closeOrderModal" class="close-btn">&times;</button>
-          </div>
-          <div class="order-confirmation">
-            <div class="item-summary" v-if="selectedOrderItem">
-              <img 
-                :src="selectedOrderItem.primary_image ? selectedOrderItem.primary_image.image_url : (selectedOrderItem.image_url || '/api/placeholder/300/300')" 
-                :alt="selectedOrderItem.name || 'Item'"
-                class="summary-image"
-              />
-              <div class="summary-details">
-                <h3>{{ selectedOrderItem.name || 'Item' }}</h3>
-                <p class="summary-category">{{ selectedOrderItem.category || 'N/A' }}</p>
-                <p class="summary-price">₱{{ selectedOrderItem.price || '0.00' }}</p>
-                <p class="summary-condition">{{ selectedOrderItem.condition || 'N/A' }}</p>
-              </div>
-            </div>
-
-            <form @submit.prevent="submitOrder">
-              <div class="form-group">
-                <label for="customer_name">Full Name *</label>
-                <input type="text" id="customer_name" v-model="orderForm.customer_name" required />
-              </div>
-
-              <div class="form-group">
-                <label for="customer_email">Email *</label>
-                <input type="email" id="customer_email" v-model="orderForm.customer_email" required />
-              </div>
-
-              <div class="form-group">
-                <label for="customer_phone">Phone Number *</label>
-                <input type="tel" id="customer_phone" v-model="orderForm.customer_phone" required />
-              </div>
-
-              <div class="form-group">
-                <label for="customer_address">Address *</label>
-                <textarea id="customer_address" v-model="orderForm.customer_address" rows="3" required></textarea>
-              </div>
-
-              <div class="form-group">
-                <label for="payment_method">Payment Method *</label>
-                <select id="payment_method" v-model="orderForm.payment_method" required>
-                  <option value="">Select payment method</option>
-                  <option value="cash">Cash on Delivery</option>
-                  <option value="bank_transfer">Bank Transfer</option>
-                  <option value="other">Other (discuss with seller)</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="notes">Additional Notes</label>
-                <textarea id="notes" v-model="orderForm.notes" rows="2" placeholder="Any special requests or notes for the seller"></textarea>
-              </div>
-
-              <div class="modal-actions">
-                <button type="button" @click="closeOrderModal" class="cancel-btn">Cancel</button>
-                <button type="submit" :disabled="submittingOrder" class="submit-btn">
-                  {{ submittingOrder ? 'Placing Order...' : 'Place Order' }}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
+      <ConfirmOrderModal
+        :show="showOrderModal"
+        :item="selectedOrderItem"
+        :loading="submittingOrder"
+        @close="closeOrderModal"
+        @submit="submitOrder"
+      />
     </div>
   </UserLayout>
 </template>
@@ -208,12 +148,14 @@
 <script>
 import UserLayout from '@/components/user/UserLayout.vue'
 import Pagination from '@/components/user/Pagination.vue'
+import ConfirmOrderModal from '@/components/user/ConfirmOrderModal.vue'
 
 export default {
   name: 'UserWishlist',
   components: {
     UserLayout,
-    Pagination
+    Pagination,
+    ConfirmOrderModal
   },
   data() {
     return {
@@ -226,15 +168,7 @@ export default {
       loading: false,
       showOrderModal: false,
       selectedOrderItem: null,
-      submittingOrder: false,
-      orderForm: {
-        customer_name: '',
-        customer_email: '',
-        customer_phone: '',
-        customer_address: '',
-        payment_method: '',
-        notes: ''
-      }
+      submittingOrder: false
     }
   },
   computed: {
@@ -433,15 +367,33 @@ export default {
       if (showModal) {
         this.selectedOrderItem = item
         this.showOrderModal = true
-        this.resetOrderForm()
       } else {
         // For batch ordering, use default values
         return this.submitOrder(item)
       }
     },
 
-    async submitOrder(batchItem = null) {
-      const item = batchItem || this.selectedOrderItem
+    async submitOrder(orderData) {
+      // Handle both new modal data and legacy batch ordering
+      let item, formData;
+      
+      if (orderData && orderData.item) {
+        // New modal structure
+        item = orderData.item;
+        formData = orderData;
+      } else {
+        // Legacy batch ordering (fallback)
+        item = orderData || this.selectedOrderItem;
+        formData = {
+          customerName: 'Customer',
+          customerEmail: 'customer@example.com',
+          customerPhone: 'N/A',
+          shippingAddress: 'N/A',
+          paymentMethod: 'cash_on_delivery',
+          customerNotes: ''
+        };
+      }
+
       if (!item || !item.id) return
 
       this.submittingOrder = true
@@ -455,12 +407,12 @@ export default {
           },
           body: JSON.stringify({
             item_id: item.id,
-            customer_name: this.orderForm.customer_name || 'Customer',
-            customer_email: this.orderForm.customer_email || 'customer@example.com',
-            customer_phone: this.orderForm.customer_phone || 'N/A',
-            customer_address: this.orderForm.customer_address || 'N/A',
-            payment_method: this.orderForm.payment_method || 'cash',
-            notes: this.orderForm.notes || ''
+            customer_name: formData.customerName || 'Customer',
+            customer_email: formData.customerEmail || 'customer@example.com',
+            customer_phone: formData.customerPhone || 'N/A',
+            customer_address: formData.shippingAddress || 'N/A',
+            payment_method: formData.paymentMethod || 'cash_on_delivery',
+            notes: formData.customerNotes || ''
           })
         })
 
@@ -468,13 +420,13 @@ export default {
           throw new Error('Failed to place order')
         }
 
-        if (!batchItem) {
+        if (orderData && orderData.item) {
           alert('Order placed successfully! The seller will contact you soon.')
           this.closeOrderModal()
         }
       } catch (error) {
         console.error('Error placing order:', error)
-        if (!batchItem) {
+        if (orderData && orderData.item) {
           alert('Failed to place order. Please try again.')
         }
       } finally {
@@ -485,18 +437,6 @@ export default {
     closeOrderModal() {
       this.showOrderModal = false
       this.selectedOrderItem = null
-      this.resetOrderForm()
-    },
-
-    resetOrderForm() {
-      this.orderForm = {
-        customer_name: '',
-        customer_email: '',
-        customer_phone: '',
-        customer_address: '',
-        payment_method: '',
-        notes: ''
-      }
     },
     
     contactSeller(item) {
@@ -933,165 +873,5 @@ export default {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-}
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #eee;
-}
-
-.modal-header h2 {
-  margin: 0;
-  color: #333;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #666;
-}
-
-.order-confirmation {
-  padding: 24px;
-}
-
-.item-summary {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 24px;
-  padding: 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
-
-.summary-image {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-.summary-details h3 {
-  margin: 0 0 8px 0;
-  color: #333;
-  font-size: 1.25rem;
-}
-
-.summary-category {
-  color: #666;
-  margin: 0 0 4px 0;
-  font-size: 0.9rem;
-}
-
-.summary-price {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #007bff;
-  margin: 0 0 4px 0;
-}
-
-.summary-condition {
-  color: #666;
-  margin: 0;
-  font-size: 0.9rem;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 6px;
-  font-weight: 600;
-  color: #333;
-}
-
-.form-group input,
-.form-group textarea,
-.form-group select {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 1rem;
-  box-sizing: border-box;
-}
-
-.form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-}
-
-.modal-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 24px;
-}
-
-.cancel-btn,
-.submit-btn {
-  flex: 1;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: background-color 0.2s;
-}
-
-.cancel-btn {
-  background: #6c757d;
-  color: white;
-}
-
-.cancel-btn:hover {
-  background: #545b62;
-}
-
-.submit-btn {
-  background: #007bff;
-  color: white;
-}
-
-.submit-btn:hover:not(:disabled) {
-  background: #0056b3;
-}
-
-.submit-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
 }
 </style>

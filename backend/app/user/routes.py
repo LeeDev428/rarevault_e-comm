@@ -1,10 +1,12 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import db
-from app.models.models import User, Item, Wishlist, Order, ItemImage
+from app.models.models import User, Item, Wishlist, Order, ItemImage, Rating
 from sqlalchemy import or_, and_, text
 import uuid
+import os
 from datetime import datetime
+from werkzeug.utils import secure_filename
 
 user_bp = Blueprint('user', __name__)
 
@@ -598,4 +600,131 @@ def mark_order_received(order_id):
         
     except Exception as e:
         db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@user_bp.route('/ratings', methods=['POST'])
+@jwt_required()
+def submit_rating():
+    """Submit a rating and review for an item"""
+    try:
+        current_user_id = get_jwt_identity()
+        
+        # Get form data
+        item_id = request.form.get('item_id')
+        order_id = request.form.get('order_id')
+        rating = request.form.get('rating')
+        review = request.form.get('review')
+        
+        if not all([item_id, rating]):
+            return jsonify({'error': 'Item ID and rating are required'}), 400
+        
+        # Validate rating is between 1-5
+        try:
+            rating = int(rating)
+            if rating < 1 or rating > 5:
+                return jsonify({'error': 'Rating must be between 1 and 5'}), 400
+        except ValueError:
+            return jsonify({'error': 'Rating must be a valid number'}), 400
+        
+        # Verify the item exists
+        item = Item.query.get(item_id)
+        if not item:
+            return jsonify({'error': 'Item not found'}), 404
+        
+        # If order_id is provided, verify the order exists and belongs to the user
+        if order_id:
+            order = Order.query.filter_by(id=order_id, buyer_id=current_user_id).first()
+            if not order:
+                return jsonify({'error': 'Order not found'}), 404
+        
+        # Check if user already rated this item for this order
+        existing_rating = Rating.query.filter_by(
+            user_id=current_user_id,
+            item_id=item_id,
+            order_id=order_id
+        ).first()
+        
+        if existing_rating:
+            return jsonify({'error': 'You have already rated this item'}), 400
+        
+        # Handle photo uploads
+        photo_urls = []
+        if 'photos' in request.files:
+            photos = request.files.getlist('photos')
+            upload_folder = os.path.join('uploads', 'ratings', str(current_user_id))
+            os.makedirs(upload_folder, exist_ok=True)
+            
+            for i, photo in enumerate(photos):
+                if photo and photo.filename:
+                    filename = secure_filename(f"rating_{item_id}_{i}_{photo.filename}")
+                    filepath = os.path.join(upload_folder, filename)
+                    photo.save(filepath)
+                    photo_urls.append(f'/uploads/ratings/{current_user_id}/{filename}')
+        
+        # Create new rating
+        new_rating = Rating(
+            user_id=current_user_id,
+            item_id=item_id,
+            order_id=order_id if order_id else None,
+            rating=rating,
+            review=review,
+            photos=photo_urls if photo_urls else None
+        )
+        
+        db.session.add(new_rating)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Rating submitted successfully',
+            'rating': new_rating.to_dict()
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@user_bp.route('/ratings', methods=['GET'])
+@jwt_required()
+def get_user_ratings():
+    """Get all ratings by the current user"""
+    try:
+        current_user_id = get_jwt_identity()
+        
+        ratings = Rating.query.filter_by(user_id=current_user_id).order_by(Rating.created_at.desc()).all()
+        
+        return jsonify({
+            'ratings': [rating.to_dict() for rating in ratings]
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@user_bp.route('/items/<int:item_id>/ratings', methods=['GET'])
+@jwt_required()
+def get_item_ratings(item_id):
+    """Get all ratings for a specific item"""
+    try:
+        # Verify the item exists
+        item = Item.query.get(item_id)
+        if not item:
+            return jsonify({'error': 'Item not found'}), 404
+        
+        ratings = Rating.query.filter_by(item_id=item_id).order_by(Rating.created_at.desc()).all()
+        
+        # Calculate average rating
+        if ratings:
+            average_rating = sum(r.rating for r in ratings) / len(ratings)
+        else:
+            average_rating = 0
+        
+        return jsonify({
+            'ratings': [rating.to_dict() for rating in ratings],
+            'average_rating': round(average_rating, 2),
+            'total_ratings': len(ratings)
+        }), 200
+        
+    except Exception as e:
         return jsonify({'error': str(e)}), 500

@@ -316,3 +316,44 @@ class SellerProfile(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
+
+
+class Rating(db.Model):
+    __tablename__ = 'ratings'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=True)
+    rating = db.Column(db.Integer, nullable=False)  # 1-5 stars
+    review = db.Column(db.Text, nullable=True)
+    photos = db.Column(db.JSON, nullable=True)  # Store photo URLs as JSON array
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', backref='ratings')
+    item = db.relationship('Item', backref='ratings')
+    order = db.relationship('Order', backref='ratings')
+    
+    # Ensure unique combination of user_id, item_id, and order_id
+    __table_args__ = (db.UniqueConstraint('user_id', 'item_id', 'order_id', name='unique_user_item_order_rating'),)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'item_id': self.item_id,
+            'order_id': self.order_id,
+            'rating': self.rating,
+            'review': self.review,
+            'photos': self.photos,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'user': self.user.to_dict() if self.user else None,
+            'item': {
+                'id': self.item.id,
+                'title': self.item.title,
+                'price': float(self.item.price)
+            } if self.item else None
+        }

@@ -87,6 +87,13 @@
                 Reorder
               </button>
               <button 
+                v-if="order.status === 'delivered'" 
+                class="action-btn rating"
+                @click.stop="rateItem(order)"
+              >
+                Rate Item
+              </button>
+              <button 
                 v-if="order.status === 'pending' || order.status === 'processing'" 
                 class="action-btn secondary"
                 @click.stop="trackOrder(order)"
@@ -316,7 +323,25 @@ export default {
     },
     
     reorderItems(order) {
-      console.log('Reorder items from order:', order.order_number)
+      // Navigate to the specific item page for reordering
+      if (order.item?.id) {
+        this.$router.push(`/user/dashboard/items/${order.item.id}`)
+      } else {
+        alert('Item is no longer available for reorder')
+      }
+    },
+
+    rateItem(order) {
+      // Navigate to ratings page with order data for rating the item
+      this.$router.push({
+        path: '/user/ratings',
+        query: {
+          orderId: order.id,
+          itemId: order.item?.id,
+          itemTitle: order.item?.title,
+          sellerId: order.item?.seller_id || order.seller_id
+        }
+      })
     }
   }
 }
@@ -594,6 +619,24 @@ export default {
 
 .action-btn.secondary:hover {
   background: #e5e7eb;
+}
+
+.action-btn.rating {
+  background: #fbbf24;
+  color: white;
+}
+
+.action-btn.rating:hover {
+  background: #f59e0b;
+}
+
+.action-btn.success {
+  background: #10b981;
+  color: white;
+}
+
+.action-btn.success:hover {
+  background: #059669;
 }
 
 /* Empty State */

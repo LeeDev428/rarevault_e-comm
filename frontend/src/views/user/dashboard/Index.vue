@@ -22,7 +22,14 @@
 
           <!-- Category Filters -->
           <div class="filter-group">
-            <h4 class="filter-subtitle">Categories</h4>
+            <h4 class="filter-subtitle">Categories</h4>  <div class="filter-item" 
+                 @click="clearCategoryFilter"
+                 :class="{ active: !selectedCategory }">
+              <span>All Categories</span>
+            </div>
+            
+
+
             <div class="filter-item" 
                  v-for="category in availableCategories" 
                  :key="category"
@@ -30,11 +37,7 @@
                  :class="{ active: selectedCategory === category }">
               <span>{{ formatCategoryName(category) }}</span>
             </div>
-            <div class="filter-item" 
-                 @click="clearCategoryFilter"
-                 :class="{ active: !selectedCategory }">
-              <span>All Categories</span>
-            </div>
+          
           </div>
 
           <!-- Condition Filter -->
@@ -145,100 +148,13 @@
     </div>
 
     <!-- Order Confirmation Modal -->
-    <div v-if="showOrderModal" class="modal-overlay" @click="closeOrderModal">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h2>Confirm Order</h2>
-          <button @click="closeOrderModal" class="close-btn">✕</button>
-        </div>
-        
-        <div class="order-confirmation">
-          <div class="item-summary">
-            <img :src="getItemImage(selectedItem)" :alt="selectedItem?.title" class="summary-image">
-            <div class="summary-details">
-              <h3>{{ selectedItem?.title }}</h3>
-              <p class="summary-category">{{ selectedItem?.category }}</p>
-              <p class="summary-price">₱{{ selectedItem?.price?.toFixed(2) }}</p>
-              <p class="summary-condition">Condition: {{ selectedItem?.condition }}</p>
-            </div>
-          </div>
-
-          <div class="order-form">
-            <form @submit.prevent="submitOrder">
-              <div class="form-group">
-                <label for="customerName">Full Name *</label>
-                <input 
-                  type="text" 
-                  id="customerName"
-                  v-model="orderForm.customerName" 
-                  required
-                  placeholder="Enter your full name"
-                >
-              </div>
-
-              <div class="form-group">
-                <label for="customerPhone">Phone Number</label>
-                <input 
-                  type="tel" 
-                  id="customerPhone"
-                  v-model="orderForm.customerPhone" 
-                  placeholder="Enter your phone number"
-                >
-              </div>
-
-              <div class="form-group">
-                <label for="customerEmail">Email</label>
-                <input 
-                  type="email" 
-                  id="customerEmail"
-                  v-model="orderForm.customerEmail" 
-                  placeholder="Enter your email"
-                >
-              </div>
-
-              <div class="form-group">
-                <label for="shippingAddress">Shipping Address *</label>
-                <textarea 
-                  id="shippingAddress"
-                  v-model="orderForm.shippingAddress" 
-                  required
-                  placeholder="Enter your complete shipping address"
-                  rows="3"
-                ></textarea>
-              </div>
-
-              <div class="form-group">
-                <label for="paymentMethod">Payment Method</label>
-                <select id="paymentMethod" v-model="orderForm.paymentMethod">
-                  <option value="cash_on_delivery">Cash on Delivery</option>
-                  <option value="bank_transfer">Bank Transfer</option>
-                  <option value="gcash">GCash</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="customerNotes">Additional Notes</label>
-                <textarea 
-                  id="customerNotes"
-                  v-model="orderForm.customerNotes" 
-                  placeholder="Any special instructions or notes"
-                  rows="2"
-                ></textarea>
-              </div>
-
-              <div class="modal-actions">
-                <button type="button" @click="closeOrderModal" class="cancel-btn">
-                  Cancel
-                </button>
-                <button type="submit" :disabled="orderLoading" class="submit-btn">
-                  {{ orderLoading ? 'Placing Order...' : 'Confirm Order' }}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
+    <ConfirmOrderModal
+      :show="showOrderModal"
+      :item="selectedItem"
+      :loading="orderLoading"
+      @close="closeOrderModal"
+      @submit="submitOrder"
+    />
   </UserLayout>
 </template>
 
@@ -246,13 +162,15 @@
 import UserLayout from '@/components/user/UserLayout.vue'
 import VintageItemCard from '@/components/user/VintageItemCard.vue'
 import Pagination from '@/components/user/Pagination.vue'
+import ConfirmOrderModal from '@/components/user/ConfirmOrderModal.vue'
 
 export default {
   name: 'UserMarketplace',
   components: {
     UserLayout,
     VintageItemCard,
-    Pagination
+    Pagination,
+    ConfirmOrderModal
   },
   data() {
     return {
@@ -290,15 +208,7 @@ export default {
       // Order Modal
       showOrderModal: false,
       selectedItem: null,
-      orderLoading: false,
-      orderForm: {
-        customerName: '',
-        customerPhone: '',
-        customerEmail: '',
-        shippingAddress: '',
-        paymentMethod: 'cash_on_delivery',
-        customerNotes: ''
-      }
+      orderLoading: false
     }
   },
   
@@ -502,6 +412,9 @@ export default {
         condition: item.condition_status || item.condition,
         year: item.year,
         description: item.description,
+        rating: item.average_rating || 0,
+        ratingCount: item.rating_count || 0,
+        soldCount: item.sold_count || 0,
         // Keep original item data for reference
         _originalItem: item
       };
@@ -593,7 +506,7 @@ export default {
       this.orderLoading = false;
     },
     
-    async submitOrder() {
+    async submitOrder(orderData) {
       try {
         this.orderLoading = true;
         
@@ -603,15 +516,15 @@ export default {
           return;
         }
         
-        const orderData = {
-          item_id: this.selectedItem.id,
+        const submitData = {
+          item_id: orderData.item.id,
           quantity: 1,
-          customer_name: this.orderForm.customerName,
-          customer_phone: this.orderForm.customerPhone,
-          customer_email: this.orderForm.customerEmail,
-          shipping_address: this.orderForm.shippingAddress,
-          payment_method: this.orderForm.paymentMethod,
-          customer_notes: this.orderForm.customerNotes
+          customer_name: orderData.customerName,
+          customer_phone: orderData.customerPhone,
+          customer_email: orderData.customerEmail,
+          shipping_address: orderData.shippingAddress,
+          payment_method: orderData.paymentMethod,
+          customer_notes: orderData.customerNotes
         };
         
         const response = await fetch('http://localhost:5000/api/user/orders', {
@@ -620,7 +533,7 @@ export default {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(orderData)
+          body: JSON.stringify(submitData)
         });
         
         if (!response.ok) {
@@ -804,20 +717,31 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
 }
 
 .price-input {
   flex: 1;
-  padding: 10px 12px;
+  min-width: 0; /* Allow input to shrink */
+  padding: 8px 10px;
   border: 2px solid #e5e7eb;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 13px;
   text-align: center;
+  box-sizing: border-box;
 }
 
 .price-input:focus {
   outline: none;
   border-color: #2563eb;
+}
+
+.price-inputs span {
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 500;
+  flex-shrink: 0; /* Prevent "to" from shrinking */
+  min-width: fit-content;
 }
 
 /* Sort Select */
@@ -986,7 +910,11 @@ export default {
   
   .price-inputs {
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
+  }
+  
+  .price-inputs span {
+    font-size: 11px;
   }
 }
 
@@ -999,165 +927,5 @@ export default {
   .marketplace-container {
     margin: 0 16px;
   }
-}
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #eee;
-}
-
-.modal-header h2 {
-  margin: 0;
-  color: #333;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #666;
-}
-
-.order-confirmation {
-  padding: 24px;
-}
-
-.item-summary {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 24px;
-  padding: 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
-
-.summary-image {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-.summary-details h3 {
-  margin: 0 0 8px 0;
-  color: #333;
-  font-size: 1.25rem;
-}
-
-.summary-category {
-  color: #666;
-  margin: 0 0 4px 0;
-  font-size: 0.9rem;
-}
-
-.summary-price {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #007bff;
-  margin: 0 0 4px 0;
-}
-
-.summary-condition {
-  color: #666;
-  margin: 0;
-  font-size: 0.9rem;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 6px;
-  font-weight: 600;
-  color: #333;
-}
-
-.form-group input,
-.form-group textarea,
-.form-group select {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 1rem;
-  box-sizing: border-box;
-}
-
-.form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-}
-
-.modal-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 24px;
-}
-
-.cancel-btn,
-.submit-btn {
-  flex: 1;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: background-color 0.2s;
-}
-
-.cancel-btn {
-  background: #6c757d;
-  color: white;
-}
-
-.cancel-btn:hover {
-  background: #545b62;
-}
-
-.submit-btn {
-  background: #007bff;
-  color: white;
-}
-
-.submit-btn:hover:not(:disabled) {
-  background: #0056b3;
-}
-
-.submit-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
 }
 </style>

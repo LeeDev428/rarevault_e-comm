@@ -60,6 +60,18 @@ const routes = [
     component: () => import('@/views/user/dashboard/Settings.vue'),
     meta: { requiresAuth: true, role: 'user' }
   },
+  {
+    path: '/user/ratings',
+    name: 'UserRatings',
+    component: () => import('@/views/user/Ratings.vue'),
+    meta: { requiresAuth: true, role: 'user' }
+  },
+  {
+    path: '/user/dashboard/items/:id',
+    name: 'UserItemDetails',
+    component: () => import('@/views/user/dashboard/ItemDetails.vue'),
+    meta: { requiresAuth: true, role: 'user' }
+  },
   // Category Routes
   {
     path: '/user/collectibles',
@@ -144,6 +156,12 @@ const routes = [
     path: '/seller/orders',
     name: 'SellerOrders',
     component: () => import('@/views/seller/Orders.vue'),
+    meta: { requiresAuth: true, role: 'seller' }
+  },
+  {
+    path: '/seller/ratings',
+    name: 'SellerRatings',
+    component: () => import('@/views/seller/Ratings.vue'),
     meta: { requiresAuth: true, role: 'seller' }
   },
   {

@@ -67,9 +67,36 @@
       
       <h3 class="item-title">{{ item.title }}</h3>
       
-      <div class="item-price">
-        <span class="price-label">Price</span>
-        <span class="price-value">₱{{ item.price.toFixed(2) }}</span>
+      <div class="item-footer">
+        <div class="item-stats">
+          <!-- Rating -->
+          <div v-if="item.rating > 0" class="rating-display">
+            <div class="stars">
+              <span v-for="star in 5" :key="star" 
+                    :class="['star', { filled: star <= Math.round(item.rating) }]">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                </svg>
+              </span>
+            </div>
+            <span class="rating-text">{{ item.rating.toFixed(1) }} ({{ item.ratingCount }})</span>
+          </div>
+          
+          <!-- Sold Count -->
+          <div v-if="item.soldCount > 0" class="sold-count">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+            <span>{{ item.soldCount }} sold</span>
+          </div>
+        </div>
+        
+        <div class="item-price">
+          <span class="price-label">Price</span>
+          <span class="price-value">₱{{ item.price.toFixed(2) }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -369,10 +396,63 @@ export default {
   overflow: hidden;
 }
 
+.item-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.item-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.rating-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stars {
+  display: flex;
+  gap: 1px;
+}
+
+.star {
+  color: #d1d5db;
+}
+
+.star.filled {
+  color: #f59e0b;
+}
+
+.rating-text {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.sold-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.sold-count svg {
+  color: #9ca3af;
+}
+
 .item-price {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  align-items: flex-end;
 }
 
 .price-label {
@@ -418,6 +498,21 @@ export default {
   
   .item-details {
     padding: 12px;
+  }
+  
+  .item-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .item-stats {
+    width: 100%;
+  }
+  
+  .item-price {
+    align-items: flex-start;
+    width: 100%;
   }
   
   .item-title {
