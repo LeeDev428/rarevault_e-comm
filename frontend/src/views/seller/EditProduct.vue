@@ -7,10 +7,10 @@
           <!-- User Profile -->
           <div class="user-profile-section">
             <div class="user-avatar">
-              <img src="https://via.placeholder.com/60" alt="Profile" class="avatar-img" />
+              <img :src="userInfo.avatar || 'https://via.placeholder.com/60'" alt="Profile" class="avatar-img" />
             </div>
             <div class="user-info">
-              <h3 class="user-name">Justine Memer</h3>
+              <h3 class="user-name">{{ userInfo.displayName }}</h3>
               <p class="listing-type">Editing product</p>
             </div>
           </div>
@@ -39,16 +39,23 @@
             <div v-if="uploadedPhotos.length > 0" class="photo-preview-grid">
               <div 
                 v-for="(photo, index) in uploadedPhotos" 
-                :key="index" 
+                :key="photo.id || index" 
                 class="photo-preview-item"
               >
-                <img :src="photo.url" :alt="`Photo ${index + 1}`" />
+                <img 
+                  :src="photo.url" 
+                  :alt="`Photo ${index + 1}`" 
+                  @error="handleImageError"
+                />
                 <button class="remove-photo-btn" @click="removePhoto(index)">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <line x1="18" y1="6" x2="6" y2="18"/>
                     <line x1="6" y1="6" x2="18" y2="18"/>
                   </svg>
                 </button>
+                <div v-if="photo.existing" class="existing-photo-badge">
+                  Existing
+                </div>
               </div>
             </div>
           </div>
@@ -61,7 +68,7 @@
                 <circle cx="12" cy="10" r="3"/>
               </svg>
             </div>
-            <span class="location-text">Lingayen</span>
+            <span class="location-text">{{ userInfo.location || 'Location not set' }}</span>
           </div>
 
           <!-- Meetup Preferences -->
@@ -123,7 +130,13 @@
 
         <!-- Right Side - Product Details Form -->
         <div class="right-section">
-          <form @submit.prevent="updateProduct">
+          <!-- Loading State -->
+          <div v-if="isLoading" class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>Loading product data...</p>
+          </div>
+          
+          <form v-else @submit.prevent="updateProduct">
             <!-- Required Section -->
             <div class="form-section">
               <h3 class="section-title">Required</h3>
@@ -154,18 +167,31 @@
               </div>
 
               <div class="form-group">
+                <label class="form-label">Stock Quantity</label>
+                <input 
+                  v-model="productForm.stock" 
+                  type="number" 
+                  class="form-input" 
+                  placeholder="Enter available stock"
+                  min="0"
+                  step="1"
+                  required
+                />
+                <small class="form-hint">Number of items available for sale</small>
+              </div>
+
+              <div class="form-group">
                 <label class="form-label">Category</label>
                 <select v-model="productForm.category" class="form-select" required>
                   <option value="">Select a category</option>
+                  <option value="antiques">Antiques</option>
+                  <option value="collectibles">Collectibles</option>
+                  <option value="coins">Coins</option>
                   <option value="electronics">Electronics</option>
                   <option value="clothing">Clothing</option>
-                  <option value="home">Home & Garden</option>
                   <option value="books">Books</option>
                   <option value="toys">Toys & Games</option>
-                  <option value="sports">Sports & Outdoors</option>
-                  <option value="automotive">Automotive</option>
-                  <option value="collectibles">Collectibles</option>
-                  <option value="other">Other</option>
+                  <option value="others">Others</option>
                 </select>
               </div>
 
@@ -174,7 +200,7 @@
                 <select v-model="productForm.condition" class="form-select" required>
                   <option value="">Select condition</option>
                   <option value="new">New</option>
-                  <option value="like-new">Like New</option>
+                  <option value="like_new">Like New</option>
                   <option value="good">Good</option>
                   <option value="fair">Fair</option>
                   <option value="poor">Poor</option>
@@ -278,9 +304,15 @@ export default {
     return {
       productId: null,
       isLoading: true,
+      userInfo: {
+        displayName: 'Loading...',
+        avatar: null,
+        location: 'Loading...'
+      },
       productForm: {
         title: '',
         price: '',
+        stock: '',
         category: '',
         condition: '',
         description: '',
@@ -311,49 +343,110 @@ export default {
   },
   async mounted() {
     this.productId = this.$route.params.id
-    await this.loadProduct()
+    console.log('EditProduct mounted with ID:', this.productId)
+    
+    if (!this.productId) {
+      this.showToast('No product ID provided', 'error', 'Error')
+      this.$router.push('/seller/items')
+      return
+    }
+    
+    await Promise.all([
+      this.loadUserInfo(),
+      this.loadProduct()
+    ])
   },
   methods: {
+    async loadUserInfo() {
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        if (!token) {
+          this.$router.push('/login')
+          return
+        }
+
+        const userInfoString = localStorage.getItem('user_info')
+        if (userInfoString) {
+          const userInfo = JSON.parse(userInfoString)
+          this.userInfo = {
+            displayName: userInfo.first_name && userInfo.last_name 
+              ? `${userInfo.first_name} ${userInfo.last_name}` 
+              : userInfo.username || 'User',
+            avatar: userInfo.avatar || null,
+            location: userInfo.address || 'Location not set'
+          }
+        }
+      } catch (error) {
+        console.error('Error loading user info:', error)
+      }
+    },
+
     async loadProduct() {
       this.isLoading = true
       try {
-        // Simulate API call to load product data
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        // Mock product data - replace with actual API call
-        const mockProduct = {
-          id: this.productId,
-          title: 'Vintage Camera',
-          price: 2500,
-          category: 'electronics',
-          condition: 'good',
-          description: 'A well-maintained vintage camera in excellent working condition.',
-          tags: 'vintage, camera, photography, collectible',
-          meetupPreferences: {
-            publicMeetup: true,
-            doorPickup: false,
-            doorDropoff: true
-          },
-          photos: [
-            { url: '/api/placeholder/200/200', name: 'photo1.jpg' },
-            { url: '/api/placeholder/200/200', name: 'photo2.jpg' }
-          ]
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        if (!token) {
+          this.$router.push('/login')
+          return
         }
+
+        const response = await fetch(`http://localhost:5000/api/seller/items/${this.productId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            this.showToast('Product not found', 'error', 'Error')
+            this.$router.push('/seller/items')
+            return
+          }
+          throw new Error('Failed to load product')
+        }
+
+        const productData = await response.json()
+        console.log('Loaded product data:', productData)
         
-        // Populate form with loaded data
+        // Handle different possible response formats
+        const item = productData.item || productData
+        
+        // Populate form with loaded data - ensure all fields are auto-populated
         this.productForm = {
-          title: mockProduct.title,
-          price: mockProduct.price,
-          category: mockProduct.category,
-          condition: mockProduct.condition,
-          description: mockProduct.description,
-          tags: mockProduct.tags
+          title: item.title || '',
+          price: item.price || '',
+          stock: item.stock || 0,
+          category: item.category || '',
+          condition: item.condition_status || item.condition || '',
+          description: item.description || '',
+          tags: Array.isArray(item.tags) ? item.tags.join(', ') : (item.tags || '')
         }
         
-        this.meetupPreferences = { ...mockProduct.meetupPreferences }
-        this.uploadedPhotos = [...mockProduct.photos]
+        console.log('Form populated with:', this.productForm)
+        
+        // Load images from different possible formats
+        let images = []
+        if (item.images && Array.isArray(item.images)) {
+          images = item.images
+        } else if (productData.images && Array.isArray(productData.images)) {
+          images = productData.images
+        }
+        
+        if (images.length > 0) {
+          this.uploadedPhotos = images.map((img, index) => ({
+            id: img.id || index,
+            url: img.image_url || img.url || `http://localhost:5000/uploads/items/${item.id}/image_${index}.jpeg`,
+            name: `image_${img.id || index}`,
+            existing: true
+          }))
+          console.log('Images loaded:', this.uploadedPhotos)
+        } else {
+          console.log('No images found for this product')
+        }
         
       } catch (error) {
+        console.error('Error loading product:', error)
         this.showToast('Failed to load product data', 'error', 'Error')
       } finally {
         this.isLoading = false
@@ -387,12 +480,18 @@ export default {
             this.uploadedPhotos.push({
               file: file,
               url: e.target.result,
-              name: file.name
+              name: file.name,
+              existing: false
             })
           }
           reader.readAsDataURL(file)
         }
       })
+    },
+
+    handleImageError(event) {
+      console.log('Image failed to load, using placeholder')
+      event.target.src = 'https://via.placeholder.com/200x200/f3f4f6/9ca3af?text=No+Image'
     },
     
     removePhoto(index) {
@@ -424,6 +523,11 @@ export default {
         this.showToast('Please enter a valid price', 'error', 'Validation Error')
         return false
       }
+
+      if (this.productForm.stock === '' || this.productForm.stock < 0) {
+        this.showToast('Please enter a valid stock quantity', 'error', 'Validation Error')
+        return false
+      }
       
       if (!this.productForm.category) {
         this.showToast('Please select a category', 'error', 'Validation Error')
@@ -448,20 +552,40 @@ export default {
       this.hideConfirmation()
       
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 2000))
-        
-        // Here you would make the actual API call to update the product
-        const productData = {
-          id: this.productId,
-          ...this.productForm,
-          meetupPreferences: this.meetupPreferences,
-          photos: this.uploadedPhotos,
-          tags: this.productForm.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        if (!token) {
+          this.$router.push('/login')
+          return
         }
-        
-        console.log('Updated product data:', productData)
-        
+
+        // Prepare the product data
+        const productData = {
+          title: this.productForm.title,
+          price: parseFloat(this.productForm.price),
+          stock: parseInt(this.productForm.stock),
+          category: this.productForm.category,
+          condition: this.productForm.condition,
+          description: this.productForm.description,
+          tags: this.productForm.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+          status: 'active'
+        }
+
+        console.log('Updating product with data:', productData)
+
+        const response = await fetch(`http://localhost:5000/api/seller/items/${this.productId}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(productData)
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.error || 'Failed to update product')
+        }
+
         this.showToast('Product updated successfully!', 'success', 'Success')
         
         // Redirect back to items list
@@ -470,7 +594,8 @@ export default {
         }, 2000)
         
       } catch (error) {
-        this.showToast('Failed to update product. Please try again.', 'error', 'Error')
+        console.error('Error updating product:', error)
+        this.showToast(`Failed to update product: ${error.message}`, 'error', 'Error')
       } finally {
         this.isSubmitting = false
       }
@@ -492,8 +617,24 @@ export default {
       this.hideConfirmation()
       
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500))
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        if (!token) {
+          this.$router.push('/login')
+          return
+        }
+
+        const response = await fetch(`http://localhost:5000/api/seller/items/${this.productId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.error || 'Failed to delete product')
+        }
         
         this.showToast('Product deleted successfully!', 'success', 'Success')
         
@@ -503,7 +644,8 @@ export default {
         }, 1500)
         
       } catch (error) {
-        this.showToast('Failed to delete product. Please try again.', 'error', 'Error')
+        console.error('Error deleting product:', error)
+        this.showToast(`Failed to delete product: ${error.message}`, 'error', 'Error')
       } finally {
         this.isSubmitting = false
       }
@@ -684,6 +826,18 @@ export default {
   background: rgba(220, 38, 38, 1);
 }
 
+.existing-photo-badge {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  background: rgba(59, 130, 246, 0.9);
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
 .location-section {
   display: flex;
   align-items: center;
@@ -854,5 +1008,35 @@ export default {
   .form-actions {
     flex-direction: column;
   }
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f4f6;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0;
 }
 </style>
