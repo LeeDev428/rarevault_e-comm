@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS `items` (
   `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `description` text COLLATE utf8mb4_unicode_ci,
   `price` decimal(10,2) NOT NULL,
+  `stock` int NOT NULL DEFAULT '1',
   `category` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `condition_status` enum('new','like_new','good','fair','poor') COLLATE utf8mb4_unicode_ci DEFAULT 'good',
   `status` enum('active','sold','pending','removed') COLLATE utf8mb4_unicode_ci DEFAULT 'active',
@@ -37,9 +38,6 @@ CREATE TABLE IF NOT EXISTS `items` (
   `isNegotiable` tinyint(1) DEFAULT '0',
   `isAuthenticated` tinyint(1) DEFAULT '0',
   `tags` json DEFAULT NULL,
-  `average_rating` decimal(3,2) DEFAULT '0.00',
-  `rating_count` int DEFAULT '0',
-  `sold_count` int DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -49,8 +47,9 @@ CREATE TABLE IF NOT EXISTS `items` (
   KEY `idx_created` (`created_at`),
   KEY `idx_items_search` (`title`,`category`,`status`),
   KEY `idx_items_price` (`price`),
-  KEY `idx_items_rating` (`average_rating`,`rating_count`),
-  CONSTRAINT `items_ibfk_1` FOREIGN KEY (`seller_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+  KEY `idx_items_stock` (`stock`),
+  CONSTRAINT `items_ibfk_1` FOREIGN KEY (`seller_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `chk_stock_positive` CHECK ((`stock` >= 0))
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Data exporting was unselected.
@@ -117,6 +116,36 @@ CREATE TABLE IF NOT EXISTS `orders` (
 
 -- Data exporting was unselected.
 
+-- Dumping structure for table rarevault_db.ratings
+CREATE TABLE IF NOT EXISTS `ratings` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `item_id` int NOT NULL,
+  `order_id` int DEFAULT NULL,
+  `seller_id` int NOT NULL,
+  `rating` tinyint NOT NULL,
+  `review` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `photo` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `is_anonymous` tinyint(1) DEFAULT '0',
+  `helpful_count` int DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_user_item_rating` (`user_id`,`item_id`),
+  KEY `idx_item_rating` (`item_id`),
+  KEY `idx_seller_rating` (`seller_id`),
+  KEY `idx_order_rating` (`order_id`),
+  KEY `idx_rating_value` (`rating`),
+  KEY `idx_created_rating` (`created_at`),
+  CONSTRAINT `ratings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `ratings_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `ratings_ibfk_3` FOREIGN KEY (`seller_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `ratings_ibfk_4` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `ratings_chk_1` CHECK (((`rating` >= 1) and (`rating` <= 5)))
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Data exporting was unselected.
+
 -- Dumping structure for table rarevault_db.seller_profiles
 CREATE TABLE IF NOT EXISTS `seller_profiles` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -173,34 +202,7 @@ CREATE TABLE IF NOT EXISTS `wishlists` (
   KEY `idx_user_wishlist` (`user_id`),
   CONSTRAINT `wishlists_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `wishlists_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Dumping structure for table rarevault_db.ratings
-CREATE TABLE IF NOT EXISTS `ratings` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `item_id` int NOT NULL,
-  `order_id` int DEFAULT NULL,
-  `seller_id` int NOT NULL,
-  `rating` tinyint NOT NULL CHECK ((`rating` >= 1 and `rating` <= 5)),
-  `review` text COLLATE utf8mb4_unicode_ci,
-  `photo` varchar(255) DEFAULT NULL, -- store one image path/URL
-  `is_anonymous` tinyint(1) DEFAULT '0',
-  `helpful_count` int DEFAULT '0',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_user_item_rating` (`user_id`,`item_id`),
-  KEY `idx_item_rating` (`item_id`),
-  KEY `idx_seller_rating` (`seller_id`),
-  KEY `idx_order_rating` (`order_id`),
-  KEY `idx_rating_value` (`rating`),
-  KEY `idx_created_rating` (`created_at`),
-  CONSTRAINT `ratings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `ratings_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `ratings_ibfk_3` FOREIGN KEY (`seller_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `ratings_ibfk_4` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Data exporting was unselected.
 

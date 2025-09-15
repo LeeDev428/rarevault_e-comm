@@ -132,7 +132,7 @@ def get_marketplace_items():
         ).distinct().all()
         categories = [cat[0] for cat in categories if cat[0]]
         
-        # Format items with seller information
+        # Format items with seller information and rating data
         items_data = []
         for item in items.items:
             item_data = item.to_dict()
@@ -147,6 +147,23 @@ def get_marketplace_items():
                     'last_name': seller.last_name
                 }
                 item_data['seller_name'] = seller.username
+            
+            # Get rating statistics for this item
+            ratings = Rating.query.filter_by(item_id=item.id).all()
+            if ratings:
+                avg_rating = sum(r.rating for r in ratings) / len(ratings)
+                item_data['rating'] = round(avg_rating, 1)
+                item_data['ratingCount'] = len(ratings)
+            else:
+                item_data['rating'] = 0
+                item_data['ratingCount'] = 0
+            
+            # Get sold count for this item (orders with delivered status)
+            sold_count = Order.query.filter_by(
+                item_id=item.id, 
+                status='delivered'
+            ).count()
+            item_data['soldCount'] = sold_count
             
             items_data.append(item_data)
         
@@ -627,49 +644,54 @@ def submit_rating():
         except ValueError:
             return jsonify({'error': 'Rating must be a valid number'}), 400
         
-        # Verify the item exists
+        # Verify the item exists and get seller_id
         item = Item.query.get(item_id)
         if not item:
             return jsonify({'error': 'Item not found'}), 404
+        
+        seller_id = item.seller_id
         
         # If order_id is provided, verify the order exists and belongs to the user
         if order_id:
             order = Order.query.filter_by(id=order_id, buyer_id=current_user_id).first()
             if not order:
                 return jsonify({'error': 'Order not found'}), 404
+            # Also verify that the order's seller matches the item's seller
+            if order.seller_id != seller_id:
+                return jsonify({'error': 'Order and item seller mismatch'}), 400
         
-        # Check if user already rated this item for this order
+        # Check if user already rated this item
         existing_rating = Rating.query.filter_by(
             user_id=current_user_id,
-            item_id=item_id,
-            order_id=order_id
+            item_id=item_id
         ).first()
         
         if existing_rating:
             return jsonify({'error': 'You have already rated this item'}), 400
         
-        # Handle photo uploads
-        photo_urls = []
+        # Handle single photo upload (based on database schema)
+        photo_url = None
         if 'photos' in request.files:
             photos = request.files.getlist('photos')
-            upload_folder = os.path.join('uploads', 'ratings', str(current_user_id))
-            os.makedirs(upload_folder, exist_ok=True)
-            
-            for i, photo in enumerate(photos):
-                if photo and photo.filename:
-                    filename = secure_filename(f"rating_{item_id}_{i}_{photo.filename}")
-                    filepath = os.path.join(upload_folder, filename)
-                    photo.save(filepath)
-                    photo_urls.append(f'/uploads/ratings/{current_user_id}/{filename}')
+            if photos and photos[0].filename:  # Take only the first photo
+                photo = photos[0]
+                upload_folder = os.path.join('uploads', 'ratings', str(current_user_id))
+                os.makedirs(upload_folder, exist_ok=True)
+                
+                filename = secure_filename(f"rating_{item_id}_{photo.filename}")
+                filepath = os.path.join(upload_folder, filename)
+                photo.save(filepath)
+                photo_url = f'/uploads/ratings/{current_user_id}/{filename}'
         
         # Create new rating
         new_rating = Rating(
             user_id=current_user_id,
             item_id=item_id,
             order_id=order_id if order_id else None,
+            seller_id=seller_id,
             rating=rating,
             review=review,
-            photos=photo_urls if photo_urls else None
+            photo=photo_url
         )
         
         db.session.add(new_rating)

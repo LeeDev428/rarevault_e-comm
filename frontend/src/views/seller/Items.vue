@@ -67,7 +67,7 @@
                 <th>Price</th>
                 <th>Category</th>
                 <th>Status</th>
-                <th>Views</th>
+                <th>Stock</th>
                 <th>Created</th>
                 <th>Actions</th>
               </tr>
@@ -110,8 +110,30 @@
                       />
                     </div>
                     <div class="item-details">
-                      <h4 class="item-title">{{ item.title }}</h4>
-                      <p class="item-description">{{ item.description }}</p>
+                      <div class="item-main-info">
+                        <h4 class="item-title">{{ item.title }}</h4>
+                        <p class="item-description">{{ item.description }}</p>
+                      </div>
+                      <div class="item-stats">
+                        <div class="stat-item">
+                          <div class="rating-display">
+                            <div class="stars">
+                              <span 
+                                v-for="n in 5" 
+                                :key="n"
+                                class="star"
+                                :class="{ filled: n <= Math.round(item.average_rating || 0) }"
+                              >
+                                ★
+                              </span>
+                            </div>
+                            <span class="rating-value">{{ (item.average_rating || 0).toFixed(1) }}</span>
+                          </div>
+                        </div>
+                        <div class="stat-item">
+                          <span class="sold-count">Sold: {{ item.sold_count || 0 }}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -122,7 +144,7 @@
                     {{ item.status }}
                   </span>
                 </td>
-                <td class="views">{{ item.views || 0 }}</td>
+                <td class="stock">{{ item.stock || 0 }}</td>
                 <td class="date">{{ formatDate(item.created_at) }}</td>
                 <td>
                   <div class="action-buttons">
@@ -743,6 +765,13 @@ th {
 
 .item-details {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.item-main-info {
+  flex: 1;
 }
 
 .item-title {
@@ -760,6 +789,51 @@ th {
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 200px;
+}
+
+.item-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+.rating-display {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stars {
+  display: flex;
+  gap: 1px;
+}
+
+.star {
+  color: #ddd;
+  font-size: 12px;
+  transition: color 0.2s;
+}
+
+.star.filled {
+  color: #ffc107;
+}
+
+.rating-value {
+  color: #6c757d;
+  font-weight: 500;
+  margin-left: 2px;
+}
+
+.sold-count {
+  color: #28a745;
+  font-weight: 500;
 }
 
 .price {
@@ -802,7 +876,7 @@ th {
   color: #721c24;
 }
 
-.views {
+.stock {
   color: #6c757d;
   font-weight: 500;
 }

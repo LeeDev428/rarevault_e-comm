@@ -135,15 +135,25 @@
       </div>
     </div>
   </UserLayout>
+
+  <!-- Confirm Order Modal -->
+  <ConfirmOrderModal
+    :show="showReorderModal"
+    :item="selectedItemForReorder"
+    @close="closeReorderModal"
+    @order-confirmed="handleReorderConfirmed"
+  />
 </template>
 
 <script>
 import UserLayout from '@/components/user/UserLayout.vue'
+import ConfirmOrderModal from '@/components/user/ConfirmOrderModal.vue'
 
 export default {
   name: 'UserOrders',
   components: {
-    UserLayout
+    UserLayout,
+    ConfirmOrderModal
   },
   data() {
     return {
@@ -151,6 +161,8 @@ export default {
       searchQuery: '',
       loading: true,
       orders: [],
+      showReorderModal: false,
+      selectedItemForReorder: null,
       orderStatuses: [
         { value: 'all', label: 'All Orders' },
         { value: 'pending', label: 'Pending' },
@@ -323,12 +335,25 @@ export default {
     },
     
     reorderItems(order) {
-      // Navigate to the specific item page for reordering
+      // Show reorder modal with item details
       if (order.item?.id) {
-        this.$router.push(`/user/dashboard/items/${order.item.id}`)
+        this.selectedItemForReorder = order.item
+        this.showReorderModal = true
       } else {
         alert('Item is no longer available for reorder')
       }
+    },
+
+    closeReorderModal() {
+      this.showReorderModal = false
+      this.selectedItemForReorder = null
+    },
+
+    handleReorderConfirmed(orderData) {
+      console.log('Reorder confirmed:', orderData)
+      this.closeReorderModal()
+      // You can add additional logic here like showing a success message
+      alert('Reorder placed successfully!')
     },
 
     rateItem(order) {

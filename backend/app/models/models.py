@@ -43,6 +43,7 @@ class Item(db.Model):
     title = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text)
     price = db.Column(Numeric(10, 2), nullable=False)
+    stock = db.Column(db.Integer, nullable=False, default=1)
     category = db.Column(db.String(100))
     condition_status = db.Column(db.Enum('new', 'like_new', 'good', 'fair', 'poor'), default='good')
     status = db.Column(db.Enum('active', 'sold', 'pending', 'removed'), default='active')
@@ -120,6 +121,7 @@ class Item(db.Model):
             'description': self.description,
             'category': self.category,
             'price': float(self.price) if self.price else None,
+            'stock': self.stock,
             'condition': self.condition_status,
             'year': self.year,
             'seller_id': self.seller_id,
@@ -325,19 +327,23 @@ class Rating(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     item_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=False)
     order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=True)
+    seller_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     rating = db.Column(db.Integer, nullable=False)  # 1-5 stars
     review = db.Column(db.Text, nullable=True)
-    photos = db.Column(db.JSON, nullable=True)  # Store photo URLs as JSON array
+    photo = db.Column(db.String(255), nullable=True)  # Single photo path/URL
+    is_anonymous = db.Column(db.Boolean, default=False)
+    helpful_count = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    user = db.relationship('User', backref='ratings')
+    user = db.relationship('User', foreign_keys=[user_id], backref='ratings')
     item = db.relationship('Item', backref='ratings')
     order = db.relationship('Order', backref='ratings')
+    seller = db.relationship('User', foreign_keys=[seller_id], backref='received_ratings')
     
-    # Ensure unique combination of user_id, item_id, and order_id
-    __table_args__ = (db.UniqueConstraint('user_id', 'item_id', 'order_id', name='unique_user_item_order_rating'),)
+    # Ensure unique combination of user_id and item_id
+    __table_args__ = (db.UniqueConstraint('user_id', 'item_id', name='unique_user_item_rating'),)
     
     def to_dict(self):
         return {
@@ -345,9 +351,12 @@ class Rating(db.Model):
             'user_id': self.user_id,
             'item_id': self.item_id,
             'order_id': self.order_id,
+            'seller_id': self.seller_id,
             'rating': self.rating,
             'review': self.review,
-            'photos': self.photos,
+            'photo': self.photo,
+            'is_anonymous': self.is_anonymous,
+            'helpful_count': self.helpful_count,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'user': self.user.to_dict() if self.user else None,

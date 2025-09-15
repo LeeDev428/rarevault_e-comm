@@ -415,6 +415,7 @@ export default {
         rating: item.average_rating || 0,
         ratingCount: item.rating_count || 0,
         soldCount: item.sold_count || 0,
+        stock: item.stock || 0,
         // Keep original item data for reference
         _originalItem: item
       };

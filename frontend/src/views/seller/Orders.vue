@@ -71,6 +71,8 @@
                 <h3 class="item-name">{{ order.item ? (order.item.title || order.item.name) : 'Item Deleted' }}</h3>
                 <p class="item-category">{{ order.item ? order.item.category : 'N/A' }}</p>
                 <p class="item-price">₱{{ order.item ? parseFloat(order.item.price).toFixed(2) : '0.00' }}</p>
+                <p class="item-quantity"><strong>Quantity:</strong> {{ order.quantity || 1 }}</p>
+                <p class="total-amount"><strong>Total:</strong> ₱{{ parseFloat(order.total_amount || (order.item ? order.item.price : 0) * (order.quantity || 1)).toFixed(2) }}</p>
               </div>
             </div>
             

@@ -35,12 +35,14 @@
                 v-for="star in 5"
                 :key="star"
                 type="button"
-                @click="setRating(star)"
-                @mouseover="hoverRating = star"
-                @mouseleave="hoverRating = 0"
+                @click="!alreadyRated && setRating(star)"
+                @mouseover="!alreadyRated && (hoverRating = star)"
+                @mouseleave="!alreadyRated && (hoverRating = 0)"
+                :disabled="alreadyRated"
                 :class="['star-btn', { 
                   'filled': star <= (hoverRating || rating),
-                  'hover': star <= hoverRating
+                  'hover': star <= hoverRating && !alreadyRated,
+                  'disabled': alreadyRated
                 }]"
               >
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
@@ -57,15 +59,16 @@
             <textarea
               id="review"
               v-model="review"
+              :disabled="alreadyRated"
               placeholder="Share your experience with this product. What did you like or dislike? Would you recommend it to others?"
-              class="review-textarea"
+              :class="['review-textarea', { 'disabled': alreadyRated }]"
               maxlength="500"
             ></textarea>
             <p class="character-count">{{ review.length }}/500 characters</p>
           </div>
 
           <!-- Photo Upload (Optional) -->
-          <div class="photo-section">
+          <div class="photo-section" v-if="!alreadyRated">
             <label class="photo-label">Add Photos (Optional)</label>
             <div class="photo-upload">
               <input
@@ -103,12 +106,16 @@
 
           <!-- Action Buttons -->
           <div class="form-actions">
-            <button type="button" @click="skipRating" class="skip-btn">
+            <button type="button" @click="skipRating" class="skip-btn" v-if="!alreadyRated">
               Skip for Now
             </button>
-            <button type="submit" :disabled="!rating || submitting" class="submit-btn">
+            <button 
+              type="submit" 
+              :disabled="!rating || submitting || alreadyRated" 
+              :class="['submit-btn', { 'already-rated': alreadyRated }]"
+            >
               <span v-if="submitting" class="loading-spinner"></span>
-              {{ submitting ? 'Submitting...' : 'Submit Rating' }}
+              {{ alreadyRated ? 'Already Rated' : (submitting ? 'Submitting...' : 'Submit Rating') }}
             </button>
           </div>
         </form>
@@ -139,7 +146,9 @@ export default {
       uploadedPhotos: [],
       orderData: null,
       sellerName: '',
-      submitting: false
+      submitting: false,
+      alreadyRated: false,
+      existingRating: null
     }
   },
   mounted() {
@@ -178,15 +187,73 @@ export default {
         if (response.ok) {
           const data = await response.json()
           this.sellerName = data.order?.item?.seller?.username || 'Unknown Seller'
+          
+          // Update orderData with item image and additional details
+          if (data.order?.item) {
+            this.orderData.itemImage = data.order.item.primary_image || 
+                                     (data.order.item.images && data.order.item.images[0]) ||
+                                     'http://localhost:5000/uploads/placeholder.svg'
+            this.orderData.itemTitle = data.order.item.title || this.orderData.itemTitle
+            this.orderData.itemPrice = data.order.item.price
+          }
         }
+
+        // Check if user already rated this item
+        await this.checkExistingRating()
+
       } catch (error) {
         console.error('Error fetching order details:', error)
         this.sellerName = 'Unknown Seller'
+        this.orderData.itemImage = 'http://localhost:5000/uploads/placeholder.svg'
+      }
+    },
+
+    async checkExistingRating() {
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        if (!token || !this.orderData.itemId) return
+
+        const response = await fetch(`http://localhost:5000/api/user/items/${this.orderData.itemId}/ratings`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          // Check if current user already rated this item
+          const currentUserId = this.getCurrentUserId()
+          this.existingRating = data.ratings.find(rating => rating.user_id === currentUserId)
+          if (this.existingRating) {
+            this.alreadyRated = true
+            this.rating = this.existingRating.rating
+            this.review = this.existingRating.review || ''
+          }
+        }
+      } catch (error) {
+        console.error('Error checking existing rating:', error)
+      }
+    },
+
+    getCurrentUserId() {
+      // Decode JWT token to get user ID (simplified version)
+      const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+      if (!token) return null
+      
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        return payload.sub || payload.user_id
+      } catch (error) {
+        console.error('Error decoding token:', error)
+        return null
       }
     },
 
     setRating(star) {
+      console.log('Setting rating to:', star)
       this.rating = star
+      console.log('Rating set to:', this.rating)
     },
 
     getRatingText() {
@@ -201,14 +268,24 @@ export default {
     },
 
     getItemImage() {
-      // Return placeholder for now, you can enhance this to fetch actual item image
+      // Return the actual item image if available, otherwise use placeholder
+      if (this.orderData?.itemImage && typeof this.orderData.itemImage === 'string') {
+        // Handle both full URLs and relative paths
+        if (this.orderData.itemImage.startsWith('http')) {
+          return this.orderData.itemImage
+        } else {
+          return `http://localhost:5000${this.orderData.itemImage}`
+        }
+      }
       return 'http://localhost:5000/uploads/placeholder.svg'
     },
 
     handleFileUpload(event) {
+      console.log('File upload triggered', event.target.files)
       const files = Array.from(event.target.files)
       
       files.forEach(file => {
+        console.log('Processing file:', file.name, file.type)
         if (file.type.startsWith('image/') && this.uploadedPhotos.length < 5) {
           const reader = new FileReader()
           reader.onload = (e) => {
@@ -216,6 +293,7 @@ export default {
               file: file,
               preview: e.target.result
             })
+            console.log('Photo added:', file.name, 'Total photos:', this.uploadedPhotos.length)
           }
           reader.readAsDataURL(file)
         }
@@ -242,11 +320,10 @@ export default {
         }
 
         const formData = new FormData()
-        formData.append('orderId', this.orderData.orderId)
-        formData.append('itemId', this.orderData.itemId)
+        formData.append('item_id', this.orderData.itemId)
+        formData.append('order_id', this.orderData.orderId)
         formData.append('rating', this.rating)
         formData.append('review', this.review)
-        formData.append('sellerId', this.orderData.sellerId)
 
         // Add photos if any
         this.uploadedPhotos.forEach((photo, index) => {
@@ -406,6 +483,8 @@ export default {
   padding: 4px;
   border-radius: 4px;
   color: #d1d5db;
+  pointer-events: auto;
+  z-index: 10;
 }
 
 .star-btn:hover,
@@ -416,6 +495,16 @@ export default {
 
 .star-btn.filled {
   color: #f59e0b;
+}
+
+.star-btn.disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.star-btn.disabled:hover {
+  transform: none;
+  color: #d1d5db;
 }
 
 .rating-text {
@@ -454,6 +543,13 @@ export default {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.review-textarea.disabled {
+  background-color: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+  border-color: #d1d5db;
 }
 
 .character-count {
@@ -603,6 +699,15 @@ export default {
 .submit-btn:disabled {
   background: #9ca3af;
   cursor: not-allowed;
+}
+
+.submit-btn.already-rated {
+  background: #10b981;
+  cursor: not-allowed;
+}
+
+.submit-btn.already-rated:hover {
+  background: #10b981;
 }
 
 /* Loading States */

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..models.models import db, Item, User, ItemImage, Order
+from ..models.models import db, Item, User, ItemImage, Order, Rating
 from datetime import datetime
 import os
 import base64
@@ -87,8 +87,32 @@ def get_seller_items():
             page=page, per_page=per_page, error_out=False
         )
         
+        # Add rating information and sold count to each item
+        items_with_ratings = []
+        for item in items.items:
+            item_data = item.to_dict()
+            
+            # Get rating statistics for this item
+            ratings = Rating.query.filter_by(item_id=item.id).all()
+            if ratings:
+                avg_rating = sum(r.rating for r in ratings) / len(ratings)
+                item_data['average_rating'] = round(avg_rating, 1)
+                item_data['rating_count'] = len(ratings)
+            else:
+                item_data['average_rating'] = None
+                item_data['rating_count'] = 0
+            
+            # Get sold count for this item (orders with delivered status)
+            sold_count = Order.query.filter_by(
+                item_id=item.id, 
+                status='delivered'
+            ).count()
+            item_data['sold_count'] = sold_count
+            
+            items_with_ratings.append(item_data)
+        
         return jsonify({
-            'items': [item.to_dict() for item in items.items],
+            'items': items_with_ratings,
             'pagination': {
                 'page': items.page,
                 'pages': items.pages,
@@ -115,7 +139,7 @@ def create_seller_item():
         data = request.get_json()
         
         # Validate required fields
-        required_fields = ['title', 'category', 'price', 'condition', 'description']
+        required_fields = ['title', 'category', 'price', 'condition', 'description', 'stock']
         for field in required_fields:
             if not data.get(field):
                 return jsonify({'error': f'{field} is required'}), 400
@@ -127,12 +151,21 @@ def create_seller_item():
                 return jsonify({'error': 'Price must be greater than 0'}), 400
         except ValueError:
             return jsonify({'error': 'Invalid price format'}), 400
+            
+        # Validate stock
+        try:
+            stock = int(data['stock'])
+            if stock < 0:
+                return jsonify({'error': 'Stock must be 0 or greater'}), 400
+        except ValueError:
+            return jsonify({'error': 'Invalid stock format'}), 400
         
         # Create new item with all the new columns
         item_data = {
             'title': data['title'],
             'description': data['description'],
             'price': price,
+            'stock': stock,
             'category': data['category'],
             'seller_id': current_user_id,
             'status': 'active',
@@ -269,6 +302,14 @@ def update_seller_item(item_id):
                 item.price = price
             except ValueError:
                 return jsonify({'error': 'Invalid price format'}), 400
+        if 'stock' in data:
+            try:
+                stock = int(data['stock'])
+                if stock < 0:
+                    return jsonify({'error': 'Stock must be 0 or greater'}), 400
+                item.stock = stock
+            except ValueError:
+                return jsonify({'error': 'Invalid stock format'}), 400
         if 'category' in data:
             item.category = data['category']
         if 'condition' in data:
@@ -682,4 +723,45 @@ def complete_order(order_id):
         
     except Exception as e:
         db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@seller_bp.route('/ratings', methods=['GET'])
+@jwt_required()
+def get_seller_ratings():
+    """Get all ratings for items sold by the seller"""
+    try:
+        current_user_id = int(get_jwt_identity())
+        
+        # Verify user is a seller
+        user = User.query.get(current_user_id)
+        if not user or user.role not in ['seller', 'admin']:
+            return jsonify({'error': 'Access denied. Seller role required.'}), 403
+        
+        # Get ratings for all items sold by this seller
+        ratings = db.session.query(Rating).join(Item, Rating.item_id == Item.id).filter(
+            Item.seller_id == current_user_id
+        ).order_by(Rating.created_at.desc()).all()
+        
+        # Calculate statistics
+        total_ratings = len(ratings)
+        if total_ratings > 0:
+            average_rating = sum(r.rating for r in ratings) / total_ratings
+            rating_distribution = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+            for r in ratings:
+                rating_distribution[r.rating] += 1
+        else:
+            average_rating = 0
+            rating_distribution = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+        
+        return jsonify({
+            'ratings': [rating.to_dict() for rating in ratings],
+            'statistics': {
+                'total_ratings': total_ratings,
+                'average_rating': round(average_rating, 2),
+                'rating_distribution': rating_distribution
+            }
+        }), 200
+        
+    except Exception as e:
         return jsonify({'error': str(e)}), 500
