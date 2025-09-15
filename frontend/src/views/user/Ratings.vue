@@ -305,8 +305,14 @@ export default {
     },
 
     async submitRating() {
-      if (!this.rating) {
-        alert('Please select a rating before submitting')
+      // Validate required fields
+      if (!this.rating || this.rating < 1 || this.rating > 5) {
+        alert('Please select a rating between 1 and 5 stars')
+        return
+      }
+      
+      if (!this.orderData || !this.orderData.itemId) {
+        alert('Missing item information. Please go back and try again.')
         return
       }
 
@@ -320,10 +326,18 @@ export default {
         }
 
         const formData = new FormData()
-        formData.append('item_id', this.orderData.itemId)
-        formData.append('order_id', this.orderData.orderId)
-        formData.append('rating', this.rating)
-        formData.append('review', this.review)
+        formData.append('item_id', String(this.orderData.itemId))
+        formData.append('order_id', String(this.orderData.orderId))
+        formData.append('rating', String(this.rating))
+        formData.append('review', this.review || '')
+
+        // Debug logging
+        console.log('Submitting rating with data:', {
+          item_id: this.orderData.itemId,
+          order_id: this.orderData.orderId, 
+          rating: this.rating,
+          review: this.review
+        })
 
         // Add photos if any
         this.uploadedPhotos.forEach((photo, index) => {
@@ -342,11 +356,13 @@ export default {
           alert('Thank you for your rating!')
           this.$router.push('/user/orders')
         } else {
-          throw new Error('Failed to submit rating')
+          const errorData = await response.json().catch(() => ({}))
+          console.error('Server error response:', errorData)
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
         }
       } catch (error) {
         console.error('Error submitting rating:', error)
-        alert('Failed to submit rating. Please try again.')
+        alert(`Failed to submit rating: ${error.message}. Please try again.`)
       } finally {
         this.submitting = false
       }

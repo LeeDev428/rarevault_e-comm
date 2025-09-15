@@ -60,9 +60,12 @@
 
           <!-- Item Image -->
           <div class="item-image-container">
-            <img :src="getItemImage(item)" 
-                 :alt="item.title || 'Item'" 
-                 class="item-image" />
+            <img 
+              :src="getItemImage(item)" 
+              :alt="item.title || 'Item'" 
+              class="item-image"
+              @error="handleImageError"
+            />
             
             <!-- Remove Button -->
             <button @click="removeFromWishlist(item.wishlist_id)" class="remove-btn">
@@ -89,6 +92,20 @@
               <span class="status-indicator available">
                 {{ item.category || 'N/A' }}
               </span>
+              
+              <!-- Stock Information -->
+              <div class="stock-info">
+                <span v-if="item.stock > 0" class="stock-available">
+                  {{ item.stock }} {{ item.stock === 1 ? 'item' : 'items' }} left
+                </span>
+                <span v-else-if="item.stock === 0" class="stock-out">
+                  Out of stock
+                </span>
+                <span v-else class="stock-unknown">
+                  Stock unavailable
+                </span>
+              </div>
+              
               <span v-if="item.added_to_wishlist" class="date-added">
                 Added {{ formatDate(item.added_to_wishlist) }}
               </span>
@@ -98,10 +115,11 @@
             <div class="item-actions">
               <button 
                 @click="orderItem(item)" 
-                :disabled="!item.id"
+                :disabled="!item.id || item.stock <= 0"
                 class="action-btn primary"
+                :class="{ disabled: !item.id || item.stock <= 0 }"
               >
-                {{ item.id ? 'Order Now' : 'Unavailable' }}
+                {{ getOrderButtonText(item) }}
               </button>
               <button @click="contactSeller(item)" class="action-btn secondary" :disabled="!item.id">
                 Contact Seller
@@ -502,8 +520,28 @@ export default {
         return item.image;
       }
       
+      // Try to construct image URL from item ID if available
+      if (item?.id) {
+        return `http://localhost:5000/uploads/items/${item.id}/image_0.jpeg`;
+      }
+      
       // Default placeholder
       return 'http://localhost:5000/uploads/placeholder.svg';
+    },
+
+    handleImageError(event) {
+      console.log('Wishlist image failed to load, using placeholder');
+      event.target.src = 'http://localhost:5000/uploads/placeholder.svg';
+    },
+
+    getOrderButtonText(item) {
+      if (!item.id) {
+        return 'Unavailable';
+      } else if (item.stock <= 0) {
+        return 'Out of Stock';
+      } else {
+        return 'Order Now';
+      }
     },
 
     getSellerName(item) {
@@ -715,8 +753,8 @@ export default {
 
 .item-status {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 8px;
   margin-bottom: 16px;
 }
 
@@ -727,6 +765,7 @@ export default {
   border-radius: 4px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  align-self: flex-start;
 }
 
 .status-indicator.available {
@@ -737,6 +776,38 @@ export default {
 .status-indicator.unavailable {
   background: #fee2e2;
   color: #991b1b;
+}
+
+/* Stock Information */
+.stock-info {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.stock-available {
+  color: #059669;
+  background: #d1fae5;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.stock-out {
+  color: #dc2626;
+  background: #fee2e2;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.stock-unknown {
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
 }
 
 .date-added {
