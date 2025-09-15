@@ -17,30 +17,7 @@
         <p>Loading wishlist...</p>
       </div>
 
-      <!-- Wishlist Actions -->
-      <div v-else-if="wishlistItems.length > 0" class="wishlist-actions">
-        <div class="selection-controls">
-          <label class="select-all">
-            <input 
-              type="checkbox" 
-              :checked="allSelected"
-              @change="toggleSelectAll"
-            />
-            <span>Select All</span>
-          </label>
-          <span class="selected-count">{{ selectedItems.length }} selected</span>
-        </div>
-        
-        <div class="bulk-actions" v-if="selectedItems.length > 0">
-          <button @click="orderSelectedItems" class="action-btn primary">
-            Order Selected ({{ selectedItems.length }})
-          </button>
-          <button @click="removeSelectedItems" class="action-btn secondary">
-            Remove Selected
-          </button>
-        </div>
-      </div>
-
+    
       <!-- Wishlist Grid -->
       <div v-if="!loading && wishlistItems.length > 0" class="wishlist-grid">
         <div 
@@ -48,15 +25,7 @@
           :key="item.id"
           class="wishlist-item"
         >
-          <!-- Selection Checkbox -->
-          <div class="item-selection">
-            <input 
-              type="checkbox" 
-              :checked="selectedItems.includes(item.wishlist_id)"
-              @change="toggleItemSelection(item.wishlist_id)"
-              class="selection-checkbox"
-            />
-          </div>
+        
 
           <!-- Item Image -->
           <div class="item-image-container">
@@ -121,9 +90,7 @@
               >
                 {{ getOrderButtonText(item) }}
               </button>
-              <button @click="contactSeller(item)" class="action-btn secondary" :disabled="!item.id">
-                Contact Seller
-              </button>
+             
             </div>
           </div>
         </div>
@@ -225,10 +192,17 @@ export default {
         }
 
         const data = await response.json()
+        console.log('Wishlist API response:', data)
+        
         this.wishlistItems = data.items || []
         this.totalItems = data.pagination?.total || 0
         this.totalPages = data.pagination?.pages || 1
         this.selectedItems = []
+        
+        // Debug: Log first item to see structure
+        if (this.wishlistItems.length > 0) {
+          console.log('First wishlist item structure:', this.wishlistItems[0])
+        }
       } catch (error) {
         console.error('Error loading wishlist:', error)
         this.wishlistItems = []
@@ -489,42 +463,78 @@ export default {
     },
 
     getItemImage(item) {
-      // Handle primary image from API
+      console.log('Getting image for wishlist item:', item);
+      
+      // Handle images array from API (most common case)
+      if (item?.images && Array.isArray(item.images) && item.images.length > 0) {
+        // Find primary image first, then fallback to first image
+        const primaryImage = item.images.find(img => img.is_primary || img.isPrimary) || item.images[0];
+        if (primaryImage?.url) {
+          console.log('Using images array primary/first url:', primaryImage.url);
+          // The backend already provides full URLs, don't add prefix
+          return primaryImage.url;
+        }
+      }
+      
+      // Handle primary_image object from API
       if (item?.primary_image?.url) {
+        console.log('Using primary_image.url:', item.primary_image.url);
+        // The backend already provides full URLs, don't add prefix
         return item.primary_image.url;
       }
       
-      // Handle primary_image as string (direct URL)
+      // Handle legacy primary image with image_path property
+      if (item?.primary_image?.image_path) {
+        const imagePath = item.primary_image.image_path;
+        console.log('Using primary_image.image_path:', imagePath);
+        // If it's already a full URL, use it directly
+        if (imagePath.startsWith('http')) {
+          return imagePath;
+        }
+        // Otherwise construct the full URL
+        return `http://localhost:5000/${imagePath}`;
+      }
+      
+      // Handle primary_image as string (direct path)
       if (item?.primary_image && typeof item.primary_image === 'string') {
-        return item.primary_image;
+        console.log('Using primary_image string:', item.primary_image);
+        if (item.primary_image.startsWith('http')) {
+          return item.primary_image;
+        }
+        return `http://localhost:5000/${item.primary_image}`;
       }
       
-      // Handle images array from API  
-      if (item?.images && Array.isArray(item.images) && item.images.length > 0) {
-        const primaryImage = item.images.find(img => img.isPrimary);
-        if (primaryImage?.url) {
-          return primaryImage.url;
-        }
-        if (item.images[0]?.url) {
-          return item.images[0].url;
-        }
-      }
-      
-      // Handle image_url property
+      // Handle legacy image_url property
       if (item?.image_url) {
-        return item.image_url;
+        console.log('Using image_url:', item.image_url);
+        if (item.image_url.startsWith('http')) {
+          return item.image_url;
+        }
+        return `http://localhost:5000/${item.image_url}`;
       }
       
       // Handle single image property
       if (item?.image) {
-        return item.image;
+        console.log('Using image:', item.image);
+        if (item.image.startsWith('http')) {
+          return item.image;
+        }
+        return `http://localhost:5000/${item.image}`;
       }
       
       // Try to construct image URL from item ID if available
       if (item?.id) {
+        console.log('Using constructed URL for item ID:', item.id);
         return `http://localhost:5000/uploads/items/${item.id}/image_0.jpeg`;
       }
       
+      // Try alternative path structure based on database schema
+      if (item?.item_id) {
+        console.log('Using constructed URL for item_id:', item.item_id);
+        return `http://localhost:5000/uploads/items/${item.item_id}/image_0.jpeg`;
+      }
+      
+      console.log('No image found for item, using placeholder');
       // Default placeholder
       return 'http://localhost:5000/uploads/placeholder.svg';
     },
@@ -841,9 +851,12 @@ export default {
   background: #2563eb;
 }
 
-.action-btn.primary:disabled {
+.action-btn.primary:disabled,
+.action-btn.primary.disabled {
   background: #9ca3af;
+  color: #ffffff;
   cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .action-btn.secondary {

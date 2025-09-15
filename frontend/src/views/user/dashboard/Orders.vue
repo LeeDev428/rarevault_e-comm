@@ -93,10 +93,11 @@
               </button>
               <button 
                 v-if="order.status === 'delivered'" 
-                class="action-btn rating"
+                :class="['action-btn', order.isRated ? 'disabled' : 'rating']"
+                :disabled="order.isRated"
                 @click.stop="rateItem(order)"
               >
-                Rate Item
+                {{ order.isRated ? 'Already Rated' : 'Rate Item' }}
               </button>
               <button 
                 v-if="order.status === 'pending' || order.status === 'processing'" 
@@ -236,11 +237,42 @@ export default {
 
         const data = await response.json()
         this.orders = data.orders || []
+        
+        // Check rating status for each order
+        await this.checkRatingStatus()
       } catch (error) {
         console.error('Error fetching orders:', error)
         this.orders = []
       } finally {
         this.loading = false
+      }
+    },
+
+    async checkRatingStatus() {
+      const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+      if (!token || this.orders.length === 0) return
+
+      try {
+        // Check rating status for each delivered order
+        for (let order of this.orders) {
+          if (order.status === 'delivered' && order.item?.id) {
+            const response = await fetch(`http://localhost:5000/api/user/ratings/check/${order.item.id}`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            })
+
+            if (response.ok) {
+              const ratingData = await response.json()
+              order.isRated = ratingData.is_rated || false
+            } else {
+              order.isRated = false
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error checking rating status:', error)
       }
     },
     
@@ -269,32 +301,39 @@ export default {
     getItemImage(item) {
       console.log('Orders.vue - getItemImage called with item:', item);
       
+      // Handle images array from API (most common case)
+      if (item?.images && Array.isArray(item.images) && item.images.length > 0) {
+        // Find primary image first, then fallback to first image
+        const primaryImage = item.images.find(img => img.is_primary || img.isPrimary) || item.images[0];
+        if (primaryImage?.url) {
+          console.log('Using images array primary/first url:', primaryImage.url);
+          // The backend already provides full URLs, don't add prefix
+          return primaryImage.url;
+        }
+      }
+      
+      // Handle primary_image object from API
       if (item?.primary_image?.url) {
         console.log('Using primary_image.url:', item.primary_image.url);
+        // The backend already provides full URLs, don't add prefix
         return item.primary_image.url;
       }
       
       // Handle primary_image as string (direct URL)
       if (item?.primary_image && typeof item.primary_image === 'string') {
         console.log('Using primary_image string:', item.primary_image);
-        return item.primary_image;
+        return item.primary_image.startsWith('http') ? item.primary_image : `http://localhost:5000${item.primary_image}`;
       }
       
-      if (item?.images && Array.isArray(item.images) && item.images.length > 0) {
-        const primaryImage = item.images.find(img => img.isPrimary);
-        if (primaryImage?.url) {
-          console.log('Using images array primary url:', primaryImage.url);
-          return primaryImage.url;
-        }
-        if (item.images[0]?.url) {
-          console.log('Using images array first url:', item.images[0].url);
-          return item.images[0].url;
-        }
+      // Handle legacy image_url or image properties
+      if (item?.image_url) {
+        console.log('Using image_url:', item.image_url);
+        return item.image_url.startsWith('http') ? item.image_url : `http://localhost:5000${item.image_url}`;
       }
       
-      if (item?.image_url || item?.image) {
-        console.log('Using image_url or image:', item.image_url || item.image);
-        return item.image_url || item.image;
+      if (item?.image) {
+        console.log('Using image:', item.image);
+        return item.image.startsWith('http') ? item.image : `http://localhost:5000${item.image}`;
       }
       
       // Try to construct image URL from item ID if available
@@ -382,6 +421,11 @@ export default {
     },
 
     rateItem(order) {
+      // Don't navigate if item is already rated
+      if (order.isRated) {
+        return
+      }
+      
       // Navigate to ratings page with order data for rating the item
       this.$router.push({
         path: '/user/ratings',
@@ -678,6 +722,16 @@ export default {
 
 .action-btn.rating:hover {
   background: #f59e0b;
+}
+
+.action-btn.disabled {
+  background: #9ca3af;
+  color: white;
+  cursor: not-allowed;
+}
+
+.action-btn.disabled:hover {
+  background: #9ca3af;
 }
 
 .action-btn.success {

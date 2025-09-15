@@ -162,11 +162,11 @@ def get_marketplace_items():
                 item_data['rating'] = 0
                 item_data['ratingCount'] = 0
             
-            # Get sold count for this item (orders with delivered status)
-            sold_count = Order.query.filter_by(
+            # Get sold count for this item (sum of quantities from delivered orders)
+            sold_count = db.session.query(db.func.sum(Order.quantity)).filter_by(
                 item_id=item.id, 
                 status='delivered'
-            ).count()
+            ).scalar() or 0
             item_data['soldCount'] = sold_count
             
             items_data.append(item_data)
@@ -763,6 +763,33 @@ def get_item_ratings(item_id):
             'ratings': [rating.to_dict() for rating in ratings],
             'average_rating': round(average_rating, 2),
             'total_ratings': len(ratings)
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@user_bp.route('/ratings/check/<int:item_id>', methods=['GET'])
+@jwt_required()
+def check_rating_status(item_id):
+    """Check if the current user has already rated a specific item"""
+    try:
+        current_user_id = get_jwt_identity()
+        
+        # Verify the item exists
+        item = Item.query.get(item_id)
+        if not item:
+            return jsonify({'error': 'Item not found'}), 404
+        
+        # Check if user has already rated this item
+        existing_rating = Rating.query.filter_by(
+            user_id=current_user_id,
+            item_id=item_id
+        ).first()
+        
+        return jsonify({
+            'is_rated': existing_rating is not None,
+            'rating': existing_rating.to_dict() if existing_rating else None
         }), 200
         
     except Exception as e:

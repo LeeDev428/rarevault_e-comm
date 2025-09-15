@@ -52,7 +52,12 @@
             <h2 class="section-title">Order Items</h2>
             <div class="items-list">
               <div class="order-item">
-                <img :src="getItemImage(order.item)" :alt="order.item.title" class="item-image" />
+                <img 
+                  :src="getItemImage(order.item)" 
+                  :alt="order.item.title" 
+                  class="item-image"
+                  @error="handleImageError"
+                />
                 
                 <div class="item-details">
                   <h3 class="item-title">{{ order.item.title }}</h3>
@@ -69,12 +74,7 @@
                 </div>
 
                 <div class="item-actions">
-                  <button @click="viewItem(order.item)" class="view-item-btn">
-                    View Item
-                  </button>
-                  <button v-if="order.status === 'delivered'" @click="leaveReview(order.item)" class="review-btn">
-                    Write Review
-                  </button>
+            
                 </div>
               </div>
             </div>
@@ -222,6 +222,24 @@ export default {
 
         const data = await response.json()
         this.order = data.order || data
+        
+        // Comprehensive debugging
+        console.log('=== OrderDetails Debug Information ===')
+        console.log('1. Raw response data:', data)
+        console.log('2. Final order object:', this.order)
+        console.log('3. Order item:', this.order?.item)
+        console.log('4. Item images array:', this.order?.item?.images)
+        console.log('5. Item primary_image:', this.order?.item?.primary_image)
+        
+        if (this.order?.item?.images) {
+          this.order.item.images.forEach((img, index) => {
+            console.log(`6. Image ${index}:`, img)
+            console.log(`   - URL: ${img.url}`)
+            console.log(`   - is_primary: ${img.is_primary}`)
+            console.log(`   - isPrimary: ${img.isPrimary}`)
+          })
+        }
+        
         this.generateDeliverySteps()
         this.loading = false
       } catch (error) {
@@ -302,29 +320,64 @@ export default {
     },
 
     getItemImage(item) {
-      // Handle primary image from API
-      if (item?.primary_image?.url) {
-        return `http://localhost:5000${item.primary_image.url}`;
-      }
-      // Handle images array from API  
+      console.log('=== getItemImage Debug ===')
+      console.log('Item received:', item);
+      console.log('Item type:', typeof item);
+      console.log('Item keys:', item ? Object.keys(item) : 'No item');
+      
+      // Handle images array from API (most common case)
       if (item?.images && Array.isArray(item.images) && item.images.length > 0) {
-        const primaryImage = item.images.find(img => img.isPrimary);
+        console.log('Found images array with length:', item.images.length);
+        console.log('Images data:', item.images);
+        
+        // Find primary image first, then fallback to first image
+        const primaryImage = item.images.find(img => img.is_primary || img.isPrimary) || item.images[0];
+        console.log('Selected primary/first image:', primaryImage);
+        
         if (primaryImage?.url) {
-          return `http://localhost:5000${primaryImage.url}`;
-        }
-        if (item.images[0]?.url) {
-          return `http://localhost:5000${item.images[0].url}`;
+          console.log('✓ Using images array primary/first url:', primaryImage.url);
+          return primaryImage.url;
         }
       }
-      // Handle image_url property
+      
+      // Handle primary_image object from API
+      if (item?.primary_image?.url) {
+        console.log('✓ Using primary_image.url:', item.primary_image.url);
+        return item.primary_image.url;
+      }
+      
+      // Handle primary_image as string
+      if (item?.primary_image && typeof item.primary_image === 'string') {
+        console.log('✓ Using primary_image string:', item.primary_image);
+        return item.primary_image.startsWith('http') ? item.primary_image : `http://localhost:5000${item.primary_image}`;
+      }
+      
+      // Handle legacy image_url property
       if (item?.image_url) {
-        return `http://localhost:5000${item.image_url}`;
+        console.log('✓ Using image_url:', item.image_url);
+        return item.image_url.startsWith('http') ? item.image_url : `http://localhost:5000${item.image_url}`;
       }
+      
       // Handle single image property
       if (item?.image) {
-        return `http://localhost:5000${item.image}`;
+        console.log('✓ Using image:', item.image);
+        return item.image.startsWith('http') ? item.image : `http://localhost:5000${item.image}`;
       }
+      
+      // Try to construct image URL from item ID if available
+      if (item?.id) {
+        const constructedUrl = `http://localhost:5000/uploads/items/${item.id}/image_0.jpeg`;
+        console.log('⚠ Attempting constructed URL:', constructedUrl);
+        return constructedUrl;
+      }
+      
+      console.log('❌ No image source found, using placeholder for item:', item?.id);
       return 'http://localhost:5000/uploads/placeholder.svg';
+    },
+
+    handleImageError(event) {
+      console.log('OrderDetails.vue - Image failed to load, using placeholder');
+      event.target.src = 'http://localhost:5000/uploads/placeholder.svg';
     },
 
     getSellerName(item) {
