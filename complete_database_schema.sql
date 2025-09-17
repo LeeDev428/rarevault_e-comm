@@ -210,7 +210,8 @@ CREATE TABLE IF NOT EXISTS `messages` (
   `sender_id` int NOT NULL,
   `receiver_id` int NOT NULL,
   `message` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `is_read` tinyint(1) DEFAULT '0',
+  `is_sender_read` tinyint(1) DEFAULT '0',
+  `is_receiver_read` tinyint(1) DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -218,7 +219,8 @@ CREATE TABLE IF NOT EXISTS `messages` (
   KEY `idx_receiver` (`receiver_id`),
   KEY `idx_conversation` (`sender_id`,`receiver_id`),
   KEY `idx_created` (`created_at`),
-  KEY `idx_read_status` (`is_read`),
+  KEY `idx_sender_read_status` (`is_sender_read`),
+  KEY `idx_receiver_read_status` (`is_receiver_read`),
   CONSTRAINT `messages_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `messages_ibfk_2` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
