@@ -8,7 +8,7 @@ from datetime import datetime
 messages_bp = Blueprint('messages', __name__)
 
 def convert_to_manila_time(dt):
-    """Convert datetime to Manila timezone"""
+    """Convert UTC datetime to Manila timezone for display only"""
     if dt is None:
         return None
     
@@ -16,24 +16,23 @@ def convert_to_manila_time(dt):
         import pytz
         # Manila timezone
         manila = pytz.timezone('Asia/Manila')
+        utc = pytz.UTC
         
-        # If dt is naive (no timezone info), assume it's UTC
+        # Ensure dt is timezone-aware UTC
         if dt.tzinfo is None:
-            utc = pytz.UTC
             dt = utc.localize(dt)
+        elif dt.tzinfo != utc:
+            dt = dt.astimezone(utc)
         
-        # Convert to Manila time
+        # Convert to Manila time for display
         manila_time = dt.astimezone(manila)
-        # Return in ISO format but more readable
         return manila_time.strftime('%Y-%m-%dT%H:%M:%S+08:00')
     except ImportError:
-        # Fallback if pytz is not available - add 8 hours to UTC (Manila is UTC+8)
-        if hasattr(dt, 'replace'):
-            import datetime
-            manila_offset = datetime.timedelta(hours=8)
-            manila_time = dt + manila_offset
-            return manila_time.strftime('%Y-%m-%dT%H:%M:%S+08:00')
-        return dt.isoformat() if dt else None
+        # Fallback - assume UTC and add 8 hours
+        from datetime import timedelta
+        manila_offset = timedelta(hours=8)
+        manila_time = dt + manila_offset
+        return manila_time.strftime('%Y-%m-%dT%H:%M:%S+08:00')
 
 @messages_bp.route('/send', methods=['POST'])
 @jwt_required()
