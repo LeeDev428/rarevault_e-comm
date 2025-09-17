@@ -7,7 +7,8 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route('/items', methods=['GET'])
 def get_items():
     try:
-        items = Item.query.filter_by(status='available').all()
+        # Get all active items (not sold, pending, or removed)
+        items = Item.query.filter_by(status='active').all()
         return jsonify({
             'items': [item.to_dict() for item in items]
         }), 200
