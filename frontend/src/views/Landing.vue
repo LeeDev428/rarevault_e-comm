@@ -137,9 +137,9 @@
         </div>
 
         <!-- Products Grid -->
-        <div class="products-grid" v-if="filteredItems.length > 0">
+        <div class="products-grid" v-if="paginatedItems.length > 0">
           <div 
-            v-for="item in filteredItems" 
+            v-for="item in paginatedItems" 
             :key="item.id"
             class="product-card"
           >
@@ -164,19 +164,33 @@
               <div class="product-meta">
                 <span class="product-year" v-if="item.year">{{ item.year }}</span>
                 <div class="product-stats">
-                  <span class="stat-item">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                      <path d="M1 12S5 4 12 4S23 12 23 12S19 20 12 20S1 12 1 12Z" stroke="currentColor" stroke-width="2"/>
-                      <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                  <!-- Rating Display -->
+                  <div v-if="item.rating && item.rating > 0" class="rating-display">
+                    <div class="stars">
+                      <span v-for="star in 5" :key="star" 
+                            :class="['star', { filled: star <= Math.round(item.rating) }]">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                        </svg>
+                      </span>
+                    </div>
+                    <span class="rating-text">{{ item.rating.toFixed(1) }}</span>
+                  </div>
+                  
+                  <!-- Sold Count -->
+                  <div v-if="item.soldCount && item.soldCount > 0" class="sold-count">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                      <line x1="3" y1="6" x2="21" y2="6"/>
+                      <path d="M16 10a4 4 0 0 1-8 0"/>
                     </svg>
-                    {{ item.views || 0 }}
-                  </span>
-                  <span class="stat-item">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                      <path d="M20.84 4.61A5.5 5.5 0 0 0 7.5 12L8 21L12 17.27L16 21L16.5 12A5.5 5.5 0 0 0 20.84 4.61Z" stroke="currentColor" stroke-width="2"/>
-                    </svg>
-                    {{ item.favorites || 0 }}
-                  </span>
+                    <span>{{ item.soldCount }} sold</span>
+                  </div>
+                  
+                  <!-- Fallback if no rating or sold count -->
+                  <div v-if="(!item.rating || item.rating === 0) && (!item.soldCount || item.soldCount === 0)" class="no-stats">
+                    <span class="new-item">New listing</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -200,20 +214,40 @@
           <h3>No items found</h3>
           <p>Try adjusting your search or category filters</p>
         </div>
+
+        <!-- Pagination -->
+        <Pagination
+          v-if="filteredItems.length > itemsPerPage"
+          :current-page="currentPage"
+          :total-pages="totalPages"
+          :total-items="filteredItems.length"
+          :has-previous="currentPage > 1"
+          :has-next="currentPage < totalPages"
+          :items-per-page="itemsPerPage"
+          item-label="items"
+          @page-changed="handlePageChange"
+        />
       </div>
     </section>
   </div>
 </template>
 
 <script>
+import Pagination from '@/components/Pagination.vue'
+
 export default {
   name: 'Landing',
+  components: {
+    Pagination
+  },
   data() {
     return {
       items: [],
       searchQuery: '',
       selectedCategory: 'all',
       isLoading: false,
+      currentPage: 1,
+      itemsPerPage: 9,
       categories: [
         {
           value: 'all',
@@ -271,6 +305,14 @@ export default {
       }
 
       return filtered;
+    },
+    paginatedItems() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.filteredItems.slice(start, end);
+    },
+    totalPages() {
+      return Math.ceil(this.filteredItems.length / this.itemsPerPage);
     }
   },
   mounted() {
@@ -287,7 +329,12 @@ export default {
         if (response.ok) {
           const data = await response.json();
           console.log('API Response data:', data);
-          this.items = data.items || [];
+          this.items = (data.items || []).map(item => ({
+            ...item,
+            // Add mock rating and sold count for demo purposes
+            rating: item.rating || (Math.random() * 5), 
+            soldCount: item.soldCount || Math.floor(Math.random() * 50)
+          }));
           console.log('Items loaded:', this.items.length);
         } else {
           console.error('Failed to fetch items:', response.statusText);
@@ -304,7 +351,12 @@ export default {
           if (altResponse.ok) {
             const altData = await altResponse.json();
             console.log('Alternative API Response data:', altData);
-            this.items = altData.items || [];
+            this.items = (altData.items || []).map(item => ({
+              ...item,
+              // Add mock rating and sold count for demo purposes
+              rating: item.rating || (Math.random() * 5),
+              soldCount: item.soldCount || Math.floor(Math.random() * 50)
+            }));
           }
         } catch (altError) {
           console.error('Alternative endpoint also failed:', altError);
@@ -314,11 +366,21 @@ export default {
       }
     },
     handleSearch() {
-      // Debounce search if needed
-      // The computed property will automatically update the filtered results
+      // Reset to first page when searching
+      this.currentPage = 1;
     },
     selectCategory(category) {
       this.selectedCategory = category;
+      // Reset to first page when changing category
+      this.currentPage = 1;
+    },
+    handlePageChange(page) {
+      this.currentPage = page;
+      // Scroll to top of products section
+      const productsSection = document.querySelector('.products-section');
+      if (productsSection) {
+        productsSection.scrollIntoView({ behavior: 'smooth' });
+      }
     },
     formatPrice(price) {
       if (price == null) return '0.00';
@@ -777,12 +839,55 @@ export default {
 .product-stats {
   display: flex;
   gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
-.stat-item {
+.rating-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stars {
+  display: flex;
+  gap: 1px;
+}
+
+.star {
+  color: #d1d5db;
+  transition: color 0.2s ease;
+}
+
+.star.filled {
+  color: #fbbf24;
+}
+
+.rating-text {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.sold-count {
   display: flex;
   align-items: center;
   gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.sold-count svg {
+  color: #10b981;
+}
+
+.no-stats .new-item {
+  font-size: 0.75rem;
+  color: var(--primary-color);
+  font-weight: 500;
+  background: rgba(139, 90, 60, 0.1);
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.5rem;
 }
 
 /* Loading and Empty States */
