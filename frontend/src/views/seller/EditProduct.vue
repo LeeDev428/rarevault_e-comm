@@ -397,7 +397,7 @@ export default {
           }
         })
 
-        if (!response.ok) {
+        if (!response.ok) {x``
           if (response.status === 404) {
             this.showToast('Product not found', 'error', 'Error')
             this.$router.push('/seller/items')
