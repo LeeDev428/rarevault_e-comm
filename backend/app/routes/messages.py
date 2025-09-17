@@ -7,6 +7,28 @@ from datetime import datetime
 
 messages_bp = Blueprint('messages', __name__)
 
+def convert_to_manila_time(dt):
+    """Convert datetime to Manila timezone"""
+    if dt is None:
+        return None
+    
+    try:
+        import pytz
+        # Assume stored times are UTC
+        utc = pytz.UTC
+        manila = pytz.timezone('Asia/Manila')
+        
+        # If dt is naive, assume it's UTC
+        if dt.tzinfo is None:
+            dt = utc.localize(dt)
+        
+        # Convert to Manila time
+        manila_time = dt.astimezone(manila)
+        return manila_time.isoformat()
+    except ImportError:
+        # Fallback if pytz is not available
+        return dt.isoformat() if dt else None
+
 @messages_bp.route('/send', methods=['POST'])
 @jwt_required()
 def send_message():
@@ -99,12 +121,6 @@ def get_conversations():
                     'unread_count': 0,
                     'is_last_message_mine': msg.sender_id == current_user_id
                 }
-            else:
-                # Update to latest message if this message is newer
-                if msg.created_at > datetime.fromisoformat(conversation_dict[partner_id]['last_message_time'].replace('Z', '+00:00')):
-                    conversation_dict[partner_id]['last_message'] = msg.message
-                    conversation_dict[partner_id]['last_message_time'] = msg.created_at.isoformat()
-                    conversation_dict[partner_id]['is_last_message_mine'] = msg.sender_id == current_user_id
             
             # Count unread messages based on user role
             if msg.sender_id == current_user_id:
