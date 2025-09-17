@@ -440,17 +440,25 @@ class Message(db.Model):
         if dt is None:
             return None
         
-        # Assume stored times are UTC
-        utc = pytz.UTC
-        manila = pytz.timezone('Asia/Manila')
-        
-        # If dt is naive, assume it's UTC
-        if dt.tzinfo is None:
-            dt = utc.localize(dt)
-        
-        # Convert to Manila time
-        manila_time = dt.astimezone(manila)
-        return manila_time.isoformat()
+        try:
+            # Manila timezone
+            manila = pytz.timezone('Asia/Manila')
+            
+            # If dt is naive (no timezone info), assume it's UTC
+            if dt.tzinfo is None:
+                utc = pytz.UTC
+                dt = utc.localize(dt)
+            
+            # Convert to Manila time
+            manila_time = dt.astimezone(manila)
+            # Return in ISO format with Manila timezone
+            return manila_time.strftime('%Y-%m-%dT%H:%M:%S+08:00')
+        except ImportError:
+            # Fallback if pytz is not available - add 8 hours to UTC
+            from datetime import timedelta
+            manila_offset = timedelta(hours=8)
+            manila_time = dt + manila_offset
+            return manila_time.strftime('%Y-%m-%dT%H:%M:%S+08:00')
     
     def to_dict(self):
         return {
