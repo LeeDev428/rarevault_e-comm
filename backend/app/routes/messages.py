@@ -37,7 +37,9 @@ def send_message():
         new_message = Message(
             sender_id=current_user_id,
             receiver_id=receiver_id,
-            message=message_text
+            message=message_text,
+            is_sender_read=True,  # Sender has "read" their own message by sending it
+            is_receiver_read=False  # Receiver hasn't read it yet
         )
         
         db.session.add(new_message)
@@ -67,7 +69,8 @@ def get_conversations():
             Message.receiver_id,
             Message.message,
             Message.created_at,
-            Message.is_read,
+            Message.is_sender_read,
+            Message.is_receiver_read,
             User.username.label('partner_username'),
             User.role.label('partner_role')
         ).join(
@@ -96,9 +99,15 @@ def get_conversations():
                     'is_last_message_mine': msg.sender_id == current_user_id
                 }
             
-            # Count unread messages
-            if msg.receiver_id == current_user_id and not msg.is_read:
-                conversation_dict[partner_id]['unread_count'] += 1
+            # Count unread messages based on user role
+            if msg.sender_id == current_user_id:
+                # I sent this message - check if I've read it (for sent message notifications)
+                if not msg.is_sender_read:
+                    conversation_dict[partner_id]['unread_count'] += 1
+            else:
+                # I received this message - check if I've read it
+                if not msg.is_receiver_read:
+                    conversation_dict[partner_id]['unread_count'] += 1
         
         conversations_list = list(conversation_dict.values())
         conversations_list.sort(key=lambda x: x['last_message_time'], reverse=True)
@@ -135,11 +144,11 @@ def get_conversation_messages(partner_id):
         unread_messages = Message.query.filter(
             Message.sender_id == partner_id,
             Message.receiver_id == current_user_id,
-            Message.is_read == False
+            Message.is_receiver_read == False
         ).all()
         
         for msg in unread_messages:
-            msg.is_read = True
+            msg.is_receiver_read = True
         
         if unread_messages:
             db.session.commit()
@@ -188,11 +197,11 @@ def mark_messages_read():
         unread_messages = Message.query.filter(
             Message.sender_id == sender_id,
             Message.receiver_id == current_user_id,
-            Message.is_read == False
+            Message.is_receiver_read == False
         ).all()
         
         for msg in unread_messages:
-            msg.is_read = True
+            msg.is_receiver_read = True
         
         db.session.commit()
         
@@ -214,7 +223,7 @@ def get_unread_count():
         
         unread_count = Message.query.filter(
             Message.receiver_id == current_user_id,
-            Message.is_read == False
+            Message.is_receiver_read == False
         ).count()
         
         return jsonify({
