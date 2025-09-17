@@ -158,7 +158,7 @@
               <h3 class="product-title">{{ item.title }}</h3>
               <p class="product-category">{{ item.category }}</p>
               <div class="product-details">
-                <span class="product-price">${{ formatPrice(item.price) }}</span>
+                <span class="product-price">₱ {{ formatPrice(item.price) }}</span>
                 <span class="product-condition">{{ item.condition }}</span>
               </div>
               <div class="product-meta">
@@ -280,15 +280,35 @@ export default {
     async fetchItems() {
       this.isLoading = true;
       try {
+        console.log('Fetching items from API...');
         const response = await fetch('http://localhost:5000/api/items');
+        console.log('API Response status:', response.status);
+        
         if (response.ok) {
           const data = await response.json();
+          console.log('API Response data:', data);
           this.items = data.items || [];
+          console.log('Items loaded:', this.items.length);
         } else {
           console.error('Failed to fetch items:', response.statusText);
+          // Try to read error response
+          const errorData = await response.text();
+          console.error('Error details:', errorData);
         }
       } catch (error) {
         console.error('Error fetching items:', error);
+        // If the main API fails, let's try without the /api prefix
+        try {
+          console.log('Trying alternative endpoint...');
+          const altResponse = await fetch('http://localhost:5000/items');
+          if (altResponse.ok) {
+            const altData = await altResponse.json();
+            console.log('Alternative API Response data:', altData);
+            this.items = altData.items || [];
+          }
+        } catch (altError) {
+          console.error('Alternative endpoint also failed:', altError);
+        }
       } finally {
         this.isLoading = false;
       }
