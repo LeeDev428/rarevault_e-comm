@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import db
 from app.models.models import Message, User
 from sqlalchemy import or_, and_
+from datetime import datetime
 
 messages_bp = Blueprint('messages', __name__)
 
@@ -98,6 +99,12 @@ def get_conversations():
                     'unread_count': 0,
                     'is_last_message_mine': msg.sender_id == current_user_id
                 }
+            else:
+                # Update to latest message if this message is newer
+                if msg.created_at > datetime.fromisoformat(conversation_dict[partner_id]['last_message_time'].replace('Z', '+00:00')):
+                    conversation_dict[partner_id]['last_message'] = msg.message
+                    conversation_dict[partner_id]['last_message_time'] = msg.created_at.isoformat()
+                    conversation_dict[partner_id]['is_last_message_mine'] = msg.sender_id == current_user_id
             
             # Count unread messages based on user role
             if msg.sender_id == current_user_id:
