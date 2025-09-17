@@ -115,6 +115,44 @@ class Item(db.Model):
                         })
                     primary_image = images_list[0] if images_list else None
         
+        # Calculate real sales data from orders table
+        from sqlalchemy import func
+        sold_count = 0
+        total_sales_quantity = 0
+        
+        try:
+            # Get total quantity sold for this item from delivered orders
+            sales_data = db.session.query(
+                func.sum(Order.quantity).label('total_quantity'),
+                func.count(Order.id).label('order_count')
+            ).filter(
+                Order.item_id == self.id,
+                Order.status == 'delivered'
+            ).first()
+            
+            if sales_data and sales_data.total_quantity:
+                total_sales_quantity = int(sales_data.total_quantity)
+                sold_count = int(sales_data.order_count)
+        except Exception as e:
+            print(f"Error calculating sales data: {e}")
+        
+        # Calculate real ratings data
+        rating = 0.0
+        rating_count = 0
+        
+        try:
+            # Get average rating and count for this item
+            rating_data = db.session.query(
+                func.avg(Rating.rating).label('avg_rating'),
+                func.count(Rating.id).label('rating_count')
+            ).filter(Rating.item_id == self.id).first()
+            
+            if rating_data and rating_data.avg_rating:
+                rating = float(rating_data.avg_rating)
+                rating_count = int(rating_data.rating_count)
+        except Exception as e:
+            print(f"Error calculating rating data: {e}")
+        
         return {
             'id': self.id,
             'title': self.title,
@@ -135,6 +173,11 @@ class Item(db.Model):
             'tags': self.tags or [],
             'images': images_list,
             'primary_image': primary_image,
+            # Real sales and ratings data
+            'soldCount': total_sales_quantity,
+            'totalOrders': sold_count,
+            'rating': rating,
+            'ratingCount': rating_count,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
