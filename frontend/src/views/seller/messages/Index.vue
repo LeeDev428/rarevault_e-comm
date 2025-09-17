@@ -107,7 +107,7 @@
                   <p>{{ message.message }}</p>
                   <div class="message-meta">
                     <span class="message-time">{{ formatDateTime(message.created_at) }}</span>
-                    <span v-if="message.sender_id === currentUserId && message.is_read" class="read-indicator">✓✓</span>
+                    <span v-if="message.sender_id === currentUserId && message.is_receiver_read" class="read-indicator">✓✓</span>
                     <span v-else-if="message.sender_id === currentUserId" class="sent-indicator">✓</span>
                   </div>
                 </div>
