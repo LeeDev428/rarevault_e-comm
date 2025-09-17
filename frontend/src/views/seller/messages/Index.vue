@@ -333,6 +333,8 @@ export default {
 
     selectConversation(conversation) {
       this.selectedPartnerId = conversation.partner_id
+      this.selectedPartnerName = conversation.partner_username
+      this.selectedPartnerRole = conversation.partner_role
       this.loadMessages(conversation.partner_id)
     },
 
