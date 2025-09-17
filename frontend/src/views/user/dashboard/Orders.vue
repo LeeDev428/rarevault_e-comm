@@ -87,7 +87,7 @@
 
                <button 
                 class="action-btn primary"
-                @click.stop="viewOrderDetails(order)"
+                @click.stop="messageSellerAction(order)"
               >
                 Message Seller
               </button>
@@ -469,6 +469,27 @@ export default {
           sellerId: order.item?.seller_id || order.seller_id
         }
       })
+    },
+
+    messageSellerAction(order) {
+      // Navigate to messages page with seller information
+      const sellerId = order.item?.seller_id || order.seller_id
+      const sellerName = this.getSellerName(order.item)
+      const itemTitle = order.item?.title || 'Item'
+      
+      if (sellerId) {
+        this.$router.push({
+          path: '/user/messages',
+          query: {
+            sellerId: sellerId,
+            sellerName: sellerName,
+            orderId: order.id,
+            itemTitle: itemTitle
+          }
+        })
+      } else {
+        alert('Seller information not available')
+      }
     }
   }
 }
