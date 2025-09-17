@@ -425,7 +425,8 @@ class Message(db.Model):
     sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     receiver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     message = db.Column(db.Text, nullable=False)
-    is_read = db.Column(db.Boolean, default=False)
+    is_sender_read = db.Column(db.Boolean, default=False)
+    is_receiver_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -439,7 +440,8 @@ class Message(db.Model):
             'sender_id': self.sender_id,
             'receiver_id': self.receiver_id,
             'message': self.message,
-            'is_read': self.is_read,
+            'is_sender_read': self.is_sender_read,
+            'is_receiver_read': self.is_receiver_read,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'sender': {
