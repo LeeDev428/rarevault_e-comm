@@ -97,6 +97,19 @@ const routes = [
     component: () => import('@/views/user/dashboard/Others.vue'),
     meta: { requiresAuth: true, role: 'user' }
   },
+  // User Messages Routes
+  {
+    path: '/user/messages',
+    name: 'UserMessages',
+    component: () => import('@/views/user/messages/Index.vue'),
+    meta: { requiresAuth: true, role: 'user' }
+  },
+  {
+    path: '/user/messages/create',
+    name: 'UserCreateMessage',
+    component: () => import('@/views/user/messages/Create.vue'),
+    meta: { requiresAuth: true, role: 'user' }
+  },
   {
     path: '/admin/dashboard',
     name: 'AdminDashboard',
@@ -168,6 +181,19 @@ const routes = [
     path: '/seller/settings',
     name: 'SellerSettings',
     component: () => import('@/views/seller/Settings.vue'),
+    meta: { requiresAuth: true, role: 'seller' }
+  },
+  // Seller Messages Routes
+  {
+    path: '/seller/messages',
+    name: 'SellerMessages',
+    component: () => import('@/views/seller/messages/Index.vue'),
+    meta: { requiresAuth: true, role: 'seller' }
+  },
+  {
+    path: '/seller/messages/create',
+    name: 'SellerCreateMessage',
+    component: () => import('@/views/seller/messages/Create.vue'),
     meta: { requiresAuth: true, role: 'seller' }
   }
 ]
