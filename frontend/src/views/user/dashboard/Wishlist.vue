@@ -132,7 +132,7 @@
 
 <script>
 import UserLayout from '@/components/user/UserLayout.vue'
-import Pagination from '@/components/user/Pagination.vue'
+import Pagination from '@/components/pagination.vue'
 import ConfirmOrderModal from '@/components/user/ConfirmOrderModal.vue'
 
 export default {
