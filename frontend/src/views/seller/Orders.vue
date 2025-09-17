@@ -142,7 +142,7 @@
 <script>
 import SellerLayout from '@/components/seller/SellerLayout.vue'
 import ActionButton from '@/components/seller/shared/ActionButton.vue'
-import Pagination from '@/components/user/Pagination.vue'
+import Pagination from '@/components/pagination.vue'
 
 export default {
   name: 'SellerOrders',
