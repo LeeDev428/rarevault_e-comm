@@ -41,11 +41,12 @@
             </button>
 
             <!-- Chat -->
-            <button class="chat-btn">
+            <button class="chat-btn" @click="navigateToMessages">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
               </svg>
               <span class="chat-text">Chat</span>
+              <span v-if="unreadMessageCount > 0" class="chat-badge">{{ unreadMessageCount }}</span>
             </button>
 
             <!-- User Profile Dropdown -->
@@ -153,6 +154,8 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   name: 'UserLayout',
   data() {
@@ -160,14 +163,19 @@ export default {
       searchQuery: '',
       showUserMenu: false,
       userName: 'John Doe',
-      userInitials: 'JD'
+      userInitials: 'JD',
+      unreadMessageCount: 0,
+      messageCountInterval: null
     }
   },
   mounted() {
     document.addEventListener('click', this.closeUserMenu)
+    this.loadUnreadMessageCount()
+    this.startMessageCountPolling()
   },
   beforeUnmount() {
     document.removeEventListener('click', this.closeUserMenu)
+    this.stopMessageCountPolling()
   },
   methods: {
     handleSearch() {
@@ -218,6 +226,42 @@ export default {
       
       this.$router.push('/login')
       this.showUserMenu = false
+    },
+
+    navigateToMessages() {
+      this.$router.push('/user/messages')
+    },
+
+    async loadUnreadMessageCount() {
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        if (!token) return
+
+        const response = await axios.get('http://localhost:5000/api/messages/unread-count', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+
+        if (response.data.success) {
+          this.unreadMessageCount = response.data.unread_count
+        }
+      } catch (error) {
+        console.error('Error loading unread message count:', error)
+        // Don't show error to user, just fail silently
+      }
+    },
+
+    startMessageCountPolling() {
+      // Poll unread count every 30 seconds
+      this.messageCountInterval = setInterval(() => {
+        this.loadUnreadMessageCount()
+      }, 30000)
+    },
+
+    stopMessageCountPolling() {
+      if (this.messageCountInterval) {
+        clearInterval(this.messageCountInterval)
+        this.messageCountInterval = null
+      }
     }
   }
 }
@@ -341,6 +385,20 @@ export default {
 .chat-text {
   font-size: 14px;
   font-weight: 500;
+}
+
+.chat-badge {
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
 }
 
 /* User Profile */
