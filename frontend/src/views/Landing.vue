@@ -233,7 +233,7 @@
 </template>
 
 <script>
-import Pagination from '@/components/Pagination.vue'
+import Pagination from '../components/pagination.vue'
 
 export default {
   name: 'Landing',
@@ -329,12 +329,7 @@ export default {
         if (response.ok) {
           const data = await response.json();
           console.log('API Response data:', data);
-          this.items = (data.items || []).map(item => ({
-            ...item,
-            // Add mock rating and sold count for demo purposes
-            rating: item.rating || (Math.random() * 5), 
-            soldCount: item.soldCount || Math.floor(Math.random() * 50)
-          }));
+          this.items = data.items || [];
           console.log('Items loaded:', this.items.length);
         } else {
           console.error('Failed to fetch items:', response.statusText);
@@ -351,12 +346,7 @@ export default {
           if (altResponse.ok) {
             const altData = await altResponse.json();
             console.log('Alternative API Response data:', altData);
-            this.items = (altData.items || []).map(item => ({
-              ...item,
-              // Add mock rating and sold count for demo purposes
-              rating: item.rating || (Math.random() * 5),
-              soldCount: item.soldCount || Math.floor(Math.random() * 50)
-            }));
+            this.items = altData.items || [];
           }
         } catch (altError) {
           console.error('Alternative endpoint also failed:', altError);
