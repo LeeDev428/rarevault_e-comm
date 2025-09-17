@@ -84,6 +84,14 @@
               <span class="total-amount">₱{{ (order.total_amount || 0).toFixed(2) }}</span>
             </div>
             <div class="order-actions">
+
+               <button 
+                class="action-btn primary"
+                @click.stop="viewOrderDetails(order)"
+              >
+                Message Seller
+              </button>
+
               <button 
                 v-if="order.status === 'delivered'" 
                 class="action-btn secondary"
@@ -119,6 +127,7 @@
               >
                 View Details
               </button>
+              
             </div>
           </div>
         </div>
