@@ -92,69 +92,59 @@ def get_conversations():
     try:
         current_user_id = get_jwt_identity()
         
-        # Get the latest message for each conversation partner
-        from sqlalchemy import func
-        
-        # Subquery to get the latest message timestamp for each partner
-        latest_messages = db.session.query(
-            func.greatest(Message.sender_id, Message.receiver_id).label('partner1'),
-            func.least(Message.sender_id, Message.receiver_id).label('partner2'),
-            func.max(Message.created_at).label('latest_time')
-        ).filter(
-            or_(Message.sender_id == current_user_id, Message.receiver_id == current_user_id)
-        ).group_by(
-            func.greatest(Message.sender_id, Message.receiver_id),
-            func.least(Message.sender_id, Message.receiver_id)
-        ).subquery()
-        
-        # Get the actual latest messages with partner info
-        conversations_query = db.session.query(
-            Message,
-            User.username.label('partner_username'),
-            User.role.label('partner_role')
-        ).join(
-            latest_messages,
-            Message.created_at == latest_messages.c.latest_time
-        ).join(
-            User,
-            or_(
-                and_(Message.sender_id == current_user_id, User.id == Message.receiver_id),
-                and_(Message.receiver_id == current_user_id, User.id == Message.sender_id)
-            )
-        ).filter(
+        # Simple approach: Get all messages involving current user, then process
+        all_messages = Message.query.filter(
             or_(Message.sender_id == current_user_id, Message.receiver_id == current_user_id)
         ).order_by(Message.created_at.desc()).all()
         
-        # Build conversation list
-        conversations_list = []
-        processed_partners = set()
+        # Group by conversation partner and keep only the latest message
+        conversations_dict = {}
         
-        for msg, partner_username, partner_role in conversations_query:
-            partner_id = msg.receiver_id if msg.sender_id == current_user_id else msg.sender_id
+        for message in all_messages:
+            # Determine the partner (the other person in the conversation)
+            partner_id = message.receiver_id if message.sender_id == current_user_id else message.sender_id
             
-            # Skip if we've already processed this partner (prevents duplicates)
-            if partner_id in processed_partners:
+            # Skip if we've already found a more recent message for this partner
+            if partner_id in conversations_dict:
                 continue
                 
-            processed_partners.add(partner_id)
+            # Get partner information
+            partner = User.query.get(partner_id)
+            if not partner:
+                continue
+                
+            # Count unread messages for this partner
+            if current_user_id == message.receiver_id:
+                # I'm the receiver - count unread messages I received
+                unread_count = Message.query.filter(
+                    Message.sender_id == partner_id,
+                    Message.receiver_id == current_user_id,
+                    Message.is_receiver_read == False
+                ).count()
+            else:
+                # I'm the sender - count unread messages I sent (sender notifications)
+                unread_count = Message.query.filter(
+                    Message.sender_id == current_user_id,
+                    Message.receiver_id == partner_id,
+                    Message.is_sender_read == False
+                ).count()
             
-            # Count unread messages for this conversation
-            unread_count = Message.query.filter(
-                or_(
-                    and_(Message.sender_id == partner_id, Message.receiver_id == current_user_id, Message.is_receiver_read == False),
-                    and_(Message.sender_id == current_user_id, Message.receiver_id == partner_id, Message.is_sender_read == False)
-                )
-            ).count()
-            
-            conversations_list.append({
+            conversations_dict[partner_id] = {
                 'partner_id': partner_id,
-                'partner_username': partner_username,
-                'partner_role': partner_role,
-                'last_message': msg.message,
-                'last_message_time': convert_to_manila_time(msg.created_at),
+                'partner_username': partner.username,
+                'partner_role': partner.role,
+                'last_message': message.message,
+                'last_message_time': convert_to_manila_time(message.created_at),
                 'unread_count': unread_count,
-                'is_last_message_mine': msg.sender_id == current_user_id
-            })
+                'is_last_message_mine': message.sender_id == current_user_id
+            }
+        
+        # Convert to list and sort by last message time
+        conversations_list = list(conversations_dict.values())
+        conversations_list.sort(
+            key=lambda x: x['last_message_time'] if x['last_message_time'] else '', 
+            reverse=True
+        )
         
         return jsonify({
             'success': True,
