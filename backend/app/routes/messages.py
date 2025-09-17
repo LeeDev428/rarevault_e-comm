@@ -14,19 +14,25 @@ def convert_to_manila_time(dt):
     
     try:
         import pytz
-        # Assume stored times are UTC
-        utc = pytz.UTC
+        # Manila timezone
         manila = pytz.timezone('Asia/Manila')
         
-        # If dt is naive, assume it's UTC
+        # If dt is naive (no timezone info), assume it's UTC
         if dt.tzinfo is None:
+            utc = pytz.UTC
             dt = utc.localize(dt)
         
         # Convert to Manila time
         manila_time = dt.astimezone(manila)
-        return manila_time.isoformat()
+        # Return in ISO format but more readable
+        return manila_time.strftime('%Y-%m-%dT%H:%M:%S+08:00')
     except ImportError:
-        # Fallback if pytz is not available
+        # Fallback if pytz is not available - add 8 hours to UTC (Manila is UTC+8)
+        if hasattr(dt, 'replace'):
+            import datetime
+            manila_offset = datetime.timedelta(hours=8)
+            manila_time = dt + manila_offset
+            return manila_time.strftime('%Y-%m-%dT%H:%M:%S+08:00')
         return dt.isoformat() if dt else None
 
 @messages_bp.route('/send', methods=['POST'])
@@ -86,18 +92,31 @@ def get_conversations():
     try:
         current_user_id = get_jwt_identity()
         
-        # Get all unique conversation partners
-        conversations = db.session.query(
-            Message.sender_id,
-            Message.receiver_id,
-            Message.message,
-            Message.created_at,
-            Message.is_sender_read,
-            Message.is_receiver_read,
+        # Get the latest message for each conversation partner
+        from sqlalchemy import func
+        
+        # Subquery to get the latest message timestamp for each partner
+        latest_messages = db.session.query(
+            func.greatest(Message.sender_id, Message.receiver_id).label('partner1'),
+            func.least(Message.sender_id, Message.receiver_id).label('partner2'),
+            func.max(Message.created_at).label('latest_time')
+        ).filter(
+            or_(Message.sender_id == current_user_id, Message.receiver_id == current_user_id)
+        ).group_by(
+            func.greatest(Message.sender_id, Message.receiver_id),
+            func.least(Message.sender_id, Message.receiver_id)
+        ).subquery()
+        
+        # Get the actual latest messages with partner info
+        conversations_query = db.session.query(
+            Message,
             User.username.label('partner_username'),
             User.role.label('partner_role')
         ).join(
-            User, 
+            latest_messages,
+            Message.created_at == latest_messages.c.latest_time
+        ).join(
+            User,
             or_(
                 and_(Message.sender_id == current_user_id, User.id == Message.receiver_id),
                 and_(Message.receiver_id == current_user_id, User.id == Message.sender_id)
@@ -106,34 +125,36 @@ def get_conversations():
             or_(Message.sender_id == current_user_id, Message.receiver_id == current_user_id)
         ).order_by(Message.created_at.desc()).all()
         
-        # Group conversations by partner
-        conversation_dict = {}
-        for msg in conversations:
+        # Build conversation list
+        conversations_list = []
+        processed_partners = set()
+        
+        for msg, partner_username, partner_role in conversations_query:
             partner_id = msg.receiver_id if msg.sender_id == current_user_id else msg.sender_id
             
-            if partner_id not in conversation_dict:
-                conversation_dict[partner_id] = {
-                    'partner_id': partner_id,
-                    'partner_username': msg.partner_username,
-                    'partner_role': msg.partner_role,
-                    'last_message': msg.message,
-                    'last_message_time': msg.created_at.isoformat(),
-                    'unread_count': 0,
-                    'is_last_message_mine': msg.sender_id == current_user_id
-                }
+            # Skip if we've already processed this partner (prevents duplicates)
+            if partner_id in processed_partners:
+                continue
+                
+            processed_partners.add(partner_id)
             
-            # Count unread messages based on user role
-            if msg.sender_id == current_user_id:
-                # I sent this message - check if I've read it (for sent message notifications)
-                if not msg.is_sender_read:
-                    conversation_dict[partner_id]['unread_count'] += 1
-            else:
-                # I received this message - check if I've read it
-                if not msg.is_receiver_read:
-                    conversation_dict[partner_id]['unread_count'] += 1
-        
-        conversations_list = list(conversation_dict.values())
-        conversations_list.sort(key=lambda x: x['last_message_time'], reverse=True)
+            # Count unread messages for this conversation
+            unread_count = Message.query.filter(
+                or_(
+                    and_(Message.sender_id == partner_id, Message.receiver_id == current_user_id, Message.is_receiver_read == False),
+                    and_(Message.sender_id == current_user_id, Message.receiver_id == partner_id, Message.is_sender_read == False)
+                )
+            ).count()
+            
+            conversations_list.append({
+                'partner_id': partner_id,
+                'partner_username': partner_username,
+                'partner_role': partner_role,
+                'last_message': msg.message,
+                'last_message_time': convert_to_manila_time(msg.created_at),
+                'unread_count': unread_count,
+                'is_last_message_mine': msg.sender_id == current_user_id
+            })
         
         return jsonify({
             'success': True,
