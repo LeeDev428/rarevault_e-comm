@@ -98,14 +98,268 @@
         </div>
       </div>
     </section>
+
+    <!-- Products Section -->
+    <section class="products-section">
+      <div class="container">
+        <!-- Search and Filters -->
+        <div class="search-filters">
+          <!-- Search Bar -->
+          <div class="search-bar">
+            <div class="search-input-wrapper">
+              <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <input 
+                type="text" 
+                v-model="searchQuery"
+                placeholder="Search for items..."
+                class="search-input"
+                @input="handleSearch"
+              />
+            </div>
+          </div>
+
+          <!-- Category Filters -->
+          <div class="category-filters">
+            <button 
+              v-for="category in categories" 
+              :key="category.value"
+              @click="selectCategory(category.value)"
+              :class="['category-btn', { active: selectedCategory === category.value }]"
+            >
+              <div class="category-icon">
+                <component :is="category.icon" />
+              </div>
+              <span>{{ category.label }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="products-grid" v-if="filteredItems.length > 0">
+          <div 
+            v-for="item in filteredItems" 
+            :key="item.id"
+            class="product-card"
+          >
+            <div class="product-image">
+              <img 
+                :src="item.primary_image?.url || '/placeholder.svg'" 
+                :alt="item.title"
+                @error="handleImageError"
+              />
+              <div class="product-status" v-if="item.isAuthenticated">
+                <span class="verified-badge">Verified</span>
+              </div>
+            </div>
+            
+            <div class="product-info">
+              <h3 class="product-title">{{ item.title }}</h3>
+              <p class="product-category">{{ item.category }}</p>
+              <div class="product-details">
+                <span class="product-price">${{ formatPrice(item.price) }}</span>
+                <span class="product-condition">{{ item.condition }}</span>
+              </div>
+              <div class="product-meta">
+                <span class="product-year" v-if="item.year">{{ item.year }}</span>
+                <div class="product-stats">
+                  <span class="stat-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path d="M1 12S5 4 12 4S23 12 23 12S19 20 12 20S1 12 1 12Z" stroke="currentColor" stroke-width="2"/>
+                      <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    {{ item.views || 0 }}
+                  </span>
+                  <span class="stat-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path d="M20.84 4.61A5.5 5.5 0 0 0 7.5 12L8 21L12 17.27L16 21L16.5 12A5.5 5.5 0 0 0 20.84 4.61Z" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    {{ item.favorites || 0 }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading-state" v-else-if="isLoading">
+          <div class="loading-spinner"></div>
+          <p>Loading items...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" v-else>
+          <div class="empty-icon">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+              <path d="M9.17 6L18.83 6C19.54 6 19.67 6.89 19.08 7.17L12.83 10.17C12.42 10.36 11.58 10.36 11.17 10.17L4.92 7.17C4.33 6.89 4.46 6 5.17 6L9.17 6Z" stroke="#9CA3AF" stroke-width="2"/>
+              <path d="M12 11V19" stroke="#9CA3AF" stroke-width="2"/>
+            </svg>
+          </div>
+          <h3>No items found</h3>
+          <p>Try adjusting your search or category filters</p>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
 <script>
 export default {
   name: 'Landing',
+  data() {
+    return {
+      items: [],
+      searchQuery: '',
+      selectedCategory: 'all',
+      isLoading: false,
+      categories: [
+        {
+          value: 'all',
+          label: 'All Items',
+          icon: 'AllItemsIcon'
+        },
+        {
+          value: 'Vintage Items',
+          label: 'Vintage Items',
+          icon: 'VintageIcon'
+        },
+        {
+          value: 'Collectibles',
+          label: 'Collectibles',
+          icon: 'CollectiblesIcon'
+        },
+        {
+          value: 'Antiques',
+          label: 'Antiques',
+          icon: 'AntiquesIcon'
+        },
+        {
+          value: 'Coins & Currency',
+          label: 'Coins & Currency',
+          icon: 'CoinsIcon'
+        },
+        {
+          value: 'Others',
+          label: 'Others',
+          icon: 'OthersIcon'
+        }
+      ]
+    }
+  },
+  computed: {
+    filteredItems() {
+      let filtered = this.items;
+
+      // Filter by category
+      if (this.selectedCategory !== 'all') {
+        filtered = filtered.filter(item => 
+          item.category && item.category.toLowerCase().includes(this.selectedCategory.toLowerCase())
+        );
+      }
+
+      // Filter by search query
+      if (this.searchQuery.trim()) {
+        const query = this.searchQuery.toLowerCase();
+        filtered = filtered.filter(item =>
+          (item.title && item.title.toLowerCase().includes(query)) ||
+          (item.description && item.description.toLowerCase().includes(query)) ||
+          (item.category && item.category.toLowerCase().includes(query)) ||
+          (item.tags && item.tags.some(tag => tag.toLowerCase().includes(query)))
+        );
+      }
+
+      return filtered;
+    }
+  },
   mounted() {
-    // Add any animations or effects here
+    this.fetchItems();
+  },
+  methods: {
+    async fetchItems() {
+      this.isLoading = true;
+      try {
+        const response = await fetch('http://localhost:5000/api/items');
+        if (response.ok) {
+          const data = await response.json();
+          this.items = data.items || [];
+        } else {
+          console.error('Failed to fetch items:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error fetching items:', error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    handleSearch() {
+      // Debounce search if needed
+      // The computed property will automatically update the filtered results
+    },
+    selectCategory(category) {
+      this.selectedCategory = category;
+    },
+    formatPrice(price) {
+      if (price == null) return '0.00';
+      return parseFloat(price).toFixed(2);
+    },
+    handleImageError(event) {
+      event.target.src = '/placeholder.svg';
+    }
+  },
+  components: {
+    // Icon components for categories
+    AllItemsIcon: {
+      template: `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M3 3H21V21H3V3Z" stroke="currentColor" stroke-width="2" fill="none"/>
+          <path d="M9 9H15V15H9V9Z" stroke="currentColor" stroke-width="2" fill="none"/>
+        </svg>
+      `
+    },
+    VintageIcon: {
+      template: `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 2Z" fill="currentColor"/>
+        </svg>
+      `
+    },
+    CollectiblesIcon: {
+      template: `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M21 16V8C20.9996 7.64928 20.9071 7.30481 20.7315 7.00116C20.556 6.69751 20.3037 6.44536 20 6.27L13 2.27C12.696 2.09446 12.3511 2.00205 12 2.00205C11.6489 2.00205 11.304 2.09446 11 2.27L4 6.27C3.69626 6.44536 3.44398 6.69751 3.26846 7.00116C3.09294 7.30481 3.00036 7.64928 3 8V16C3.00036 16.3507 3.09294 16.6952 3.26846 16.9988C3.44398 17.3025 3.69626 17.5546 4 17.73L11 21.73C11.304 21.9055 11.6489 21.9979 12 21.9979C12.3511 21.9979 12.696 21.9055 13 21.73L20 17.73C20.3037 17.5546 20.556 17.3025 20.7315 16.9988C20.9071 16.6952 20.9996 16.3507 21 16Z" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      `
+    },
+    AntiquesIcon: {
+      template: `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M7 21C7 21 3 17 3 13C3 10.79 4.79 9 7 9S11 10.79 11 13C11 17 7 21 7 21Z" stroke="currentColor" stroke-width="2"/>
+          <path d="M17 21C17 21 13 17 13 13C13 10.79 14.79 9 17 9S21 10.79 21 13C21 17 17 21 17 21Z" stroke="currentColor" stroke-width="2"/>
+          <path d="M7 3V9" stroke="currentColor" stroke-width="2"/>
+          <path d="M17 3V9" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      `
+    },
+    CoinsIcon: {
+      template: `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2"/>
+          <path d="M18.09 10.37A6 6 0 1 1 10.37 18.09" stroke="currentColor" stroke-width="2"/>
+          <path d="M7 6H9V10H7" stroke="currentColor" stroke-width="2"/>
+          <path d="M13 16H15V20H13" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      `
+    },
+    OthersIcon: {
+      template: `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M12 3V21M3 12H21" stroke="currentColor" stroke-width="2"/>
+          <circle cx="12" cy="12" r="2" fill="currentColor"/>
+        </svg>
+      `
+    }
   }
 }
 </script>
