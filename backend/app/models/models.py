@@ -2,6 +2,7 @@ from app import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import Numeric
+import pytz
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -434,6 +435,23 @@ class Message(db.Model):
     sender = db.relationship('User', foreign_keys=[sender_id], backref='sent_messages')
     receiver = db.relationship('User', foreign_keys=[receiver_id], backref='received_messages')
     
+    def get_manila_time(self, dt):
+        """Convert datetime to Manila timezone"""
+        if dt is None:
+            return None
+        
+        # Assume stored times are UTC
+        utc = pytz.UTC
+        manila = pytz.timezone('Asia/Manila')
+        
+        # If dt is naive, assume it's UTC
+        if dt.tzinfo is None:
+            dt = utc.localize(dt)
+        
+        # Convert to Manila time
+        manila_time = dt.astimezone(manila)
+        return manila_time.isoformat()
+    
     def to_dict(self):
         return {
             'id': self.id,
@@ -442,8 +460,8 @@ class Message(db.Model):
             'message': self.message,
             'is_sender_read': self.is_sender_read,
             'is_receiver_read': self.is_receiver_read,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'created_at': self.get_manila_time(self.created_at),
+            'updated_at': self.get_manila_time(self.updated_at),
             'sender': {
                 'id': self.sender.id,
                 'username': self.sender.username,
