@@ -44,6 +44,8 @@ def create_app():
     from app.routes.main import main_bp
     from app.routes.items import items_bp
     from app.routes.messages import messages_bp
+    from app.routes.notifications import notifications_bp
+    from app.routes.seller_notifications import seller_notifications_bp
     from app.admin.routes import admin_bp
     from app.user.routes import user_bp
     from app.seller.routes import seller_bp
@@ -53,6 +55,8 @@ def create_app():
     app.register_blueprint(main_bp, url_prefix='/api')
     app.register_blueprint(items_bp, url_prefix='/api')
     app.register_blueprint(messages_bp, url_prefix='/api/messages')
+    app.register_blueprint(notifications_bp)
+    app.register_blueprint(seller_notifications_bp)
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
     app.register_blueprint(user_bp, url_prefix='/api/user')
     app.register_blueprint(seller_bp, url_prefix='/api')
