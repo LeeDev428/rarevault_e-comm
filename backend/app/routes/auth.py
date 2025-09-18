@@ -112,6 +112,29 @@ def get_profile():
         print(f"Profile route error: {e}")
         return jsonify({'error': str(e)}), 500
 
+@auth_bp.route('/users/<int:user_id>', methods=['GET'])
+@jwt_required()
+def get_user(user_id):
+    """Get user details by ID (public information only)"""
+    try:
+        user = User.query.get_or_404(user_id)
+        
+        # Return only public information
+        user_data = {
+            'id': user.id,
+            'username': user.username,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'role': user.role,
+            'created_at': user.created_at.isoformat() if user.created_at else None
+        }
+        
+        return jsonify(user_data), 200
+        
+    except Exception as e:
+        print(f"Get user route error: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @auth_bp.route('/logout', methods=['POST'])
 @jwt_required()
 def logout():
