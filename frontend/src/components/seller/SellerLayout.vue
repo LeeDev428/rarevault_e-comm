@@ -114,8 +114,6 @@
             <span>Add Item</span>
           </div>
           
-    
-
           <div 
             class="nav-item"
             :class="{ active: $route.path === '/seller/orders' }"
@@ -127,6 +125,17 @@
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
             </svg>
             <span>Orders</span>
+          </div>
+          
+          <div 
+            class="nav-item"
+            :class="{ active: $route.path.includes('/seller/messages') }"
+            @click="$router.push('/seller/messages')"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span>Messages</span>
           </div>
           
           <div 
