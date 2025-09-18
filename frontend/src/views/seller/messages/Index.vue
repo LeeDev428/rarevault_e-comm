@@ -6,7 +6,7 @@
         <h1 class="page-title">Customer Messages</h1>
         <div class="header-stats">
           <div class="stat-item">
-            <span class="stat-number">{{ conversations.length }}</span>
+            <span class="stat-number">{{ customerConversations.length }}</span>
             <span class="stat-label">Conversations</span>
           </div>
           <div class="stat-item" v-if="totalUnreadCount > 0">
@@ -31,7 +31,7 @@
 
           <div class="conversations-list">
             <div 
-              v-for="conversation in conversations" 
+              v-for="conversation in customerConversations" 
               :key="conversation.partner_id"
               @click="selectConversation(conversation)"
               :class="['conversation-item', { 'active': selectedPartnerId === conversation.partner_id, 'has-unread': conversation.unread_count > 0 }]"
@@ -55,7 +55,7 @@
               </div>
             </div>
 
-            <div v-if="conversations.length === 0 && !loading" class="empty-conversations">
+            <div v-if="customerConversations.length === 0 && !loading" class="empty-conversations">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 <circle cx="9" cy="9" r="2"/>
@@ -181,6 +181,12 @@ export default {
       totalUnreadCount: 0,
       pollingInterval: null,
       conversationPollingInterval: null
+    }
+  },
+  computed: {
+    customerConversations() {
+      // Only show conversations with users (customers)
+      return this.conversations.filter(conv => conv.partner_role === 'user')
     }
   },
   async mounted() {
@@ -339,7 +345,7 @@ export default {
     },
 
     calculateUnreadCount() {
-      this.totalUnreadCount = this.conversations.reduce((total, conv) => total + conv.unread_count, 0)
+      this.totalUnreadCount = this.customerConversations.reduce((total, conv) => total + conv.unread_count, 0)
     },
 
     startPolling() {
