@@ -756,55 +756,140 @@ export default {
 
 /* Seller Section */
 .seller-section {
-  padding: 20px;
+  padding: 25px;
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .section-title {
   font-size: 18px;
   font-weight: 600;
   color: #111827;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .seller-info {
   display: flex;
-  align-items: center;
-  gap: 15px;
+  align-items: flex-start;
+  gap: 20px;
 }
 
 .seller-avatar {
-  width: 50px;
-  height: 50px;
-  background: #f3f4f6;
+  flex-shrink: 0;
+}
+
+.avatar-circle {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .seller-details {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 12px;
+}
+
+.seller-main-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .seller-name {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   color: #111827;
 }
 
-.seller-role {
+.seller-role-badge {
+  padding: 4px 12px;
+  background: #e0f2fe;
+  color: #0277bd;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.seller-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.seller-since,
+.seller-sales,
+.seller-rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 14px;
   color: #6b7280;
 }
 
-.seller-since {
-  font-size: 12px;
-  color: #9ca3af;
+.seller-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.seller-stars {
+  display: flex;
+  gap: 2px;
+}
+
+.seller-stars .star {
+  color: #d1d5db;
+}
+
+.seller-stars .star.filled {
+  color: #fbbf24;
+}
+
+.seller-rating-text {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.seller-business {
+  margin-top: 8px;
+  font-size: 16px;
+  color: #374151;
+}
+
+.seller-description {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.5;
+  max-width: 400px;
+}
+
+.seller-verified {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: #dcfce7;
+  color: #166534;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  width: fit-content;
 }
 
 /* Description Section */
