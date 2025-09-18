@@ -275,11 +275,57 @@ export default {
       console.log('ConfirmOrderModal: Item data:', this.item);
       console.log('ConfirmOrderModal: Selected quantity:', this.orderForm.quantity);
       
-      // Emit the form data back to the parent component
-      this.$emit('submit', {
-        ...this.orderForm,
-        item: this.item
-      })
+      this.confirmOrder();
+    },
+    
+    async confirmOrder() {
+      if (this.loading) return;
+      
+      try {
+        this.loading = true;
+        this.error = '';
+        
+        // Prepare order data
+        const orderData = {
+          item_id: this.item.id,
+          quantity: this.orderForm.quantity,
+          customer_name: this.orderForm.customerName,
+          customer_phone: this.orderForm.customerPhone,
+          customer_email: this.orderForm.customerEmail,
+          shipping_address: this.orderForm.shippingAddress,
+          payment_method: this.orderForm.paymentMethod,
+          customer_notes: this.orderForm.customerNotes || ''
+        };
+        
+        console.log('ConfirmOrderModal: Sending order data to API:', orderData);
+        
+        // Submit order to backend
+        const response = await fetch('http://localhost:5000/api/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify(orderData)
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('ConfirmOrderModal: Order created successfully:', result);
+        
+        // Emit success event to parent
+        this.$emit('order-confirmed', result);
+        
+      } catch (error) {
+        console.error('ConfirmOrderModal: Error creating order:', error);
+        this.error = error.message || 'Failed to create order. Please try again.';
+      } finally {
+        this.loading = false;
+      }
     },
     
     closeModal() {
