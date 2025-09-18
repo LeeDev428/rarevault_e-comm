@@ -87,11 +87,25 @@ def send_message():
 @messages_bp.route('/conversations', methods=['GET'])
 @jwt_required()
 def get_conversations():
-    """Get all conversations for current user"""
+    """Get all conversations for current user, filtered by role compatibility"""
     try:
         current_user_id = get_jwt_identity()
         
-        # Simple approach: Get all messages involving current user, then process
+        # Get current user to determine role
+        current_user = User.query.get(current_user_id)
+        if not current_user:
+            return jsonify({'error': 'User not found'}), 404
+            
+        # Define allowed conversation partners based on role
+        allowed_roles = []
+        if current_user.role == 'seller':
+            allowed_roles = ['user']  # Sellers can only talk to users/customers
+        elif current_user.role == 'user':
+            allowed_roles = ['seller', 'admin']  # Users can talk to sellers and admins
+        elif current_user.role == 'admin':
+            allowed_roles = ['user', 'seller']  # Admins can talk to everyone
+        
+        # Get all messages involving current user
         all_messages = Message.query.filter(
             or_(Message.sender_id == current_user_id, Message.receiver_id == current_user_id)
         ).order_by(Message.created_at.desc()).all()
@@ -112,21 +126,16 @@ def get_conversations():
             if not partner:
                 continue
                 
-            # Count unread messages for this partner
-            if current_user_id == message.receiver_id:
-                # I'm the receiver - count unread messages I received
-                unread_count = Message.query.filter(
-                    Message.sender_id == partner_id,
-                    Message.receiver_id == current_user_id,
-                    Message.is_receiver_read == False
-                ).count()
-            else:
-                # I'm the sender - count unread messages I sent (sender notifications)
-                unread_count = Message.query.filter(
-                    Message.sender_id == current_user_id,
-                    Message.receiver_id == partner_id,
-                    Message.is_sender_read == False
-                ).count()
+            # Filter by allowed roles
+            if partner.role not in allowed_roles:
+                continue
+                
+            # Count unread messages FROM this partner TO current user
+            unread_count = Message.query.filter(
+                Message.sender_id == partner_id,
+                Message.receiver_id == current_user_id,
+                Message.is_receiver_read == False
+            ).count()
             
             conversations_dict[partner_id] = {
                 'partner_id': partner_id,
@@ -147,7 +156,8 @@ def get_conversations():
         
         return jsonify({
             'success': True,
-            'conversations': conversations_list
+            'conversations': conversations_list,
+            'user_role': current_user.role
         }), 200
         
     except Exception as e:
@@ -267,3 +277,109 @@ def get_unread_count():
     except Exception as e:
         current_app.logger.error(f"Error getting unread count: {str(e)}")
         return jsonify({'error': 'Failed to get unread count'}), 500
+
+@messages_bp.route('/sellers', methods=['GET'])
+@jwt_required()
+def get_sellers():
+    """Get list of sellers that users can message"""
+    try:
+        current_user_id = get_jwt_identity()
+        
+        # Get current user to verify they're allowed to message sellers
+        current_user = User.query.get(current_user_id)
+        if not current_user:
+            return jsonify({'error': 'User not found'}), 404
+            
+        # Only users can use this endpoint
+        if current_user.role not in ['user', 'admin']:
+            return jsonify({'error': 'Access denied'}), 403
+        
+        # Get all sellers
+        sellers = User.query.filter_by(role='seller').all()
+        
+        sellers_data = []
+        for seller in sellers:
+            # Check if there's an existing conversation
+            existing_conversation = Message.query.filter(
+                or_(
+                    and_(Message.sender_id == current_user_id, Message.receiver_id == seller.id),
+                    and_(Message.sender_id == seller.id, Message.receiver_id == current_user_id)
+                )
+            ).first()
+            
+            sellers_data.append({
+                'id': seller.id,
+                'username': seller.username,
+                'email': seller.email,
+                'has_conversation': existing_conversation is not None
+            })
+        
+        return jsonify({
+            'success': True,
+            'sellers': sellers_data
+        }), 200
+        
+    except Exception as e:
+        current_app.logger.error(f"Error getting sellers: {str(e)}")
+        return jsonify({'error': 'Failed to get sellers'}), 500
+
+@messages_bp.route('/start-conversation', methods=['POST'])
+@jwt_required()
+def start_conversation():
+    """Start a new conversation with a seller"""
+    try:
+        current_user_id = get_jwt_identity()
+        data = request.get_json()
+        
+        if not data or not data.get('seller_id') or not data.get('message'):
+            return jsonify({'error': 'Seller ID and initial message are required'}), 400
+        
+        seller_id = data.get('seller_id')
+        message_text = data.get('message').strip()
+        
+        if not message_text:
+            return jsonify({'error': 'Message cannot be empty'}), 400
+        
+        # Get current user
+        current_user = User.query.get(current_user_id)
+        if not current_user:
+            return jsonify({'error': 'User not found'}), 404
+            
+        # Verify user role
+        if current_user.role not in ['user', 'admin']:
+            return jsonify({'error': 'Only users can start conversations with sellers'}), 403
+        
+        # Check if seller exists and is actually a seller
+        seller = User.query.get(seller_id)
+        if not seller:
+            return jsonify({'error': 'Seller not found'}), 404
+            
+        if seller.role != 'seller':
+            return jsonify({'error': 'Target user is not a seller'}), 400
+        
+        # Prevent messaging yourself
+        if current_user_id == seller_id:
+            return jsonify({'error': 'Cannot send message to yourself'}), 400
+        
+        # Create the first message
+        new_message = Message(
+            sender_id=current_user_id,
+            receiver_id=seller_id,
+            message=message_text,
+            is_sender_read=True,
+            is_receiver_read=False
+        )
+        
+        db.session.add(new_message)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Conversation started successfully',
+            'data': new_message.to_dict()
+        }), 201
+        
+    except Exception as e:
+        current_app.logger.error(f"Error starting conversation: {str(e)}")
+        db.session.rollback()
+        return jsonify({'error': 'Failed to start conversation'}), 500
