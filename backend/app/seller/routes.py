@@ -628,6 +628,8 @@ def confirm_order(order_id):
         order.confirmed_at = datetime.utcnow()
         order.updated_at = datetime.utcnow()
         
+        # No need to create separate notification - we count confirmed orders directly
+        
         # Note: Item status should remain 'active' to allow other customers to order
         # Only the order status changes, not the item status
         
