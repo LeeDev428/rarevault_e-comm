@@ -100,14 +100,14 @@
               <div 
                 v-for="message in messages" 
                 :key="message.id"
-                :class="['message-item', { 'own-message': message.sender_id === currentUserId }]"
+                :class="['message-item', { 'own-message': parseInt(message.sender_id) === parseInt(currentUserId) }]"
               >
                 <div class="message-content">
                   <p>{{ message.message }}</p>
                   <div class="message-meta">
                     <span class="message-time">{{ formatDateTime(message.created_at) }}</span>
-                    <span v-if="message.sender_id === currentUserId && message.is_receiver_read" class="read-indicator">✓✓</span>
-                    <span v-else-if="message.sender_id === currentUserId" class="sent-indicator">✓</span>
+                    <span v-if="parseInt(message.sender_id) === parseInt(currentUserId) && message.is_receiver_read" class="read-indicator">✓✓</span>
+                    <span v-else-if="parseInt(message.sender_id) === parseInt(currentUserId)" class="sent-indicator">✓</span>
                   </div>
                 </div>
               </div>
@@ -764,8 +764,9 @@ export default {
 
 .role-badge {
   position: absolute;
-  bottom: -2px;
-  right: -2px;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
   background: #10b981;
   color: white;
   font-size: 10px;
@@ -773,6 +774,7 @@ export default {
   border-radius: 8px;
   text-transform: uppercase;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .role-badge.seller {
@@ -935,11 +937,19 @@ export default {
 .message-item {
   display: flex;
   max-width: 70%;
+  margin-bottom: 16px;
 }
 
 .message-item.own-message {
   align-self: flex-end;
-  flex-direction: row-reverse;
+  margin-left: auto;
+  margin-right: 0;
+}
+
+.message-item:not(.own-message) {
+  align-self: flex-start;
+  margin-left: 0;
+  margin-right: auto;
 }
 
 .message-content {
