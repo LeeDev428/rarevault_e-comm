@@ -5,7 +5,7 @@
       <div class="messages-header">
         <h1 class="page-title">Messages</h1>
         <div class="header-actions">
-          <button @click="showSellersModal = true" class="action-btn primary">
+          <button @click="openSellersModal" class="action-btn primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
             </svg>
@@ -38,8 +38,8 @@
               :class="['conversation-item', { 'active': selectedPartnerId === conversation.partner_id }]"
             >
               <div class="conversation-avatar">
-                <div class="avatar-circle">{{ conversation.partner_username.charAt(0).toUpperCase() }}</div>
-                <span class="role-badge" :class="conversation.partner_role">{{ conversation.partner_role }}</span>
+                <div class="avatar-circle" :class="conversation.partner_role">{{ conversation.partner_username.charAt(0).toUpperCase() }}</div>
+                <span class="role-badge" :class="conversation.partner_role">{{ conversation.partner_role === 'seller' ? 'Seller' : conversation.partner_role }}</span>
               </div>
               <div class="conversation-info">
                 <div class="conversation-header">
@@ -80,10 +80,10 @@
             <!-- Chat Header -->
             <div class="chat-header">
               <div class="chat-partner-info">
-                <div class="partner-avatar">{{ selectedPartnerName.charAt(0).toUpperCase() }}</div>
+                <div class="partner-avatar" :class="selectedPartnerRole">{{ selectedPartnerName.charAt(0).toUpperCase() }}</div>
                 <div>
                   <h4>{{ selectedPartnerName }}</h4>
-                  <span class="partner-role">{{ selectedPartnerRole }}</span>
+                  <span class="partner-role">{{ selectedPartnerRole === 'seller' ? 'Seller' : selectedPartnerRole }}</span>
                 </div>
               </div>
               <div class="chat-actions">
@@ -252,16 +252,24 @@ export default {
       loading: false,
       messagesLoading: false,
       sendingMessage: false,
+      loadingSellers: false,
+      startingConversation: false,
       conversations: [],
       messages: [],
+      sellers: [],
       selectedPartnerId: null,
       selectedPartnerName: '',
       selectedPartnerRole: '',
+      selectedSellerForConversation: null,
       newMessage: '',
+      initialMessage: '',
       currentUserId: null,
       totalUnreadCount: 0,
       pollingInterval: null,
-      conversationPollingInterval: null
+      conversationPollingInterval: null,
+      showSellersModal: false,
+      showStartConversationModal: false,
+      errorMessage: ''
     }
   },
   async mounted() {
@@ -508,6 +516,88 @@ export default {
     truncateMessage(message, maxLength = 50) {
       if (message.length <= maxLength) return message
       return message.substring(0, maxLength) + '...'
+    },
+
+    async loadSellers() {
+      try {
+        this.loadingSellers = true
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        
+        const response = await axios.get('http://localhost:5000/api/messages/sellers', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+
+        if (response.data.success) {
+          this.sellers = response.data.sellers
+        }
+      } catch (error) {
+        console.error('Error loading sellers:', error)
+        this.errorMessage = 'Failed to load sellers'
+      } finally {
+        this.loadingSellers = false
+      }
+    },
+
+    async startConversationWithSeller(seller) {
+      if (seller.has_conversation) {
+        // If conversation exists, find and select it
+        const existingConversation = this.conversations.find(conv => 
+          conv.partner_id === seller.id && conv.partner_role === 'seller'
+        )
+        if (existingConversation) {
+          this.selectConversation(existingConversation)
+          this.showSellersModal = false
+        }
+      } else {
+        // Start new conversation
+        this.selectedSellerForConversation = seller
+        this.showSellersModal = false
+        this.showStartConversationModal = true
+      }
+    },
+
+    async sendInitialMessage() {
+      if (!this.initialMessage.trim() || !this.selectedSellerForConversation || this.startingConversation) return
+
+      try {
+        this.startingConversation = true
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        
+        const response = await axios.post('http://localhost:5000/api/messages/start-conversation', {
+          seller_id: this.selectedSellerForConversation.id,
+          message: this.initialMessage.trim()
+        }, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+
+        if (response.data.success) {
+          this.closeStartConversationModal()
+          // Refresh conversations and select the new one
+          await this.loadConversations()
+          const newConversation = this.conversations.find(conv => 
+            conv.partner_id === this.selectedSellerForConversation.id
+          )
+          if (newConversation) {
+            this.selectConversation(newConversation)
+          }
+        }
+      } catch (error) {
+        console.error('Error starting conversation:', error)
+        this.errorMessage = 'Failed to start conversation. Please try again.'
+      } finally {
+        this.startingConversation = false
+      }
+    },
+
+    closeStartConversationModal() {
+      this.showStartConversationModal = false
+      this.selectedSellerForConversation = null
+      this.initialMessage = ''
+    },
+
+    async openSellersModal() {
+      this.showSellersModal = true
+      await this.loadSellers()
     }
   }
 }
@@ -636,6 +726,18 @@ export default {
   align-items: center;
   justify-content: center;
   font-weight: 600;
+}
+
+.avatar-circle.seller {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.avatar-circle.admin {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.avatar-circle.user {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 }
 
 .role-badge {
@@ -951,5 +1053,275 @@ export default {
     align-items: flex-start;
     gap: 12px;
   }
+}
+
+/* Header Styles */
+.messages-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-size: 14px;
+}
+
+.action-btn.primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.action-btn.primary:hover {
+  background: #2563eb;
+}
+
+.action-btn.secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.action-btn.secondary:hover {
+  background: #e5e7eb;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  color: #374151;
+  background: #f3f4f6;
+}
+
+.modal-body {
+  padding: 20px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* Sellers List Styles */
+.loading-sellers {
+  text-align: center;
+  padding: 40px;
+  color: #6b7280;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+.sellers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.seller-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.seller-item:hover {
+  background: #f9fafb;
+  border-color: #3b82f6;
+}
+
+.seller-item.has-conversation {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.seller-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin-right: 12px;
+}
+
+.seller-info {
+  flex: 1;
+}
+
+.seller-name {
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.seller-status {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.seller-status .existing {
+  color: #3b82f6;
+}
+
+.seller-status .new {
+  color: #059669;
+}
+
+.seller-action {
+  color: #3b82f6;
+}
+
+.no-sellers {
+  text-align: center;
+  color: #6b7280;
+  padding: 40px;
+}
+
+/* Start Conversation Form */
+.start-conversation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: #374151;
+}
+
+.initial-message-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.initial-message-textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn {
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-size: 14px;
+}
+
+.btn.primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn.primary:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.btn.primary:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.btn.secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.btn.secondary:hover {
+  background: #e5e7eb;
 }
 </style>
