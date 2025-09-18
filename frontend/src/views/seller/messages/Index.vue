@@ -360,12 +360,16 @@ export default {
       }
     },
 
-    async loadMessages(partnerId, itemId = null) {
+    async loadMessages(partnerId, itemId = null, silent = false) {
       if (!partnerId) return
 
       try {
-        this.messagesLoading = true
-        this.errorMessage = ''
+        // Only show loading indicator if not in silent mode (during polling)
+        if (!silent) {
+          this.messagesLoading = true
+          this.errorMessage = ''
+        }
+        
         const token = localStorage.getItem('access_token') || localStorage.getItem('token')
         
         let url = `http://localhost:5000/api/messages/conversation/${partnerId}`
@@ -378,14 +382,17 @@ export default {
         })
 
         if (response.data.success) {
+          const previousMessageCount = this.messages.length
           this.messages = response.data.messages
           this.selectedPartnerName = response.data.partner.username
           this.conversationItem = response.data.item
           
-          // Scroll to bottom after loading messages
-          this.$nextTick(() => {
-            this.scrollToBottom()
-          })
+          // Only scroll to bottom if we're not polling or if there are new messages
+          if (!silent || this.messages.length > previousMessageCount) {
+            this.$nextTick(() => {
+              this.scrollToBottom()
+            })
+          }
 
           // Update conversation unread count in local data
           const conversation = this.conversations.find(c => 
@@ -476,19 +483,30 @@ export default {
     },
 
     startPolling() {
-      // Poll messages every 5 seconds when a conversation is selected
-      this.pollingInterval = setInterval(() => {
+      // Simple AJAX polling for messages every 10 seconds (reduced frequency to avoid UI issues)
+      this.pollingInterval = setInterval(async () => {
         if (this.selectedConversation && !this.messagesLoading) {
-          this.loadMessages(this.selectedConversation.partner_id, this.selectedConversation.item_id)
+          try {
+            // Use silent mode to avoid UI flickering during polling
+            await this.loadMessages(this.selectedConversation.partner_id, this.selectedConversation.item_id, true)
+          } catch (error) {
+            console.warn('Failed to refresh messages:', error)
+            // Don't show error to user for polling failures
+          }
         }
-      }, 5000)
+      }, 10000)
 
-      // Poll conversations every 15 seconds
-      this.conversationPollingInterval = setInterval(() => {
+      // Simple AJAX polling for conversations every 30 seconds (reduced frequency)
+      this.conversationPollingInterval = setInterval(async () => {
         if (!this.loading) {
-          this.loadConversations()
+          try {
+            await this.loadConversations()
+          } catch (error) {
+            console.warn('Failed to refresh conversations:', error)
+            // Don't show error to user for polling failures
+          }
         }
-      }, 15000)
+      }, 30000)
     },
 
     stopPolling() {
