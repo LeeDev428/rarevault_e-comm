@@ -1,7 +1,7 @@
 from app import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import Numeric
+from sqlalchemy import Numeric, or_, and_
 import pytz
 
 class User(db.Model):
@@ -441,6 +441,7 @@ class Message(db.Model):
             return None
         
         try:
+            import pytz
             # Manila timezone
             manila = pytz.timezone('Asia/Manila')
             
@@ -459,6 +460,38 @@ class Message(db.Model):
             manila_offset = timedelta(hours=8)
             manila_time = dt + manila_offset
             return manila_time.strftime('%Y-%m-%dT%H:%M:%S+08:00')
+    
+    def get_conversation_partner(self, user_id):
+        """Get the conversation partner for a given user"""
+        return self.receiver_id if self.sender_id == user_id else self.sender_id
+    
+    def is_between_users(self, user1_id, user2_id):
+        """Check if this message is between two specific users"""
+        return ((self.sender_id == user1_id and self.receiver_id == user2_id) or 
+                (self.sender_id == user2_id and self.receiver_id == user1_id))
+    
+    def mark_as_read_by_receiver(self):
+        """Mark message as read by receiver"""
+        self.is_receiver_read = True
+    
+    @staticmethod
+    def get_conversation_messages(user1_id, user2_id):
+        """Get all messages in a conversation between two users"""
+        return Message.query.filter(
+            or_(
+                and_(Message.sender_id == user1_id, Message.receiver_id == user2_id),
+                and_(Message.sender_id == user2_id, Message.receiver_id == user1_id)
+            )
+        ).order_by(Message.created_at.asc())
+    
+    @staticmethod
+    def get_unread_count_from_user(from_user_id, to_user_id):
+        """Get count of unread messages from one user to another"""
+        return Message.query.filter(
+            Message.sender_id == from_user_id,
+            Message.receiver_id == to_user_id,
+            Message.is_receiver_read == False
+        ).count()
     
     def to_dict(self):
         return {
