@@ -4,8 +4,16 @@
       <!-- Header -->
       <div class="messages-header">
         <h1 class="page-title">Messages</h1>
-        <div class="unread-count" v-if="totalUnreadCount > 0">
-          {{ totalUnreadCount }} unread message{{ totalUnreadCount > 1 ? 's' : '' }}
+        <div class="header-actions">
+          <button @click="showSellersModal = true" class="action-btn primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+            </svg>
+            Message a Seller
+          </button>
+          <div class="unread-count" v-if="totalUnreadCount > 0">
+            {{ totalUnreadCount }} unread message{{ totalUnreadCount > 1 ? 's' : '' }}
+          </div>
         </div>
       </div>
 
@@ -141,6 +149,88 @@
                 </div>
               </form>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sellers Modal -->
+      <div v-if="showSellersModal" class="modal-overlay" @click="showSellersModal = false">
+        <div class="modal-content" @click.stop>
+          <div class="modal-header">
+            <h3>Message a Seller</h3>
+            <button @click="showSellersModal = false" class="close-btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div v-if="loadingSellers" class="loading-sellers">
+              <div class="loading-spinner"></div>
+              <p>Loading sellers...</p>
+            </div>
+            <div v-else class="sellers-list">
+              <div 
+                v-for="seller in sellers" 
+                :key="seller.id"
+                @click="startConversationWithSeller(seller)"
+                class="seller-item"
+                :class="{ 'has-conversation': seller.has_conversation }"
+              >
+                <div class="seller-avatar">{{ seller.username.charAt(0).toUpperCase() }}</div>
+                <div class="seller-info">
+                  <div class="seller-name">{{ seller.username }}</div>
+                  <div class="seller-status">
+                    <span v-if="seller.has_conversation" class="existing">Existing conversation</span>
+                    <span v-else class="new">Click to start conversation</span>
+                  </div>
+                </div>
+                <div class="seller-action">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                </div>
+              </div>
+              <div v-if="sellers.length === 0" class="no-sellers">
+                <p>No sellers available</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Start Conversation Modal -->
+      <div v-if="showStartConversationModal" class="modal-overlay" @click="closeStartConversationModal">
+        <div class="modal-content" @click.stop>
+          <div class="modal-header">
+            <h3>Message {{ selectedSellerForConversation?.username }}</h3>
+            <button @click="closeStartConversationModal" class="close-btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="sendInitialMessage" class="start-conversation-form">
+              <div class="form-group">
+                <label for="initialMessage">Your message:</label>
+                <textarea
+                  id="initialMessage"
+                  v-model="initialMessage"
+                  placeholder="Hi! I'm interested in your items..."
+                  rows="4"
+                  required
+                  class="initial-message-textarea"
+                ></textarea>
+              </div>
+              <div class="form-actions">
+                <button type="button" @click="closeStartConversationModal" class="btn secondary">Cancel</button>
+                <button type="submit" :disabled="!initialMessage.trim() || startingConversation" class="btn primary">
+                  <span v-if="startingConversation">Sending...</span>
+                  <span v-else>Send Message</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
