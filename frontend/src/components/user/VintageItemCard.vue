@@ -38,6 +38,13 @@
       <div class="item-overlay">
         <div class="item-actions">
           <button 
+            class="action-btn view-details-btn"
+            @click="viewItemDetails"
+          >
+            View Details
+          </button>
+          
+          <button 
             class="action-btn order-btn"
             @click="$emit('order-item', item)"
           >
@@ -195,6 +202,11 @@ export default {
       // Return non-primary images, limit to 3 for display
       const secondaryImages = images.filter(img => !img.isPrimary);
       return secondaryImages.slice(0, 3);
+    },
+    
+    viewItemDetails() {
+      // Navigate to item details page
+      this.$router.push(`/user/items/${this.item.id}`);
     }
   }
 }
@@ -341,6 +353,16 @@ export default {
   transition: all 0.2s ease;
   text-align: center;
   min-width: 140px;
+}
+
+.view-details-btn {
+  background: #6B7280;
+  color: white;
+}
+
+.view-details-btn:hover {
+  background: #4B5563;
+  transform: translateY(-1px);
 }
 
 .order-btn {
