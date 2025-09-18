@@ -7,88 +7,180 @@
         <div class="header-stats">
           <div class="stat-item">
             <span class="stat-number">{{ customerConversations.length }}</span>
-            <span class="stat-label">Conversations</span>
+            <span class="stat-label">Active Conversations</span>
           </div>
           <div class="stat-item" v-if="totalUnreadCount > 0">
             <span class="stat-number unread">{{ totalUnreadCount }}</span>
-            <span class="stat-label">Unread</span>
+            <span class="stat-label">Unread Messages</span>
           </div>
         </div>
       </div>
 
+      <!-- Error Message -->
+      <div v-if="errorMessage" class="error-banner">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+        {{ errorMessage }}
+        <button @click="errorMessage = ''" class="close-error">×</button>
+      </div>
+
       <!-- Chat Interface -->
       <div class="chat-interface">
-        <!-- Conversations List (Left Sidebar) -->
+        <!-- Conversations Sidebar -->
         <div class="conversations-sidebar">
           <div class="sidebar-header">
-            <h3>Customer Conversations</h3>
-            <button @click="refreshConversations" class="refresh-btn" :disabled="loading">
-              <svg class="refresh-icon" :class="{ spinning: loading }" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-8 3.58-8 8s3.58 8 8 8c3.74 0 6.85-2.58 7.75-6h-2.08c-.82 2.33-3.04 4-5.67 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
-              </svg>
-            </button>
+            <h3>Customer Inquiries</h3>
+            <div class="header-actions">
+              <button @click="refreshConversations" class="refresh-btn" :disabled="loading">
+                <svg class="refresh-icon" :class="{ spinning: loading }" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-8 3.58-8 8s3.58 8 8 8c3.74 0 6.85-2.58 7.75-6h-2.08c-.82 2.33-3.04 4-5.67 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                </svg>
+              </button>
+            </div>
           </div>
 
           <div class="conversations-list">
             <div 
               v-for="conversation in customerConversations" 
-              :key="conversation.partner_id"
+              :key="`${conversation.partner_id}_${conversation.item_id || 'general'}`"
               @click="selectConversation(conversation)"
-              :class="['conversation-item', { 'active': selectedPartnerId === conversation.partner_id, 'has-unread': conversation.unread_count > 0 }]"
+              :class="['conversation-item', { 
+                'active': isActiveConversation(conversation), 
+                'has-unread': conversation.unread_count > 0 
+              }]"
             >
-              <div class="conversation-avatar">
-                <div class="avatar-circle customer">{{ conversation.partner_username.charAt(0).toUpperCase() }}</div>
-                <span class="role-badge user">Customer</span>
-              </div>
-              <div class="conversation-info">
-                <div class="conversation-header">
-                  <span class="partner-name">{{ conversation.partner_username }}</span>
-                  <span class="message-time">{{ formatTime(conversation.last_message_time) }}</span>
+              <!-- Item Preview (if conversation is about an item) -->
+              <div v-if="conversation.item" class="conversation-item-preview">
+                <div class="item-thumbnail">
+                  <img v-if="conversation.item.images && conversation.item.images.length > 0" 
+                       :src="`http://localhost:5000/uploads/${conversation.item.images[0]}`" 
+                       :alt="conversation.item.title"
+                       class="item-image">
+                  <div v-else class="no-image">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                    </svg>
+                  </div>
                 </div>
-                <div class="last-message">
-                  <span class="message-preview">{{ truncateMessage(conversation.last_message) }}</span>
-                  <div class="message-indicators">
-                    <span v-if="conversation.unread_count > 0" class="unread-badge">{{ conversation.unread_count }}</span>
-                    <span v-if="conversation.is_last_message_mine" class="sent-indicator">✓</span>
+                <div class="item-info">
+                  <div class="item-title">{{ truncateText(conversation.item.title, 25) }}</div>
+                  <div class="item-price">${{ conversation.item.price }}</div>
+                </div>
+              </div>
+
+              <!-- Customer Info -->
+              <div class="conversation-details">
+                <div class="customer-avatar">
+                  <div class="avatar-circle">{{ conversation.partner_username.charAt(0).toUpperCase() }}</div>
+                  <span class="customer-badge">Customer</span>
+                </div>
+                
+                <div class="conversation-info">
+                  <div class="conversation-header">
+                    <span class="customer-name">{{ conversation.partner_username }}</span>
+                    <span class="message-time">{{ formatRelativeTime(conversation.last_message_time) }}</span>
+                  </div>
+                  
+                  <div class="last-message-row">
+                    <span class="message-preview">{{ truncateText(conversation.last_message, 40) }}</span>
+                    <div class="message-indicators">
+                      <span v-if="conversation.unread_count > 0" class="unread-badge">{{ conversation.unread_count }}</span>
+                      <span v-if="conversation.is_last_message_mine" class="sent-indicator">✓</span>
+                    </div>
+                  </div>
+                  
+                  <!-- Order Status (if applicable) -->
+                  <div v-if="conversation.order" class="order-status">
+                    <span class="order-label">Order #{{ conversation.order.order_number }}</span>
+                    <span :class="['status-badge', conversation.order.status]">{{ conversation.order.status }}</span>
                   </div>
                 </div>
               </div>
             </div>
 
+            <!-- Empty State -->
             <div v-if="customerConversations.length === 0 && !loading" class="empty-conversations">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 <circle cx="9" cy="9" r="2"/>
                 <path d="m13 13l6 6"/>
               </svg>
-              <p>No customer messages yet</p>
-              <small>Customer messages will appear here when they contact you</small>
+              <h3>No Customer Messages</h3>
+              <p>When customers message you about your items, their conversations will appear here.</p>
+            </div>
+
+            <!-- Loading State -->
+            <div v-if="loading" class="loading-conversations">
+              <div class="loading-spinner"></div>
+              <p>Loading conversations...</p>
             </div>
           </div>
         </div>
 
-        <!-- Chat Area (Right Panel) -->
+        <!-- Chat Panel -->
         <div class="chat-panel">
-          <div v-if="!selectedPartnerId" class="no-conversation-selected">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <!-- No Conversation Selected -->
+          <div v-if="!selectedConversation" class="no-conversation-selected">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
-            <h3>Select a customer conversation</h3>
+            <h3>Select a Customer Conversation</h3>
             <p>Choose a customer from the sidebar to view and respond to their messages</p>
           </div>
 
+          <!-- Active Chat -->
           <div v-else class="active-chat">
+            <!-- Item Header (if conversation is about an item) -->
+            <div v-if="conversationItem" class="item-header">
+              <div class="item-details">
+                <div class="item-image-container">
+                  <img v-if="conversationItem.images && conversationItem.images.length > 0" 
+                       :src="`http://localhost:5000/uploads/${conversationItem.images[0]}`" 
+                       :alt="conversationItem.title"
+                       class="item-header-image">
+                  <div v-else class="no-item-image">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="item-info-detailed">
+                  <h4 class="item-title-header">{{ conversationItem.title }}</h4>
+                  <p class="item-description">{{ truncateText(conversationItem.description || 'No description available', 100) }}</p>
+                  <div class="item-meta">
+                    <span class="item-price-header">${{ conversationItem.price }}</span>
+                    <span :class="['item-status', conversationItem.status]">{{ conversationItem.status }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Order Info (if applicable) -->
+              <div v-if="conversationOrder" class="order-header">
+                <div class="order-details">
+                  <h5>Order #{{ conversationOrder.order_number }}</h5>
+                  <div class="order-meta">
+                    <span class="order-amount">${{ conversationOrder.total_amount }}</span>
+                    <span :class="['order-status-badge', conversationOrder.status]">{{ conversationOrder.status }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Chat Header -->
             <div class="chat-header">
               <div class="chat-partner-info">
-                <div class="partner-avatar customer">{{ selectedPartnerName.charAt(0).toUpperCase() }}</div>
-                <div>
+                <div class="partner-avatar-large">{{ selectedPartnerName.charAt(0).toUpperCase() }}</div>
+                <div class="partner-details">
                   <h4>{{ selectedPartnerName }}</h4>
                   <span class="partner-role">Customer</span>
+                  <span v-if="conversationItem" class="conversation-context">
+                    About: {{ conversationItem.title }}
+                  </span>
                 </div>
               </div>
               <div class="chat-actions">
-                <button @click="refreshMessages" :disabled="messagesLoading" class="action-btn secondary">
+                <button @click="refreshMessages" :disabled="messagesLoading" class="action-btn">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-8 3.58-8 8s3.58 8 8 8c3.74 0 6.85-2.58 7.75-6h-2.08c-.82 2.33-3.04 4-5.67 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
                   </svg>
@@ -101,44 +193,55 @@
               <div 
                 v-for="message in messages" 
                 :key="message.id"
-                :class="['message-item', { 'own-message': message.sender_id === currentUserId }]"
+                :class="['message-bubble', { 'own-message': message.sender_id === currentUserId }]"
               >
                 <div class="message-content">
-                  <p>{{ message.message }}</p>
-                  <div class="message-meta">
-                    <span class="message-time">{{ formatDateTime(message.created_at) }}</span>
-                    <span v-if="message.sender_id === currentUserId && message.is_receiver_read" class="read-indicator">✓✓</span>
-                    <span v-else-if="message.sender_id === currentUserId" class="sent-indicator">✓</span>
+                  <p class="message-text">{{ message.message }}</p>
+                  <div class="message-metadata">
+                    <span class="message-timestamp">{{ formatDateTime(message.created_at) }}</span>
+                    <span v-if="message.sender_id === currentUserId && message.is_receiver_read" class="read-status">Read</span>
+                    <span v-else-if="message.sender_id === currentUserId" class="sent-status">Sent</span>
                   </div>
                 </div>
               </div>
 
+              <!-- Empty Messages -->
               <div v-if="messages.length === 0 && !messagesLoading" class="no-messages">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
                 <p>No messages yet</p>
-                <small>This customer hasn't sent any messages</small>
+                <small>This conversation hasn't started yet</small>
+              </div>
+
+              <!-- Loading Messages -->
+              <div v-if="messagesLoading" class="loading-messages">
+                <div class="loading-spinner small"></div>
+                <p>Loading messages...</p>
               </div>
             </div>
 
             <!-- Message Input -->
             <div class="message-input-container">
               <form @submit.prevent="sendMessage" class="message-form">
-                <div class="input-group">
+                <div class="input-wrapper">
                   <textarea
                     v-model="newMessage"
                     @keydown.enter.exact.prevent="sendMessage"
                     @keydown.enter.shift="newMessage += '\n'"
-                    placeholder="Type your response... (Shift+Enter for new line)"
+                    placeholder="Type your response to the customer... (Shift+Enter for new line)"
                     rows="1"
                     ref="messageInput"
                     :disabled="sendingMessage"
-                    class="message-textarea"
+                    class="message-input"
+                    @input="autoResize"
                   ></textarea>
                   <button 
                     type="submit" 
                     :disabled="!newMessage.trim() || sendingMessage"
-                    class="send-btn"
+                    class="send-button"
                   >
-                    <svg v-if="sendingMessage" class="sending-spinner" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <svg v-if="sendingMessage" class="sending-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                       <circle cx="12" cy="12" r="3" opacity="0.4"/>
                       <path d="M12 1a11 11 0 1 0 11 11A11 11 0 0 0 12 1zm0 19a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" opacity="0.2"/>
                       <path d="M12 4a8 8 0 0 1 8 8" opacity="1"/>
@@ -173,14 +276,17 @@ export default {
       sendingMessage: false,
       conversations: [],
       messages: [],
+      selectedConversation: null,
       selectedPartnerId: null,
       selectedPartnerName: '',
-      selectedPartnerRole: '',
+      conversationItem: null,
+      conversationOrder: null,
       newMessage: '',
       currentUserId: null,
       totalUnreadCount: 0,
       pollingInterval: null,
-      conversationPollingInterval: null
+      conversationPollingInterval: null,
+      errorMessage: ''
     }
   },
   computed: {
@@ -206,24 +312,31 @@ export default {
           return
         }
 
-        // Decode JWT to get user ID (basic decode, in production use proper JWT library)
+        // Decode JWT to get user ID and verify role
         const payload = JSON.parse(atob(token.split('.')[1]))
         this.currentUserId = payload.sub
 
         // Verify user is a seller
         if (payload.role !== 'seller') {
-          this.$router.push('/user/dashboard')
+          this.errorMessage = 'Access denied. This page is for sellers only.'
+          setTimeout(() => {
+            this.$router.push('/user/dashboard')
+          }, 2000)
           return
         }
       } catch (error) {
         console.error('Error initializing user:', error)
-        this.$router.push('/login')
+        this.errorMessage = 'Authentication error. Please log in again.'
+        setTimeout(() => {
+          this.$router.push('/login')
+        }, 2000)
       }
     },
 
     async loadConversations() {
       try {
         this.loading = true
+        this.errorMessage = ''
         const token = localStorage.getItem('access_token') || localStorage.getItem('token')
         
         const response = await axios.get('http://localhost:5000/api/messages/conversations', {
@@ -231,14 +344,14 @@ export default {
         })
 
         if (response.data.success) {
-          // Filter to only show conversations with users (customers)
-          this.conversations = response.data.conversations.filter(conv => 
-            conv.partner_role === 'user'
-          )
+          this.conversations = response.data.conversations
           this.calculateUnreadCount()
+        } else {
+          this.errorMessage = 'Failed to load conversations'
         }
       } catch (error) {
         console.error('Error loading conversations:', error)
+        this.errorMessage = error.response?.data?.error || 'Failed to load conversations'
         if (error.response?.status === 401) {
           this.$router.push('/login')
         }
@@ -247,32 +360,46 @@ export default {
       }
     },
 
-    async loadMessages(partnerId) {
+    async loadMessages(partnerId, itemId = null) {
       if (!partnerId) return
 
       try {
         this.messagesLoading = true
+        this.errorMessage = ''
         const token = localStorage.getItem('access_token') || localStorage.getItem('token')
         
-        const response = await axios.get(`http://localhost:5000/api/messages/conversation/${partnerId}`, {
+        let url = `http://localhost:5000/api/messages/conversation/${partnerId}`
+        if (itemId) {
+          url += `?item_id=${itemId}`
+        }
+        
+        const response = await axios.get(url, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
 
         if (response.data.success) {
           this.messages = response.data.messages
           this.selectedPartnerName = response.data.partner.username
-          this.selectedPartnerRole = response.data.partner.role
+          this.conversationItem = response.data.item
           
           // Scroll to bottom after loading messages
           this.$nextTick(() => {
             this.scrollToBottom()
           })
 
-          // Mark as read
-          await this.markMessagesAsRead(partnerId)
+          // Update conversation unread count in local data
+          const conversation = this.conversations.find(c => 
+            c.partner_id === partnerId && 
+            (c.item_id === itemId || (!c.item_id && !itemId))
+          )
+          if (conversation) {
+            conversation.unread_count = 0
+            this.calculateUnreadCount()
+          }
         }
       } catch (error) {
         console.error('Error loading messages:', error)
+        this.errorMessage = error.response?.data?.error || 'Failed to load messages'
         if (error.response?.status === 401) {
           this.$router.push('/login')
         }
@@ -282,16 +409,29 @@ export default {
     },
 
     async sendMessage() {
-      if (!this.newMessage.trim() || !this.selectedPartnerId || this.sendingMessage) return
+      if (!this.newMessage.trim() || !this.selectedConversation || this.sendingMessage) return
 
       try {
         this.sendingMessage = true
+        this.errorMessage = ''
         const token = localStorage.getItem('access_token') || localStorage.getItem('token')
         
-        const response = await axios.post('http://localhost:5000/api/messages/send', {
-          receiver_id: this.selectedPartnerId,
+        const messageData = {
+          receiver_id: this.selectedConversation.partner_id,
           message: this.newMessage.trim()
-        }, {
+        }
+
+        // Add item_id if this conversation is about a specific item
+        if (this.selectedConversation.item_id) {
+          messageData.item_id = this.selectedConversation.item_id
+        }
+
+        // Add order_id if this conversation is about a specific order
+        if (this.selectedConversation.order_id) {
+          messageData.order_id = this.selectedConversation.order_id
+        }
+        
+        const response = await axios.post('http://localhost:5000/api/messages/send', messageData, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
 
@@ -303,6 +443,7 @@ export default {
           // Scroll to bottom
           this.$nextTick(() => {
             this.scrollToBottom()
+            this.autoResize() // Reset textarea height
           })
 
           // Refresh conversations to update last message
@@ -310,38 +451,24 @@ export default {
         }
       } catch (error) {
         console.error('Error sending message:', error)
-        alert('Failed to send message. Please try again.')
+        this.errorMessage = error.response?.data?.error || 'Failed to send message. Please try again.'
       } finally {
         this.sendingMessage = false
       }
     },
 
-    async markMessagesAsRead(senderId) {
-      try {
-        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
-        
-        await axios.put('http://localhost:5000/api/messages/mark-read', {
-          sender_id: senderId
-        }, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
-
-        // Update local conversation data
-        const conversation = this.conversations.find(c => c.partner_id === senderId)
-        if (conversation) {
-          conversation.unread_count = 0
-          this.calculateUnreadCount()
-        }
-      } catch (error) {
-        console.error('Error marking messages as read:', error)
-      }
-    },
-
     selectConversation(conversation) {
+      this.selectedConversation = conversation
       this.selectedPartnerId = conversation.partner_id
       this.selectedPartnerName = conversation.partner_username
-      this.selectedPartnerRole = conversation.partner_role
-      this.loadMessages(conversation.partner_id)
+      this.conversationOrder = conversation.order
+      this.loadMessages(conversation.partner_id, conversation.item_id)
+    },
+
+    isActiveConversation(conversation) {
+      return this.selectedConversation && 
+             this.selectedConversation.partner_id === conversation.partner_id &&
+             this.selectedConversation.item_id === conversation.item_id
     },
 
     calculateUnreadCount() {
@@ -349,19 +476,19 @@ export default {
     },
 
     startPolling() {
-      // Poll messages every 3 seconds when a conversation is selected
+      // Poll messages every 5 seconds when a conversation is selected
       this.pollingInterval = setInterval(() => {
-        if (this.selectedPartnerId && !this.messagesLoading) {
-          this.loadMessages(this.selectedPartnerId)
+        if (this.selectedConversation && !this.messagesLoading) {
+          this.loadMessages(this.selectedConversation.partner_id, this.selectedConversation.item_id)
         }
-      }, 3000)
+      }, 5000)
 
-      // Poll conversations every 10 seconds
+      // Poll conversations every 15 seconds
       this.conversationPollingInterval = setInterval(() => {
         if (!this.loading) {
           this.loadConversations()
         }
-      }, 10000)
+      }, 15000)
     },
 
     stopPolling() {
@@ -378,8 +505,8 @@ export default {
     },
 
     async refreshMessages() {
-      if (this.selectedPartnerId) {
-        await this.loadMessages(this.selectedPartnerId)
+      if (this.selectedConversation) {
+        await this.loadMessages(this.selectedConversation.partner_id, this.selectedConversation.item_id)
       }
     },
 
@@ -390,57 +517,82 @@ export default {
       }
     },
 
-    formatTime(dateString) {
+    autoResize() {
+      const textarea = this.$refs.messageInput
+      if (textarea) {
+        textarea.style.height = 'auto'
+        textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px'
+      }
+    },
+
+    formatRelativeTime(dateString) {
+      if (!dateString) return ''
       const date = new Date(dateString)
       const now = new Date()
       const diff = now - date
       
       if (diff < 60000) return 'now'
-      if (diff < 3600000) return `${Math.floor(diff / 60000)}m`
-      if (diff < 86400000) return `${Math.floor(diff / 3600000)}h`
-      if (diff < 2592000000) return `${Math.floor(diff / 86400000)}d`
+      if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`
+      if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`
+      if (diff < 2592000000) return `${Math.floor(diff / 86400000)}d ago`
       
       return date.toLocaleDateString()
     },
 
     formatDateTime(dateString) {
-      return new Date(dateString).toLocaleString()
+      if (!dateString) return ''
+      return new Date(dateString).toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
     },
 
-    truncateMessage(message, maxLength = 50) {
-      if (message.length <= maxLength) return message
-      return message.substring(0, maxLength) + '...'
+    truncateText(text, maxLength = 50) {
+      if (!text || text.length <= maxLength) return text
+      return text.substring(0, maxLength) + '...'
     }
   }
 }
 </script>
 
 <style scoped>
+/* Main Container */
 .messages-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   height: calc(100vh - 120px);
   display: flex;
   flex-direction: column;
+  padding: 0 16px;
 }
 
+/* Header */
 .messages-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .page-title {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
   color: #111827;
   margin: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .header-stats {
   display: flex;
-  gap: 24px;
+  gap: 32px;
 }
 
 .stat-item {
@@ -449,7 +601,7 @@ export default {
 
 .stat-number {
   display: block;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
   color: #3b82f6;
   margin-bottom: 4px;
@@ -457,6 +609,7 @@ export default {
 
 .stat-number.unread {
   color: #ef4444;
+  animation: pulse 2s infinite;
 }
 
 .stat-label {
@@ -467,21 +620,53 @@ export default {
   letter-spacing: 0.5px;
 }
 
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Error Banner */
+.error-banner {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.close-error {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #dc2626;
+}
+
+/* Chat Interface */
 .chat-interface {
   display: flex;
   height: 100%;
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   overflow: hidden;
+  border: 1px solid #e5e7eb;
 }
 
 /* Conversations Sidebar */
 .conversations-sidebar {
-  width: 320px;
+  width: 380px;
   border-right: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
+  background: #f9fafb;
 }
 
 .sidebar-header {
@@ -490,25 +675,40 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: white;
 }
 
 .sidebar-header h3 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
+  color: #111827;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .refresh-btn {
   background: none;
-  border: none;
+  border: 1px solid #d1d5db;
   cursor: pointer;
   color: #6b7280;
-  padding: 4px;
-  border-radius: 4px;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
 }
 
 .refresh-btn:hover {
-  background: #f3f4f6;
+  color: #3b82f6;
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .refresh-icon.spinning {
@@ -523,60 +723,114 @@ export default {
 .conversations-list {
   flex: 1;
   overflow-y: auto;
+  padding: 8px;
 }
 
+/* Conversation Item */
 .conversation-item {
-  display: flex;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid #f3f4f6;
+  background: white;
+  border-radius: 12px;
+  margin-bottom: 8px;
   cursor: pointer;
-  transition: background 0.2s ease;
-  position: relative;
+  transition: all 0.2s ease;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
 }
 
 .conversation-item:hover {
-  background: #f9fafb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #3b82f6;
 }
 
 .conversation-item.active {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
   background: #eff6ff;
-  border-right: 3px solid #3b82f6;
 }
 
 .conversation-item.has-unread {
-  background: #fef7ff;
+  border-left: 4px solid #ef4444;
 }
 
-.conversation-item.has-unread.active {
-  background: #eff6ff;
+/* Item Preview */
+.conversation-item-preview {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  background: #f8fafc;
 }
 
-.conversation-avatar {
-  position: relative;
+.item-thumbnail {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  overflow: hidden;
   margin-right: 12px;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.item-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.no-image {
+  color: #9ca3af;
+}
+
+.item-info {
+  flex: 1;
+}
+
+.item-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.item-price {
+  font-weight: 700;
+  color: #059669;
+  font-size: 14px;
+}
+
+/* Conversation Details */
+.conversation-details {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  gap: 12px;
+}
+
+.customer-avatar {
+  position: relative;
+  flex-shrink: 0;
 }
 
 .avatar-circle {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: #3b82f6;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
+  font-size: 16px;
 }
 
-.avatar-circle.customer {
-  background: #10b981;
-}
-
-.role-badge {
+.customer-badge {
   position: absolute;
-  bottom: -2px;
-  right: -2px;
+  bottom: -4px;
+  right: -4px;
   background: #10b981;
   color: white;
   font-size: 10px;
@@ -584,10 +838,7 @@ export default {
   border-radius: 8px;
   text-transform: uppercase;
   font-weight: 600;
-}
-
-.role-badge.user {
-  background: #10b981;
+  letter-spacing: 0.5px;
 }
 
 .conversation-info {
@@ -599,118 +850,320 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
-.partner-name {
+.customer-name {
   font-weight: 600;
   color: #111827;
+  font-size: 15px;
 }
 
 .message-time {
   font-size: 12px;
   color: #6b7280;
+  font-weight: 500;
 }
 
-.last-message {
+.last-message-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 4px;
 }
 
 .message-preview {
+  font-size: 13px;
   color: #6b7280;
-  font-size: 14px;
+  flex: 1;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  margin-right: 8px;
 }
 
 .message-indicators {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .unread-badge {
   background: #ef4444;
   color: white;
   font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 10px;
-  min-width: 18px;
+  font-weight: 600;
+  padding: 3px 7px;
+  border-radius: 12px;
+  min-width: 20px;
   text-align: center;
 }
 
 .sent-indicator {
   color: #10b981;
   font-size: 12px;
+  font-weight: 600;
 }
 
-.empty-conversations {
+/* Order Status */
+.order-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.order-label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.status-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.pending { background: #fef3c7; color: #d97706; }
+.status-badge.confirmed { background: #dcfce7; color: #16a34a; }
+.status-badge.shipped { background: #dbeafe; color: #2563eb; }
+.status-badge.delivered { background: #f0fdf4; color: #15803d; }
+.status-badge.cancelled { background: #fee2e2; color: #dc2626; }
+
+/* Empty States */
+.empty-conversations, .loading-conversations {
+  padding: 60px 20px;
   text-align: center;
-  padding: 40px 20px;
   color: #6b7280;
 }
 
-/* Chat Panel - Same as user messages but with seller branding */
+.empty-conversations svg, .loading-conversations svg {
+  margin-bottom: 20px;
+  color: #d1d5db;
+}
+
+.empty-conversations h3 {
+  color: #374151;
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.empty-conversations p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+.loading-spinner.small {
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+}
+
+/* Chat Panel */
 .chat-panel {
   flex: 1;
   display: flex;
   flex-direction: column;
+  background: white;
 }
 
 .no-conversation-selected {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   color: #6b7280;
   text-align: center;
+  padding: 40px;
+}
+
+.no-conversation-selected svg {
+  margin-bottom: 24px;
+  color: #d1d5db;
 }
 
 .no-conversation-selected h3 {
-  margin: 16px 0 8px 0;
+  margin: 0 0 8px;
   color: #374151;
+  font-size: 20px;
 }
 
+.no-conversation-selected p {
+  margin: 0;
+  font-size: 14px;
+  max-width: 300px;
+}
+
+/* Active Chat */
 .active-chat {
+  height: 100%;
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
+/* Item Header */
+.item-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-bottom: 1px solid #e5e7eb;
+  padding: 16px 20px;
+}
+
+.item-details {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.item-image-container {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.item-header-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.no-item-image {
+  color: #9ca3af;
+}
+
+.item-info-detailed {
+  flex: 1;
+}
+
+.item-title-header {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.item-description {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.item-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.item-price-header {
+  font-size: 18px;
+  font-weight: 700;
+  color: #059669;
+}
+
+.item-status {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.item-status.active { background: #dcfce7; color: #16a34a; }
+.item-status.sold { background: #fee2e2; color: #dc2626; }
+.item-status.pending { background: #fef3c7; color: #d97706; }
+
+/* Order Header */
+.order-header {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.order-details h5 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.order-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.order-amount {
+  font-size: 16px;
+  font-weight: 700;
+  color: #059669;
+}
+
+.order-status-badge {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.order-status-badge.pending { background: #fef3c7; color: #d97706; }
+.order-status-badge.confirmed { background: #dcfce7; color: #16a34a; }
+.order-status-badge.shipped { background: #dbeafe; color: #2563eb; }
+.order-status-badge.delivered { background: #f0fdf4; color: #15803d; }
+
+/* Chat Header */
 .chat-header {
   padding: 20px;
   border-bottom: 1px solid #e5e7eb;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: white;
 }
 
 .chat-partner-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
-.partner-avatar {
-  width: 40px;
-  height: 40px;
+.partner-avatar-large {
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: #10b981;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
+  font-size: 18px;
 }
 
-.chat-partner-info h4 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
+.partner-details h4 {
+  margin: 0 0 4px;
+  font-size: 18px;
   color: #111827;
 }
 
@@ -718,19 +1171,42 @@ export default {
   font-size: 12px;
   color: #6b7280;
   text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.conversation-context {
+  font-size: 13px;
+  color: #3b82f6;
+  font-weight: 500;
+}
+
+.chat-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .action-btn {
-  background: #f3f4f6;
-  border: none;
+  background: none;
+  border: 1px solid #d1d5db;
   padding: 8px;
   border-radius: 6px;
   cursor: pointer;
   color: #6b7280;
+  transition: all 0.2s;
 }
 
 .action-btn:hover {
-  background: #e5e7eb;
+  color: #3b82f6;
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Messages List */
@@ -741,144 +1217,194 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  background: linear-gradient(180deg, #f9fafb 0%, #ffffff 100%);
 }
 
-.message-item {
+.message-bubble {
   display: flex;
-  max-width: 70%;
+  max-width: 75%;
+  animation: fadeIn 0.3s ease-out;
 }
 
-.message-item.own-message {
+.message-bubble.own-message {
   align-self: flex-end;
-  flex-direction: row-reverse;
+  margin-left: auto;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .message-content {
   background: #f3f4f6;
   padding: 12px 16px;
   border-radius: 18px;
-  max-width: 100%;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .own-message .message-content {
-  background: #f59e0b;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
 }
 
-.message-content p {
-  margin: 0 0 8px 0;
+.message-text {
+  margin: 0 0 8px;
+  font-size: 14px;
   line-height: 1.4;
   word-wrap: break-word;
 }
 
-.message-meta {
+.message-metadata {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-top: 4px;
-}
-
-.message-time {
+  gap: 8px;
   font-size: 11px;
   opacity: 0.7;
 }
 
-.read-indicator {
-  color: #10b981;
-  font-size: 12px;
-}
-
-.sent-indicator {
-  color: #6b7280;
-  font-size: 12px;
-}
-
-.own-message .sent-indicator,
-.own-message .read-indicator {
+.own-message .message-metadata {
   color: rgba(255, 255, 255, 0.8);
 }
 
-.no-messages {
+.message-timestamp {
+  font-weight: 500;
+}
+
+.read-status {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.sent-status {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.own-message .sent-status {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.no-messages, .loading-messages {
   text-align: center;
   color: #6b7280;
-  padding: 40px 20px;
+  padding: 60px 20px;
+}
+
+.no-messages svg, .loading-messages svg {
+  margin-bottom: 16px;
+  color: #d1d5db;
 }
 
 /* Message Input */
 .message-input-container {
   padding: 20px;
   border-top: 1px solid #e5e7eb;
+  background: white;
 }
 
 .message-form {
+  max-width: 100%;
+}
+
+.input-wrapper {
   display: flex;
   gap: 12px;
+  align-items: flex-end;
 }
 
-.input-group {
+.message-input {
   flex: 1;
-  display: flex;
-  gap: 8px;
-}
-
-.message-textarea {
-  flex: 1;
+  min-height: 44px;
+  max-height: 120px;
   padding: 12px 16px;
   border: 1px solid #d1d5db;
-  border-radius: 20px;
-  resize: none;
-  font-family: inherit;
+  border-radius: 22px;
   font-size: 14px;
-  line-height: 1.4;
-  max-height: 120px;
-  min-height: 44px;
-}
-
-.message-textarea:focus {
+  font-family: inherit;
+  resize: none;
+  background: #f9fafb;
+  transition: all 0.2s;
   outline: none;
-  border-color: #f59e0b;
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
 }
 
-.send-btn {
+.message-input:focus {
+  border-color: #3b82f6;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.message-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.send-button {
   width: 44px;
   height: 44px;
   border: none;
-  border-radius: 50%;
-  background: #f59e0b;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
+  border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
-.send-btn:hover:not(:disabled) {
-  background: #d97706;
+.send-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
-.send-btn:disabled {
-  background: #9ca3af;
+.send-button:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
-.sending-spinner {
+.sending-icon {
   animation: spin 1s linear infinite;
 }
 
-/* Responsive */
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .conversations-sidebar {
+    width: 320px;
+  }
+  
+  .item-header {
+    padding: 12px 16px;
+  }
+  
+  .item-details {
+    gap: 12px;
+  }
+  
+  .item-image-container {
+    width: 60px;
+    height: 60px;
+  }
+}
+
 @media (max-width: 768px) {
   .messages-container {
     height: calc(100vh - 80px);
-  }
-  
-  .conversations-sidebar {
-    width: 280px;
+    padding: 0 8px;
   }
   
   .chat-interface {
     flex-direction: column;
+    border-radius: 12px;
+  }
+  
+  .conversations-sidebar {
+    width: 100%;
+    max-height: 40vh;
   }
   
   .messages-header {
@@ -888,8 +1414,28 @@ export default {
   }
   
   .header-stats {
-    align-self: stretch;
-    justify-content: space-around;
+    gap: 20px;
+  }
+  
+  .page-title {
+    font-size: 24px;
+  }
+  
+  .message-bubble {
+    max-width: 90%;
+  }
+  
+  .conversation-item-preview {
+    padding: 8px 12px;
+  }
+  
+  .item-thumbnail {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .conversation-details {
+    padding: 12px;
   }
 }
 </style>
