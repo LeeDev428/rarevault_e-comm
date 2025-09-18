@@ -63,7 +63,7 @@
               <h1 class="item-title">{{ item.title }}</h1>
               <div class="item-meta">
                 <span class="item-category">{{ formatCategoryName(item.category) }}</span>
-                <span class="item-condition">{{ formatCondition(item.condition_status) }}</span>
+                <span class="item-condition">{{ formatCondition(item.condition || item.condition_status) }}</span>
                 <span v-if="item.year" class="item-year">{{ item.year }}</span>
               </div>
             </div>
@@ -72,32 +72,32 @@
             <div class="price-section">
               <div class="price-info">
                 <span class="price-label">Price</span>
-                <span class="price-value">₱{{ formatPrice(item.price) }}</span>
+                <span class="price-value">₱{{ formatPrice(item.price || 0) }}</span>
                 <span v-if="item.isNegotiable" class="negotiable-tag">Negotiable</span>
               </div>
               <div class="stock-info">
                 <span class="stock-label">Stock:</span>
-                <span class="stock-value" :class="{ 'low-stock': item.stock < 5, 'out-of-stock': item.stock === 0 }">
-                  {{ item.stock > 0 ? `${item.stock} available` : 'Out of stock' }}
+                <span class="stock-value" :class="{ 'low-stock': (item.stock || 0) < 5, 'out-of-stock': (item.stock || 0) === 0 }">
+                  {{ (item.stock || 0) > 0 ? `${item.stock} available` : 'Out of stock' }}
                 </span>
               </div>
             </div>
 
             <!-- Rating and Sales Info -->
-            <div v-if="item.rating > 0 || item.soldCount > 0" class="stats-section">
-              <div v-if="item.rating > 0" class="rating-display">
+            <div v-if="(item.rating && item.rating > 0) || (item.soldCount && item.soldCount > 0)" class="stats-section">
+              <div v-if="item.rating && item.rating > 0" class="rating-display">
                 <div class="stars">
                   <span v-for="star in 5" :key="star" 
-                        :class="['star', { filled: star <= Math.round(item.rating) }]">
+                        :class="['star', { filled: star <= Math.round(item.rating || 0) }]">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
                     </svg>
                   </span>
                 </div>
-                <span class="rating-text">{{ item.rating.toFixed(1) }} ({{ item.ratingCount }} reviews)</span>
+                <span class="rating-text">{{ (item.rating || 0).toFixed(1) }} ({{ item.ratingCount || 0 }} reviews)</span>
               </div>
               
-              <div v-if="item.soldCount > 0" class="sold-info">
+              <div v-if="item.soldCount && item.soldCount > 0" class="sold-info">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
                   <line x1="3" y1="6" x2="21" y2="6"/>
@@ -112,16 +112,65 @@
               <h3 class="section-title">Seller Information</h3>
               <div class="seller-info">
                 <div class="seller-avatar">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                  </svg>
+                  <div class="avatar-circle">
+                    {{ getSellerInitials() }}
+                  </div>
                 </div>
                 <div class="seller-details">
-                  <span class="seller-name">{{ seller?.username || item.seller }}</span>
-                  <span class="seller-role">Seller</span>
-                  <div v-if="seller?.created_at" class="seller-since">
-                    Member since {{ formatDate(seller.created_at) }}
+                  <div class="seller-main-info">
+                    <span class="seller-name">{{ getSellerDisplayName() }}</span>
+                    <span class="seller-role-badge">{{ seller?.role || 'Seller' }}</span>
+                  </div>
+                  
+                  <div class="seller-meta">
+                    <div v-if="seller?.created_at" class="seller-since">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 1v6m0 6v6"></path>
+                        <path d="m21 12-6 0m-6 0-6 0"></path>
+                      </svg>
+                      Member since {{ formatDate(seller.created_at) }}
+                    </div>
+                    
+                    <div v-if="sellerProfile?.total_sales && sellerProfile.total_sales > 0" class="seller-sales">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <path d="M16 10a4 4 0 0 1-8 0"/>
+                      </svg>
+                      {{ sellerProfile.total_sales }} total sales
+                    </div>
+                    
+                    <div v-if="sellerProfile?.rating && sellerProfile.rating > 0" class="seller-rating">
+                      <div class="seller-stars">
+                        <span v-for="star in 5" :key="star" 
+                              :class="['star', { filled: star <= Math.round(sellerProfile.rating) }]">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                          </svg>
+                        </span>
+                      </div>
+                      <span class="seller-rating-text">{{ sellerProfile.rating.toFixed(1) }} seller rating</span>
+                    </div>
+                  </div>
+                  
+                  <div v-if="sellerProfile?.business_name" class="seller-business">
+                    <strong>{{ sellerProfile.business_name }}</strong>
+                  </div>
+                  
+                  <div v-if="sellerProfile?.description" class="seller-description">
+                    {{ sellerProfile.description }}
+                  </div>
+                  
+                  <div v-if="sellerProfile?.verification_status === 'verified'" class="seller-verified">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M9 12l2 2 4-4"/>
+                      <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"/>
+                      <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"/>
+                      <path d="M12 3c0 1-1 3-3 3s-3-2-3-3 1-3 3-3 3 2 3 3"/>
+                      <path d="M12 21c0-1-1-3-3-3s-3 2-3 3 1 3 3 3 3-2 3-3"/>
+                    </svg>
+                    <span>Verified Seller</span>
                   </div>
                 </div>
               </div>
@@ -147,24 +196,15 @@
             <!-- Action Buttons -->
             <div class="action-section">
               <button 
-                v-if="item.stock > 0"
+                v-if="(item.stock || 0) > 0"
                 @click="showOrderModal = true"
                 class="primary-btn order-btn"
-                :disabled="item.stock === 0"
+                :disabled="(item.stock || 0) === 0"
               >
                 Order Now
               </button>
               
-              <button 
-                @click="addToWishlist"
-                class="secondary-btn wishlist-btn"
-                :disabled="isAddingToWishlist"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
-                {{ isAddingToWishlist ? 'Adding...' : 'Add to Wishlist' }}
-              </button>
+          
             </div>
           </div>
         </div>
@@ -197,6 +237,7 @@ export default {
     return {
       item: null,
       seller: null,
+      sellerProfile: null,
       loading: true,
       error: null,
       selectedImage: null,
@@ -240,6 +281,7 @@ export default {
         this.error = null
         
         const itemId = this.$route.params.id
+        console.log('Fetching item details for ID:', itemId)
         
         // Fetch item details
         const response = await axios.get(`http://localhost:5000/api/items/${itemId}`, {
@@ -248,7 +290,11 @@ export default {
           }
         })
         
-        this.item = response.data
+        console.log('API Response:', response.data)
+        
+        // The API returns {item: {...}} so we need to access response.data.item
+        this.item = response.data.item || response.data
+        console.log('Item data:', this.item)
         
         // Set the first image as selected
         if (this.itemImages.length > 0) {
@@ -270,15 +316,35 @@ export default {
     
     async fetchSellerDetails(sellerId) {
       try {
+        // Fetch basic seller information
         const response = await axios.get(`http://localhost:5000/api/users/${sellerId}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         })
         this.seller = response.data
+        
+        // Fetch seller profile if they are a seller
+        if (response.data.role === 'seller') {
+          await this.fetchSellerProfile(sellerId)
+        }
       } catch (error) {
         console.error('Error fetching seller details:', error)
         // Don't show error for seller details, it's optional
+      }
+    },
+    
+    async fetchSellerProfile(sellerId) {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/seller/profile/${sellerId}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        })
+        this.sellerProfile = response.data
+      } catch (error) {
+        console.error('Error fetching seller profile:', error)
+        // Seller profile is optional, don't show error
       }
     },
     
@@ -323,7 +389,11 @@ export default {
     },
     
     formatPrice(price) {
-      return parseFloat(price).toFixed(2)
+      const numPrice = parseFloat(price)
+      if (isNaN(numPrice)) {
+        return '0.00'
+      }
+      return numPrice.toFixed(2)
     },
     
     formatCategoryName(category) {
@@ -367,6 +437,28 @@ export default {
       } finally {
         this.isAddingToWishlist = false
       }
+    },
+    
+    getSellerInitials() {
+      if (this.seller?.first_name && this.seller?.last_name) {
+        return `${this.seller.first_name.charAt(0)}${this.seller.last_name.charAt(0)}`.toUpperCase()
+      } else if (this.seller?.username) {
+        return this.seller.username.charAt(0).toUpperCase()
+      } else if (this.item?.seller) {
+        return this.item.seller.charAt(0).toUpperCase()
+      }
+      return 'S'
+    },
+    
+    getSellerDisplayName() {
+      if (this.seller?.first_name && this.seller?.last_name) {
+        return `${this.seller.first_name} ${this.seller.last_name}`
+      } else if (this.seller?.username) {
+        return this.seller.username
+      } else if (this.item?.seller) {
+        return this.item.seller
+      }
+      return 'Seller'
     },
     
     handleOrderConfirmed(orderData) {
