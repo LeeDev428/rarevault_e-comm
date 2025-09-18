@@ -322,11 +322,15 @@ export default {
       }
     },
 
-    async loadMessages(partnerId) {
+    async loadMessages(partnerId, silent = false) {
       if (!partnerId) return
 
       try {
-        this.messagesLoading = true
+        // Only show loading indicator if not in silent mode (during polling)
+        if (!silent) {
+          this.messagesLoading = true
+        }
+        
         const token = localStorage.getItem('access_token') || localStorage.getItem('token')
         
         const response = await axios.get(`http://localhost:5000/api/messages/conversation/${partnerId}`, {
@@ -334,17 +338,22 @@ export default {
         })
 
         if (response.data.success) {
+          const previousMessageCount = this.messages.length
           this.messages = response.data.messages
           this.selectedPartnerName = response.data.partner.username
           this.selectedPartnerRole = response.data.partner.role
           
-          // Scroll to bottom after loading messages
-          this.$nextTick(() => {
-            this.scrollToBottom()
-          })
+          // Only scroll to bottom if we're not polling or if there are new messages
+          if (!silent || this.messages.length > previousMessageCount) {
+            this.$nextTick(() => {
+              this.scrollToBottom()
+            })
+          }
 
-          // Mark as read
-          await this.markMessagesAsRead(partnerId)
+          // Mark as read (but only if not silent mode to avoid excessive API calls)
+          if (!silent) {
+            await this.markMessagesAsRead(partnerId)
+          }
         }
       } catch (error) {
         console.error('Error loading messages:', error)
@@ -352,7 +361,9 @@ export default {
           this.$router.push('/login')
         }
       } finally {
-        this.messagesLoading = false
+        if (!silent) {
+          this.messagesLoading = false
+        }
       }
     },
 
@@ -455,19 +466,30 @@ export default {
     },
 
     startPolling() {
-      // Poll messages every 3 seconds when a conversation is selected
-      this.pollingInterval = setInterval(() => {
+      // Simple AJAX polling for messages every 10 seconds (reduced frequency to avoid UI issues)
+      this.pollingInterval = setInterval(async () => {
         if (this.selectedPartnerId && !this.messagesLoading) {
-          this.loadMessages(this.selectedPartnerId)
-        }
-      }, 3000)
-
-      // Poll conversations every 10 seconds
-      this.conversationPollingInterval = setInterval(() => {
-        if (!this.loading) {
-          this.loadConversations()
+          try {
+            // Use silent mode to avoid UI flickering during polling
+            await this.loadMessages(this.selectedPartnerId, true)
+          } catch (error) {
+            console.warn('Failed to refresh messages:', error)
+            // Don't show error to user for polling failures
+          }
         }
       }, 10000)
+
+      // Simple AJAX polling for conversations every 30 seconds (reduced frequency)
+      this.conversationPollingInterval = setInterval(async () => {
+        if (!this.loading) {
+          try {
+            await this.loadConversations()
+          } catch (error) {
+            console.warn('Failed to refresh conversations:', error)
+            // Don't show error to user for polling failures
+          }
+        }
+      }, 30000)
     },
 
     stopPolling() {
