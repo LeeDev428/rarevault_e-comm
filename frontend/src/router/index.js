@@ -67,6 +67,12 @@ const routes = [
     meta: { requiresAuth: true, role: 'user' }
   },
   {
+    path: '/user/items/:id',
+    name: 'ItemDetails',
+    component: () => import('@/views/user/ItemDetails.vue'),
+    meta: { requiresAuth: true, role: 'user' }
+  },
+  {
     path: '/user/dashboard/items/:id',
     name: 'UserItemDetails',
     component: () => import('@/views/user/dashboard/ItemDetails.vue'),
