@@ -425,6 +425,8 @@ class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     receiver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=True)  # NEW: Link to specific item
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=True)  # NEW: Link to specific order
     message = db.Column(db.Text, nullable=False)
     is_sender_read = db.Column(db.Boolean, default=False)
     is_receiver_read = db.Column(db.Boolean, default=False)
@@ -434,6 +436,8 @@ class Message(db.Model):
     # Relationships
     sender = db.relationship('User', foreign_keys=[sender_id], backref='sent_messages')
     receiver = db.relationship('User', foreign_keys=[receiver_id], backref='received_messages')
+    item = db.relationship('Item', foreign_keys=[item_id], backref='messages')  # NEW: Item relationship
+    order = db.relationship('Order', foreign_keys=[order_id], backref='messages')  # NEW: Order relationship
     
     def get_manila_time(self, dt):
         """Convert datetime to Manila timezone"""
@@ -475,29 +479,46 @@ class Message(db.Model):
         self.is_receiver_read = True
     
     @staticmethod
-    def get_conversation_messages(user1_id, user2_id):
-        """Get all messages in a conversation between two users"""
-        return Message.query.filter(
+    def get_conversation_messages(user1_id, user2_id, item_id=None):
+        """Get all messages in a conversation between two users, optionally filtered by item"""
+        query = Message.query.filter(
             or_(
                 and_(Message.sender_id == user1_id, Message.receiver_id == user2_id),
                 and_(Message.sender_id == user2_id, Message.receiver_id == user1_id)
             )
-        ).order_by(Message.created_at.asc())
+        )
+        
+        if item_id:
+            query = query.filter(Message.item_id == item_id)
+            
+        return query.order_by(Message.created_at.asc())
     
     @staticmethod
-    def get_unread_count_from_user(from_user_id, to_user_id):
-        """Get count of unread messages from one user to another"""
-        return Message.query.filter(
+    def get_unread_count_from_user(from_user_id, to_user_id, item_id=None):
+        """Get count of unread messages from one user to another, optionally filtered by item"""
+        query = Message.query.filter(
             Message.sender_id == from_user_id,
             Message.receiver_id == to_user_id,
             Message.is_receiver_read == False
-        ).count()
+        )
+        
+        if item_id:
+            query = query.filter(Message.item_id == item_id)
+            
+        return query.count()
+    
+    @staticmethod
+    def get_item_conversations(item_id):
+        """Get all conversations related to a specific item"""
+        return Message.query.filter(Message.item_id == item_id).order_by(Message.created_at.desc())
     
     def to_dict(self):
         return {
             'id': self.id,
             'sender_id': self.sender_id,
             'receiver_id': self.receiver_id,
+            'item_id': self.item_id,
+            'order_id': self.order_id,
             'message': self.message,
             'is_sender_read': self.is_sender_read,
             'is_receiver_read': self.is_receiver_read,
@@ -512,5 +533,18 @@ class Message(db.Model):
                 'id': self.receiver.id,
                 'username': self.receiver.username,
                 'role': self.receiver.role
-            } if self.receiver else None
+            } if self.receiver else None,
+            'item': {
+                'id': self.item.id,
+                'title': self.item.title,
+                'price': float(self.item.price),
+                'status': self.item.status,
+                'images': [img.image_path for img in self.item.images[:1]]  # Get first image
+            } if self.item else None,
+            'order': {
+                'id': self.order.id,
+                'order_number': self.order.order_number,
+                'status': self.order.status,
+                'total_amount': float(self.order.total_amount)
+            } if self.order else None
         }
