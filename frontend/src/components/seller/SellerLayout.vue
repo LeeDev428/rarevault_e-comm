@@ -22,12 +22,60 @@
         </div>
 
         <div class="header-actions">
-          <button class="notification-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
-          </button>
+          <!-- Notifications -->
+          <div class="notification-container">
+            <button class="notification-btn" @click="toggleNotifications">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              <span v-if="notificationCount > 0" class="notification-badge">{{ notificationCount }}</span>
+            </button>
+
+            <!-- Notifications Dropdown -->
+            <div v-if="showNotifications" class="notifications-dropdown" @click.stop>
+              <div class="notifications-header">
+                <h3>Notifications</h3>
+                <span class="notification-count">{{ notificationCount }} new</span>
+              </div>
+              
+              <div class="notifications-list" v-if="notifications.length > 0">
+                <div 
+                  v-for="notification in notifications" 
+                  :key="notification.id"
+                  class="notification-item"
+                  @click="handleNotificationClick(notification)"
+                >
+                  <div class="notification-icon">
+                    <svg v-if="notification.status === 'pending'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <circle cx="9" cy="21" r="1"/>
+                      <circle cx="20" cy="21" r="1"/>
+                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                    </svg>
+                    <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M9 12l2 2 4-4"/>
+                      <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                  </div>
+                  <div class="notification-content">
+                    <div class="notification-title">{{ notification.title }}</div>
+                    <div class="notification-message">{{ notification.message }}</div>
+                    <div class="notification-time">{{ formatNotificationTime(notification.created_at) }}</div>
+                  </div>
+                  <div class="notification-amount">${{ notification.amount.toFixed(2) }}</div>
+                </div>
+              </div>
+
+              <div v-else class="no-notifications">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                <p>No notifications yet</p>
+                <small>You'll see order updates here</small>
+              </div>
+            </div>
+          </div>
           
           <div class="user-profile" @click="toggleUserMenu">
             <div class="user-avatar">
@@ -136,6 +184,7 @@
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
             <span>Messages</span>
+            <span v-if="unreadMessageCount > 0" class="message-badge">{{ unreadMessageCount }}</span>
           </div>
           
           <div 
@@ -211,18 +260,26 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   name: 'SellerLayout',
   data() {
     return {
       searchQuery: '',
       showUserMenu: false,
+      showNotifications: false,
       currentUser: {
         name: 'John Seller',
         email: 'seller@example.com',
         role: 'seller'
       },
-      toasts: []
+      notificationCount: 0,
+      notifications: [],
+      unreadMessageCount: 0,
+      toasts: [],
+      notificationInterval: null,
+      messageCountInterval: null
     }
   },
   computed: {
@@ -238,19 +295,133 @@ export default {
   },
   mounted() {
     // Close dropdown when clicking outside
-    document.addEventListener('click', this.closeUserMenu)
+    document.addEventListener('click', this.closeDropdowns)
+    this.loadNotificationCount()
+    this.loadUnreadMessageCount()
+    this.startPolling()
   },
   beforeUnmount() {
-    document.removeEventListener('click', this.closeUserMenu)
+    document.removeEventListener('click', this.closeDropdowns)
+    this.stopPolling()
   },
   methods: {
     toggleUserMenu(event) {
       event.stopPropagation()
       this.showUserMenu = !this.showUserMenu
+      this.showNotifications = false
     },
-    closeUserMenu(event) {
-      if (event && event.target && !event.target.closest('.user-profile')) {
-        this.showUserMenu = false
+    toggleNotifications(event) {
+      event.stopPropagation()
+      this.showNotifications = !this.showNotifications
+      this.showUserMenu = false
+      if (this.showNotifications) {
+        this.loadNotifications()
+      }
+    },
+    closeDropdowns(event) {
+      if (event && event.target) {
+        if (!event.target.closest('.user-profile')) {
+          this.showUserMenu = false
+        }
+        if (!event.target.closest('.notification-container')) {
+          this.showNotifications = false
+        }
+      }
+    },
+    async loadNotificationCount() {
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        if (!token) return
+
+        const response = await axios.get('http://localhost:5000/api/seller/notifications/count', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+
+        if (response.data.success) {
+          this.notificationCount = response.data.notification_count
+        }
+      } catch (error) {
+        console.error('Error loading notification count:', error)
+      }
+    },
+    async loadNotifications() {
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        if (!token) return
+
+        const response = await axios.get('http://localhost:5000/api/seller/notifications', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+
+        if (response.data.success) {
+          this.notifications = response.data.notifications || []
+        }
+      } catch (error) {
+        console.error('Error loading notifications:', error)
+        this.notifications = []
+      }
+    },
+    async loadUnreadMessageCount() {
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        if (!token) return
+
+        const response = await axios.get('http://localhost:5000/api/seller/messages/unread-count', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+
+        if (response.data.success) {
+          this.unreadMessageCount = response.data.unread_count
+        }
+      } catch (error) {
+        console.error('Error loading unread message count:', error)
+      }
+    },
+    handleNotificationClick(notification) {
+      // Navigate to orders page to see order details
+      this.$router.push('/seller/orders')
+      this.showNotifications = false
+    },
+    formatNotificationTime(timeString) {
+      try {
+        const date = new Date(timeString)
+        const now = new Date()
+        const diffTime = Math.abs(now - date)
+        const diffMinutes = Math.ceil(diffTime / (1000 * 60))
+        const diffHours = Math.ceil(diffTime / (1000 * 60 * 60))
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+        if (diffMinutes < 60) {
+          return `${diffMinutes}m ago`
+        } else if (diffHours < 24) {
+          return `${diffHours}h ago`
+        } else if (diffDays < 7) {
+          return `${diffDays}d ago`
+        } else {
+          return date.toLocaleDateString()
+        }
+      } catch (error) {
+        return 'Recently'
+      }
+    },
+    startPolling() {
+      // Poll counts every 30 seconds
+      this.notificationInterval = setInterval(() => {
+        this.loadNotificationCount()
+      }, 30000)
+      
+      this.messageCountInterval = setInterval(() => {
+        this.loadUnreadMessageCount()
+      }, 30000)
+    },
+    stopPolling() {
+      if (this.notificationInterval) {
+        clearInterval(this.notificationInterval)
+        this.notificationInterval = null
+      }
+      if (this.messageCountInterval) {
+        clearInterval(this.messageCountInterval)
+        this.messageCountInterval = null
       }
     },
     goToProfile() {
@@ -379,7 +550,12 @@ export default {
   gap: 16px;
 }
 
+.notification-container {
+  position: relative;
+}
+
 .notification-btn {
+  position: relative;
   background: none;
   border: none;
   padding: 8px;
@@ -391,6 +567,140 @@ export default {
 
 .notification-btn:hover {
   background: #f8f9fa;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: #dc3545;
+  color: white;
+  border-radius: 50%;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Notifications Dropdown */
+.notifications-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  width: 380px;
+  max-height: 500px;
+  z-index: 1000;
+  margin-top: 8px;
+}
+
+.notifications-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.notifications-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #343a40;
+}
+
+.notification-count {
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.notifications-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f8f9fa;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+  background: #f8f9fa;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-icon {
+  width: 40px;
+  height: 40px;
+  background: #e3f2fd;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1976d2;
+  flex-shrink: 0;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-title {
+  font-weight: 600;
+  color: #343a40;
+  margin-bottom: 4px;
+}
+
+.notification-message {
+  color: #6c757d;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.notification-time {
+  color: #adb5bd;
+  font-size: 12px;
+}
+
+.notification-amount {
+  font-weight: 600;
+  color: #28a745;
+  font-size: 14px;
+}
+
+.no-notifications {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+}
+
+.no-notifications svg {
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.no-notifications p {
+  margin: 0 0 8px 0;
+  font-weight: 500;
+}
+
+.no-notifications small {
+  opacity: 0.7;
 }
 
 .user-profile {
@@ -522,6 +832,7 @@ export default {
   width: 100%;
   cursor: pointer;
   font-size: 14px;
+  position: relative;
 }
 
 .nav-item:hover {
@@ -538,6 +849,22 @@ export default {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
+}
+
+.message-badge {
+  position: absolute;
+  right: 8px;
+  background: #dc3545;
+  color: white;
+  border-radius: 50%;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
 }
 
 .nav-divider {
