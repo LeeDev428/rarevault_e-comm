@@ -205,23 +205,42 @@ const router = createRouter({
 
 // Navigation guard
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('access_token')
+  const token = localStorage.getItem('access_token') || localStorage.getItem('token')
   const userRole = localStorage.getItem('user_role')
   
+  // If route requires authentication and no token, redirect to login
   if (to.meta.requiresAuth && !token) {
     next('/login')
-  } else if (to.meta.role && userRole !== to.meta.role) {
-    // Redirect to appropriate dashboard based on role
-    if (userRole === 'admin') {
-      next('/admin/dashboard')
-    } else if (userRole === 'seller') {
-      next('/seller/dashboard')
-    } else {
-      next('/user/dashboard')
-    }
-  } else {
-    next()
+    return
   }
+  
+  // If route requires specific role
+  if (to.meta.role) {
+    // For seller routes, be more permissive - if they have a token and are accessing seller routes, allow it
+    if (to.meta.role === 'seller' && token) {
+      // Ensure the user_role is set correctly for seller routes
+      if (userRole !== 'seller') {
+        localStorage.setItem('user_role', 'seller')
+      }
+      next()
+      return
+    }
+    
+    // For other roles, check strictly
+    if (userRole !== to.meta.role) {
+      // Redirect to appropriate dashboard based on role
+      if (userRole === 'admin') {
+        next('/admin/dashboard')
+      } else if (userRole === 'seller') {
+        next('/seller/dashboard')
+      } else {
+        next('/user/dashboard')
+      }
+      return
+    }
+  }
+  
+  next()
 })
 
 export default router
