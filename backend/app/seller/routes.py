@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..models.models import db, Item, User, ItemImage, Order, Rating
+from ..models.models import db, Item, User, ItemImage, Order, Rating, SellerProfile
 from datetime import datetime
 import os
 import base64
