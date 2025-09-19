@@ -5,7 +5,7 @@ from app.models.models import User, Item, Wishlist, Order, ItemImage, Rating
 from sqlalchemy import or_, and_, text
 import uuid
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 
 user_bp = Blueprint('user', __name__)
@@ -498,13 +498,10 @@ def create_order():
         
         data = request.get_json()
         
-        # Validate required fields
-        required_fields = ['item_id', 'shipping_address', 'customer_name']
-        for field in required_fields:
-            if not data.get(field):
-                return jsonify({'error': f'{field} is required'}), 400
-        
-        item_id = data['item_id']
+        # Get data
+        item_id = data.get('item_id')
+        if not item_id:
+            return jsonify({'error': 'item_id is required'}), 400
         
         # Check if item exists and is available
         item = Item.query.filter_by(id=item_id, status='active').first()
@@ -520,46 +517,66 @@ def create_order():
         if quantity <= 0:
             return jsonify({'error': 'Quantity must be greater than 0'}), 400
         
-        if quantity > item.stock:
-            return jsonify({'error': f'Insufficient stock. Only {item.stock} items available'}), 400        # Generate unique order number
+        # Check for recent duplicate orders (prevent double-clicking)
+        recent_order = Order.query.filter_by(
+            buyer_id=user_id,
+            item_id=item_id
+        ).filter(
+            Order.created_at > datetime.now() - timedelta(minutes=1)
+        ).first()
+        
+        if recent_order:
+            return jsonify({
+                'message': 'Order already created',
+                'order': recent_order.to_dict()
+            }), 200
+        
+        # Generate unique order number
         order_number = f"ORD{datetime.now().strftime('%Y%m%d')}{str(uuid.uuid4())[:8].upper()}"
         
-        # Create order
-        order = Order(
-            order_number=order_number,
-            buyer_id=user_id,
-            seller_id=item.seller_id,
-            item_id=item_id,
-            quantity=quantity,
-            price_per_item=item.price,
-            total_amount=item.price * quantity,
-            status='pending',
+        # Create order with transaction safety
+        try:
+            # Create order
+            order = Order(
+                order_number=order_number,
+                buyer_id=user_id,
+                seller_id=item.seller_id,
+                item_id=item_id,
+                quantity=quantity,
+                price_per_item=item.price,
+                total_amount=item.price * quantity,
+                status='pending',
+                
+                # Customer information - use defaults if empty
+                shipping_address=data.get('shipping_address') or 'Not provided',
+                customer_name=data.get('customer_name') or 'Not provided',
+                customer_phone=data.get('customer_phone') or '',
+                customer_email=data.get('customer_email') or '',
+                
+                # Payment and notes
+                payment_method=data.get('payment_method', 'cash_on_delivery'),
+                customer_notes=data.get('customer_notes', '')
+            )
             
-            # Customer information
-            shipping_address=data['shipping_address'],
-            customer_name=data['customer_name'],
-            customer_phone=data.get('customer_phone', ''),
-            customer_email=data.get('customer_email', ''),
+            # Reserve stock (deduct from available stock)
+            item.stock -= quantity
             
-            # Payment and notes
-            payment_method=data.get('payment_method', 'cash_on_delivery'),
-            customer_notes=data.get('customer_notes', '')
-        )
-        
-        # Reserve stock (deduct from available stock)
-        item.stock -= quantity
-        
-        # If stock reaches 0, set item status to out_of_stock
-        if item.stock <= 0:
-            item.status = 'out_of_stock'
-        
-        db.session.add(order)
-        db.session.commit()
-        
-        return jsonify({
-            'message': 'Order created successfully',
-            'order': order.to_dict()
-        }), 201
+            # If stock reaches 0, set item status to out_of_stock
+            if item.stock <= 0:
+                item.status = 'out_of_stock'
+            
+            db.session.add(order)
+            db.session.commit()
+            
+            return jsonify({
+                'message': 'Order created successfully',
+                'order': order.to_dict()
+            }), 201
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"Order creation error: {e}")
+            return jsonify({'error': 'Failed to create order'}), 500
         
     except Exception as e:
         db.session.rollback()
