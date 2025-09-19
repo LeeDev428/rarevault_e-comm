@@ -234,6 +234,7 @@ export default {
   },
   mounted() {
     document.addEventListener('click', this.closeMenus)
+    this.loadUserInfo()
     this.loadUnreadMessageCount()
     this.loadUnreadNotificationCount()
     this.loadNotifications()
