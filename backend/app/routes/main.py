@@ -28,21 +28,21 @@ def get_item(item_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@main_bp.route('/orders', methods=['POST'])
-@jwt_required()
-def create_order():
+# DISABLED - Use /api/user/orders instead to prevent duplication
+# @main_bp.route('/orders', methods=['POST'])
+# @jwt_required()
+# def create_order():
     try:
         current_user_id = get_jwt_identity()
         data = request.get_json()
         
-        # Validate required fields
-        required_fields = ['item_id', 'quantity', 'customer_name', 'customer_phone', 'shipping_address']
-        for field in required_fields:
-            if not data.get(field):
-                return jsonify({'error': f'{field} is required'}), 400
+        # Get basic required data
+        item_id = data.get('item_id')
+        if not item_id:
+            return jsonify({'error': 'item_id is required'}), 400
         
         # Get the item
-        item = Item.query.get(data['item_id'])
+        item = Item.query.get(item_id)
         if not item:
             return jsonify({'error': 'Item not found'}), 404
         
