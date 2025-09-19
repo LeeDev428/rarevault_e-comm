@@ -1,6 +1,8 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.models import User, Item
+from ..models.models import db, User, Item, Order
+from datetime import datetime
+import uuid
 
 main_bp = Blueprint('main', __name__)
 
@@ -24,4 +26,72 @@ def get_item(item_id):
         
         return jsonify({'item': item.to_dict()}), 200
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@main_bp.route('/orders', methods=['POST'])
+@jwt_required()
+def create_order():
+    try:
+        current_user_id = get_jwt_identity()
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['item_id', 'quantity', 'customer_name', 'customer_phone', 'shipping_address']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'error': f'{field} is required'}), 400
+        
+        # Get the item
+        item = Item.query.get(data['item_id'])
+        if not item:
+            return jsonify({'error': 'Item not found'}), 404
+        
+        # Check if item is available
+        if item.status != 'active':
+            return jsonify({'error': 'Item is not available for purchase'}), 400
+        
+        # Check stock availability
+        if data['quantity'] > item.stock:
+            return jsonify({'error': 'Insufficient stock available'}), 400
+        
+        # Prevent self-purchase
+        if item.seller_id == current_user_id:
+            return jsonify({'error': 'You cannot order your own item'}), 400
+        
+        # Generate unique order number
+        order_number = f"ORD-{datetime.now().strftime('%Y%m%d')}-{str(uuid.uuid4())[:8].upper()}"
+        
+        # Calculate total amount
+        price_per_item = item.price
+        total_amount = price_per_item * data['quantity']
+        
+        # Create the order
+        order = Order(
+            order_number=order_number,
+            buyer_id=current_user_id,
+            seller_id=item.seller_id,
+            item_id=item.id,
+            quantity=data['quantity'],
+            price_per_item=price_per_item,
+            total_amount=total_amount,
+            shipping_address=data['shipping_address'],
+            customer_name=data['customer_name'],
+            customer_phone=data['customer_phone'],
+            customer_email=data.get('customer_email', ''),
+            payment_method=data.get('payment_method', 'cash_on_delivery'),
+            customer_notes=data.get('customer_notes', ''),
+            status='pending'
+        )
+        
+        db.session.add(order)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Order created successfully',
+            'order': order.to_dict()
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error creating order: {e}")
         return jsonify({'error': str(e)}), 500
