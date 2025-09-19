@@ -9,12 +9,18 @@
       <div class="order-confirmation">
         <!-- Item Summary -->
         <div class="item-summary">
-          <img 
-            :src="getItemImage(item)" 
-            :alt="item?.title || 'Item'" 
-            class="summary-image"
-            @error="handleImageError"
-          >
+          <div class="image-container">
+            <img 
+              :src="getItemImage(item)" 
+              :alt="item?.title || 'Item'" 
+              class="summary-image"
+              @error="handleImageError"
+              @load="imageLoaded = true"
+            >
+            <div v-if="!imageLoaded" class="image-loading">
+              <div class="loading-spinner"></div>
+            </div>
+          </div>
           <div class="summary-details">
             <h3>{{ item?.title || item?.name }}</h3>
             <p class="summary-category">{{ item?.category }}</p>
@@ -146,6 +152,7 @@ export default {
   },
   data() {
     return {
+      imageLoaded: false,
       orderForm: {
         customerName: '',
         customerPhone: '',
@@ -161,8 +168,12 @@ export default {
   watch: {
     show(newValue) {
       if (newValue) {
+        this.imageLoaded = false // Reset image loading state
         this.initializeForm()
       }
+    },
+    item() {
+      this.imageLoaded = false // Reset when item changes
     }
   },
   methods: {
@@ -202,39 +213,55 @@ export default {
     },
     
     getItemImage(item) {
-      if (!item) return 'https://via.placeholder.com/80x80/f3f4f6/9ca3af?text=No+Image'
+      if (!item) return 'http://localhost:5000/uploads/placeholder.svg'
       
-      // Handle different image formats from different sources
-      if (item.primary_image?.url) {
+      console.log('ConfirmOrderModal - getItemImage called with item:', item);
+      
+      // Handle direct image property (already processed)
+      if (item?.image && typeof item.image === 'string') {
+        console.log('Found item.image:', item.image);
+        return item.image;
+      }
+      
+      // Handle primary image from API
+      if (item?.primary_image?.url) {
+        console.log('Found item.primary_image.url:', item.primary_image.url);
         return item.primary_image.url;
       }
       
-      if (item.primary_image?.image_url) {
-        return item.primary_image.image_url;
+      // Handle primary_image as string (direct URL)
+      if (item?.primary_image && typeof item.primary_image === 'string') {
+        console.log('Found item.primary_image as string:', item.primary_image);
+        return item.primary_image;
       }
       
-      if (item.images && item.images.length > 0) {
-        const firstImage = item.images[0]
-        if (typeof firstImage === 'string') {
-          return firstImage;
+      // Handle images array from API  
+      if (item?.images && Array.isArray(item.images) && item.images.length > 0) {
+        console.log('Found item.images array:', item.images);
+        const primaryImage = item.images.find(img => img.isPrimary);
+        if (primaryImage?.url) {
+          console.log('Found primary image in array:', primaryImage.url);
+          return primaryImage.url;
         }
-        return firstImage.url || firstImage.image_url || firstImage;
+        if (item.images[0]?.url) {
+          console.log('Using first image in array:', item.images[0].url);
+          return item.images[0].url;
+        }
       }
       
-      if (item.image_url) {
+      // Handle image_url property
+      if (item?.image_url) {
+        console.log('Found item.image_url:', item.image_url);
         return item.image_url;
       }
       
-      // Try to construct image URL from item ID
-      if (item.id) {
-        return `http://localhost:5000/uploads/items/${item.id}/image_0.jpeg`;
-      }
-      
-      return 'https://via.placeholder.com/80x80/f3f4f6/9ca3af?text=No+Image'
+      // Default placeholder
+      console.log('Using placeholder image');
+      return 'http://localhost:5000/uploads/placeholder.svg';
     },
     
     handleImageError(event) {
-      event.target.src = 'https://via.placeholder.com/80x80/f3f4f6/9ca3af?text=No+Image';
+      event.target.src = 'http://localhost:5000/uploads/placeholder.svg';
     },
     
     formatPrice(price) {
@@ -370,6 +397,41 @@ export default {
   flex-shrink: 0; /* Prevent image from shrinking */
 }
 
+.image-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+}
+
+.image-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e2e8f0;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .summary-details {
   flex: 1;
   min-width: 0;
@@ -403,6 +465,33 @@ export default {
   margin: 0;
   font-size: 14px;
   color: #6b7280;
+}
+
+.image-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fafc;
+  border-radius: 8px;
+}
+
+.loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .quantity-section {
