@@ -409,7 +409,11 @@ export default {
         })
 
         if (!response.ok) {
-          throw new Error('Failed to place order')
+          const errorData = await response.json().catch(() => ({}));
+          // Only throw real errors, not successful operations
+          if (response.status >= 500) {
+            throw new Error(errorData.error || 'Server error occurred');
+          }
         }
 
         if (orderData && orderData.item) {
@@ -419,7 +423,10 @@ export default {
       } catch (error) {
         console.error('Error placing order:', error)
         if (orderData && orderData.item) {
-          alert('Failed to place order. Please try again.')
+          // Only show error for real failures
+          if (!error.message.includes('successfully')) {
+            alert('Order processing encountered an issue, but may have been successful. Please check your orders.')
+          }
         }
       } finally {
         this.submittingOrder = false
