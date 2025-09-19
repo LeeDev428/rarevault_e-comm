@@ -318,6 +318,53 @@ export default {
       this.$router.push('/user/messages')
     },
 
+    async loadUserInfo() {
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        if (!token) return
+
+        // Try to get user info from localStorage first
+        const cachedUserInfo = localStorage.getItem('user_info')
+        if (cachedUserInfo) {
+          const user = JSON.parse(cachedUserInfo)
+          this.updateUserDisplay(user)
+        }
+
+        // Also fetch fresh data from API if available
+        const response = await axios.get('http://localhost:5000/api/user/profile', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+
+        if (response.data) {
+          this.updateUserDisplay(response.data)
+          // Update localStorage with fresh data
+          localStorage.setItem('user_info', JSON.stringify(response.data))
+        }
+      } catch (error) {
+        console.error('Error loading user info:', error)
+        // Fallback to cached data or default
+        const cachedUserInfo = localStorage.getItem('user_info')
+        if (cachedUserInfo) {
+          const user = JSON.parse(cachedUserInfo)
+          this.updateUserDisplay(user)
+        }
+      }
+    },
+
+    updateUserDisplay(user) {
+      // Use first_name and last_name if available, otherwise fallback to username
+      if (user.first_name && user.last_name) {
+        this.userName = `${user.first_name} ${user.last_name}`
+        this.userInitials = `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`.toUpperCase()
+      } else if (user.first_name) {
+        this.userName = user.first_name
+        this.userInitials = user.first_name.charAt(0).toUpperCase()
+      } else if (user.username) {
+        this.userName = user.username
+        this.userInitials = user.username.charAt(0).toUpperCase()
+      }
+    },
+
     async loadUnreadMessageCount() {
       try {
         const token = localStorage.getItem('access_token') || localStorage.getItem('token')
