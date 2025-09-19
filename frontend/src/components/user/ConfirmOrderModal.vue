@@ -48,16 +48,6 @@
           </div>
         </div>
 
-        <!-- Error Message -->
-        <div v-if="error" class="error-message">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="15" y1="9" x2="9" y2="15"/>
-            <line x1="9" y1="9" x2="15" y2="15"/>
-          </svg>
-          {{ error }}
-        </div>
-
         <!-- Order Form -->
         <div class="order-form">
           <form @submit.prevent="submitOrder">
@@ -73,12 +63,11 @@
             </div>
 
             <div class="form-group">
-              <label for="customerPhone">Phone Number *</label>
+              <label for="customerPhone">Phone Number</label>
               <input 
                 type="tel" 
                 id="customerPhone"
                 v-model="orderForm.customerPhone" 
-                required
                 placeholder="Enter your phone number"
               >
             </div>
@@ -166,8 +155,7 @@ export default {
         customerNotes: '',
         quantity: 1
       },
-      loading: false,
-      error: ''
+      loading: false
     }
   },
   watch: {
@@ -178,11 +166,9 @@ export default {
     }
   },
   methods: {
-    async initializeForm() {
-      // Get user info from backend and pre-fill the form
-      console.log('ConfirmOrderModal: Initializing form...');
-      const userInfo = await this.fetchUserInfo()
-      console.log('ConfirmOrderModal: User info received:', userInfo);
+    initializeForm() {
+      // Get user info from localStorage and pre-fill the form
+      const userInfo = this.getUserInfo()
       
       this.orderForm = {
         customerName: userInfo.fullName || '',
@@ -193,51 +179,9 @@ export default {
         customerNotes: '',
         quantity: 1
       }
-      
-      console.log('ConfirmOrderModal: Form initialized with:', this.orderForm);
     },
     
-    async fetchUserInfo() {
-      try {
-        // First try to get from localStorage
-        const localUserInfo = this.getUserInfoFromStorage()
-        
-        // Then fetch fresh data from backend
-        const response = await fetch('http://localhost:5000/api/profile', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        })
-        
-        if (response.ok) {
-          const userData = await response.json()
-          const backendUserInfo = {
-            fullName: userData.first_name && userData.last_name 
-              ? `${userData.first_name} ${userData.last_name}` 
-              : userData.username || '',
-            email: userData.email || '',
-            phone: userData.phone || '',
-            address: userData.address || ''
-          }
-          
-          // Use backend data if available, otherwise fallback to localStorage
-          return {
-            fullName: backendUserInfo.fullName || localUserInfo.fullName,
-            email: backendUserInfo.email || localUserInfo.email,
-            phone: backendUserInfo.phone || localUserInfo.phone,
-            address: backendUserInfo.address || localUserInfo.address
-          }
-        } else {
-          console.warn('Failed to fetch user profile, using localStorage data')
-          return localUserInfo
-        }
-      } catch (error) {
-        console.error('Error fetching user info:', error)
-        return this.getUserInfoFromStorage()
-      }
-    },
-    
-    getUserInfoFromStorage() {
+    getUserInfo() {
       try {
         const userInfo = localStorage.getItem('user_info')
         if (userInfo) {
@@ -326,94 +270,16 @@ export default {
     },
     
     submitOrder() {
-      // Debug logging
-      console.log('ConfirmOrderModal: Submitting order with form data:', this.orderForm);
-      console.log('ConfirmOrderModal: Item data:', this.item);
-      console.log('ConfirmOrderModal: Selected quantity:', this.orderForm.quantity);
-      
-      this.confirmOrder();
-    },
-    
-    async confirmOrder() {
-      if (this.loading) return;
-      
-      try {
-        this.loading = true;
-        this.error = '';
-        
-        // Validate required fields
-        if (!this.orderForm.customerName.trim()) {
-          throw new Error('Customer name is required');
-        }
-        if (!this.orderForm.customerPhone.trim()) {
-          throw new Error('Phone number is required');
-        }
-        if (!this.orderForm.shippingAddress.trim()) {
-          throw new Error('Shipping address is required');
-        }
-        if (!this.item?.id) {
-          throw new Error('Invalid item');
-        }
-        if (this.orderForm.quantity <= 0) {
-          throw new Error('Quantity must be greater than 0');
-        }
-        
-        // Prepare order data
-        const orderData = {
-          item_id: this.item.id,
-          quantity: this.orderForm.quantity,
-          customer_name: this.orderForm.customerName.trim(),
-          customer_phone: this.orderForm.customerPhone.trim(),
-          customer_email: this.orderForm.customerEmail.trim(),
-          shipping_address: this.orderForm.shippingAddress.trim(),
-          payment_method: this.orderForm.paymentMethod,
-          customer_notes: this.orderForm.customerNotes.trim()
-        };
-        
-        console.log('ConfirmOrderModal: Sending order data to API:', orderData);
-        
-        // Submit order to backend
-        const response = await fetch('http://localhost:5000/api/orders', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify(orderData)
-        });
-        
-        console.log('ConfirmOrderModal: Response status:', response.status);
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error('ConfirmOrderModal: Backend error response:', errorData);
-          
-          // Handle specific error types
-          if (response.status === 422) {
-            throw new Error(errorData.error || 'Invalid data provided. Please check all fields.');
-          } else if (response.status === 400) {
-            throw new Error(errorData.error || 'Bad request. Please check your input.');
-          } else if (response.status === 404) {
-            throw new Error('Item not found or no longer available.');
-          } else if (response.status === 403) {
-            throw new Error('You are not authorized to perform this action.');
-          } else {
-            throw new Error(errorData.error || `Server error (${response.status}). Please try again.`);
-          }
-        }
-        
-        const result = await response.json();
-        console.log('ConfirmOrderModal: Order created successfully:', result);
-        
-        // Emit success event to parent
-        this.$emit('order-confirmed', result);
-        
-      } catch (error) {
-        console.error('ConfirmOrderModal: Error creating order:', error);
-        this.error = error.message || 'Failed to create order. Please try again.';
-      } finally {
-        this.loading = false;
+      // Prevent double submission
+      if (this.loading) {
+        return;
       }
+      
+      // Emit the form data back to the parent component
+      this.$emit('submit', {
+        ...this.orderForm,
+        item: this.item
+      })
     },
     
     closeModal() {
@@ -631,25 +497,6 @@ export default {
   font-size: 20px;
   font-weight: 700;
   color: #059669;
-}
-
-.error-message {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  margin: 20px 0;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  color: #dc2626;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.error-message svg {
-  flex-shrink: 0;
-  color: #dc2626;
 }
 
 .order-form {
