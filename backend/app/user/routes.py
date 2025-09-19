@@ -49,6 +49,33 @@ def test_jwt():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@user_bp.route('/profile', methods=['GET'])
+@jwt_required()
+def get_user_profile():
+    """Get current user's profile information"""
+    try:
+        user_identity = get_jwt_identity()
+        if isinstance(user_identity, str):
+            user_id = int(user_identity)
+        else:
+            user_id = user_identity
+            
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        return jsonify({
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'role': user.role,
+            'created_at': user.created_at.isoformat() if user.created_at else None
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @user_bp.route('/marketplace', methods=['GET'])
 @jwt_required()
 def get_marketplace_items():
