@@ -62,7 +62,7 @@
                     <div class="notification-message">{{ notification.message }}</div>
                     <div class="notification-time">{{ formatNotificationTime(notification.created_at) }}</div>
                   </div>
-                  <div class="notification-amount">${{ notification.amount.toFixed(2) }}</div>
+                  <div class="notification-amount">₱{{ notification.amount.toFixed(2) }}</div>
                 </div>
               </div>
 
