@@ -6,7 +6,7 @@
         <div class="logo">
           <h1 class="logo-text font-display" style="color: rgb(139, 90, 60); font-size: 24px;">RareVault.</h1>
         </div>
-        <div class="search-section">
+        <!-- <div class="search-section">
           <div class="search-bar">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <circle cx="11" cy="11" r="8"></circle>
@@ -14,22 +14,19 @@
             </svg>
             <input type="text" placeholder="Search">
           </div>
-        </div>
+        </div> -->
         
         <div class="header-right">
-          <div class="notification-icon">
+          <!-- <div class="notification-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
-          </div>
+          </div> -->
           
           <div class="user-profile" @click="toggleUserMenu">
-            <div class="user-avatar">
-              <div class="avatar-placeholder">S</div>
-            </div>
+            
             <div class="user-info">
-              <span class="user-name">Soaremove</span>
               <span class="user-role">Admin</span>
             </div>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -38,7 +35,7 @@
             
             <!-- User Dropdown Menu -->
             <div v-if="showUserMenu" class="user-dropdown" @click.stop>
-              <div class="dropdown-item" @click="goToProfile">
+              <!-- <div class="dropdown-item" @click="goToProfile">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
@@ -51,7 +48,7 @@
                   <path d="M12 1v6m0 6v6m11-7h-6M7 12H1m15.5-3.5l-5.66 5.66M12.34 5.66L6.68 11.32M17.5 17.5l-5.66-5.66M5.66 17.5l5.66-5.66"></path>
                 </svg>
                 Settings
-              </div>
+              </div> -->
               <div class="dropdown-divider"></div>
               <div class="dropdown-item logout" @click="logout">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -76,14 +73,14 @@
           </div>
           
           <nav class="sidebar-nav">
-            <div class="nav-item" :class="{ active: $route.path.includes('/admin/users') }">
+            <div class="nav-item" :class="{ active: $route.path.includes('/admin/dashboard') }">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
-              <router-link to="/admin/users" class="nav-link">Manage user page</router-link>
+              <router-link to="/admin/dashboard" class="nav-link">Manage user page</router-link>
             </div>
-            
+<!--             
             <div class="nav-item" :class="{ active: $route.path.includes('/admin/listings') }">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -92,9 +89,9 @@
                 <line x1="3" y1="10" x2="21" y2="10"></line>
               </svg>
               <router-link to="/admin/listings" class="nav-link">Manage Listings Page</router-link>
-            </div>
+            </div> -->
             
-            <div class="nav-item" :class="{ active: $route.path.includes('/admin/reports') }">
+            <!-- <div class="nav-item" :class="{ active: $route.path.includes('/admin/reports') }">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                 <polyline points="14,2 14,8 20,8"></polyline>
@@ -103,7 +100,7 @@
                 <polyline points="10,9 9,9 8,9"></polyline>
               </svg>
               <router-link to="/admin/reports" class="nav-link">Reports / Logs Page</router-link>
-            </div>
+            </div> -->
           </nav>
         </div>
       </aside>
