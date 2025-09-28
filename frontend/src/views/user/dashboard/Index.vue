@@ -136,6 +136,7 @@
         <!-- Pagination Component -->
         <Pagination
           v-if="pagination.pages > 1"
+          variant="dots"
           :current-page="pagination.page"
           :total-pages="pagination.pages"
           :total-items="pagination.total"
