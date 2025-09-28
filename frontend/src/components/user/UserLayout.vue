@@ -6,28 +6,28 @@
         <!-- Left Side - Logo -->
         <div class="header-left">
           <router-link to="/user/dashboard" class="logo">
-                     <h2 class="logo-text font-display" style="color: rgb(139, 90, 60); font-size: 28px;">RareVault</h2>
+            <h2 class="logo-text font-display">RareVault.</h2>
           </router-link>
         </div>
 
         <!-- Center - Search -->
-        <div class="header-center">
-          <div class="search-container">
-            <div class="search-input-wrapper">
-              <input 
-                type="text" 
-                placeholder="Search for items..." 
-                class="search-input"
-                v-model="searchQuery"
-                @input="handleSearch"
-              />
-              <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <circle cx="11" cy="11" r="8"/>
-                <path d="M21 21l-4.35-4.35"/>
-              </svg>
+            <div class="header-center">
+              <div class="search-container">
+                <div class="search-input-wrapper">
+                  <input 
+                    type="text" 
+                    placeholder="Search for items..." 
+                    class="search-input dark-pill"
+                    v-model="searchQuery"
+                    @input="handleSearch"
+                  />
+                  <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="M21 21l-4.35-4.35"/>
+                  </svg>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
         <!-- Right Side - User Menu -->
         <div class="header-right">
@@ -537,6 +537,13 @@ export default {
   margin: 0;
 }
 
+.logo-text {
+  color: #000; /* black logo */
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0;
+}
+
 /* Search */
 .header-center {
   flex: 1;
@@ -562,6 +569,21 @@ export default {
   font-size: 14px;
   background: #f9fafb;
   transition: all 0.2s ease;
+}
+
+/* Dark rounded pill search style */
+.search-input.dark-pill {
+  background: #000000; /* black */
+  color: #ffffff;
+  border: none;
+  padding: 12px 20px 12px 52px;
+  border-radius: 999px;
+}
+.search-input.dark-pill::placeholder {
+  color: rgba(255,255,255,0.7);
+}
+.search-input.dark-pill:focus {
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
 }
 
 .search-input:focus {
