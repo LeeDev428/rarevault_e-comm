@@ -1,28 +1,43 @@
 <template>
   <UserLayout>
-    <!-- Category quick filters (icons/pills) -->
-    <div class="category-row">
-      <button class="category-pill active">Vintage Items</button>
-      <button v-for="category in availableCategories" :key="category" class="category-pill">{{ formatCategoryName(category) }}</button>
-    </div>
-
     <div class="marketplace-container">
       <!-- Left Sidebar Filters -->
       <aside class="filter-sidebar">
         <div class="filter-section">
           <h3 class="filter-title">Filter</h3>
-
-          <!-- Categories (simple list) -->
+          
+          <!-- Search Box -->
           <div class="filter-group">
-            <h4 class="filter-subtitle">Categories</h4>
-            <div class="filter-item" @click="clearCategoryFilter" :class="{ active: !selectedCategory }">
+            <div class="search-box">
+              <input 
+                v-model="searchQuery"
+                type="text"
+                placeholder="Search items..."
+                class="search-input"
+                @input="debouncedSearch"
+              >
+              <i class="search-icon">🔍</i>
+            </div>
+          </div>
+
+          <!-- Category Filters -->
+          <div class="filter-group">
+            <h4 class="filter-subtitle">Categories</h4>  <div class="filter-item" 
+                 @click="clearCategoryFilter"
+                 :class="{ active: !selectedCategory }">
               <span>All Categories</span>
             </div>
-            <div class="filter-list">
-              <div class="filter-item" v-for="category in availableCategories" :key="category" @click="toggleCategory(category)" :class="{ active: selectedCategory === category }">
-                <span>{{ formatCategoryName(category) }}</span>
-              </div>
+            
+
+
+            <div class="filter-item" 
+                 v-for="category in availableCategories" 
+                 :key="category"
+                 @click="toggleCategory(category)"
+                 :class="{ active: selectedCategory === category }">
+              <span>{{ formatCategoryName(category) }}</span>
             </div>
+          
           </div>
 
           <!-- Condition Filter -->
