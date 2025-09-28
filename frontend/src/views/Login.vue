@@ -180,14 +180,10 @@ export default {
   background: #fafafa;
 }
 
-.logo-text {
+  .logo-text {
   font-size: 1.75rem;
   font-weight: 600;
-  color: var(--text-primary);
-  background: var(--gradient-vintage);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #000; /* RareVault logo color set to black */
   margin: 0;
 }
 
