@@ -37,50 +37,92 @@
       <!-- Overlay Actions on Hover -->
       <div class="item-overlay">
         <div class="item-actions">
-          <button class="action-btn view-details-btn" @click="viewItemDetails">View Details</button>
-          <button class="action-btn order-btn" @click="openOrderModal">Order Now</button>
-          <button class="action-btn save-btn" @click.stop="$emit('save-item', item)">Save to wishlist</button>
+          <button 
+            class="action-btn view-details-btn"
+            @click="viewItemDetails"
+          >
+            View Details
+          </button>
+          
+          <button 
+            class="action-btn order-btn"
+            @click="openOrderModal"
+          >
+            Order Now
+          </button>
+         
+          <button 
+            class="action-btn save-btn"
+            @click="$emit('save-item', item)"
+          >
+            Save to wishlist
+          </button>
         </div>
-      </div>
-    </div> <!-- .item-image-container -->
-
-    <!-- Card Body -->
-    <div class="card-body">
-      <div class="category-label">{{ item.category || 'Vintage Items' }}</div>
-
-      <h3 class="item-title">{{ item.title }}</h3>
-
-      <hr class="divider" />
-
-      <div class="price-row">
-        <div class="price-left">
-          <div class="price-label">Price</div>
-          <div class="price-value">PHP {{ item.price ? item.price.toFixed(0) : '0' }}</div>
-        </div>
-
-        <button class="favorite-btn" @click.stop="$emit('save-item', item)" aria-label="Save">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.02-1.07a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.8-8.81a5.5 5.5 0 0 0 0-7.82z"/>
-          </svg>
-        </button>
-      </div>
-
-      <div class="card-actions">
-        <button class="btn btn-outline" @click="$emit('contact-seller', item)">Contact Seller</button>
-        <button class="btn btn-primary" @click="$emit('order-item', item)">Trade something?</button>
       </div>
     </div>
 
-    </div> <!-- .vintage-item-card -->
-
-      <!-- Order Confirmation Modal -->
-    <ConfirmOrderModal
-      :show="showOrderModal"
-      :item="item"
-      :loading="orderLoading"
-      @close="closeOrderModal"
-      @submit="handleOrderSubmit"
-    />
+    <!-- Item Details -->
+    <div class="item-details">
+      <div class="seller-label">
+        <span>{{ item.seller }}</span>
+      </div>
+      
+      <h3 class="item-title">{{ item.title }}</h3>
+      
+      <div class="item-footer">
+        <div class="item-stats">
+          <!-- Rating -->
+          <div v-if="item.rating > 0" class="rating-display">
+            <div class="stars">
+              <span v-for="star in 5" :key="star" 
+                    :class="['star', { filled: star <= Math.round(item.rating) }]">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                </svg>
+              </span>
+            </div>
+            <span class="rating-text">{{ item.rating.toFixed(1) }} ({{ item.ratingCount }})</span>
+          </div>
+          
+          <!-- Sold Count -->
+          <div v-if="item.soldCount > 0" class="sold-count">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+            <span>{{ item.soldCount }} sold</span>
+          </div>
+          
+          <!-- Stock Count -->
+          <div class="stock-count" :class="{ 'low-stock': item.stock < 5, 'out-of-stock': item.stock === 0 }">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span v-if="item.stock > 0">{{ item.stock }} in stock</span>
+            <span v-else>Out of stock</span>
+          </div>
+        </div>
+        
+        <div class="item-price">
+          <span class="price-label">Price</span>
+          <span class="price-value">₱{{ item.price.toFixed(2) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Order Confirmation Modal -->
+  <ConfirmOrderModal
+    :show="showOrderModal"
+    :item="item"
+    :loading="orderLoading"
+    @close="closeOrderModal"
+    @submit="handleOrderSubmit"
+  />
 </template>
 
 <script>
@@ -541,33 +583,6 @@ export default {
   flex: 1;
 }
 
-/* Card body tweaks matching mock */
-.item-image.single,
-.item-image.primary,
-.item-image.secondary,
-.item-image.placeholder {
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-}
-
-.divider {
-  border: none;
-  border-top: 1px solid #e5e7eb;
-  margin: 8px 0;
-}
-
-.card-body { padding: 14px 16px 18px; }
-
-.price-left { display: flex; flex-direction: column; }
-
-.price-label { font-size: 12px; color: #6b7280; font-weight: 600; }
-
-.price-value { font-size: 16px; font-weight: 700; color: #111827; }
-
-.favorite-btn { background: transparent; border: none; color: #6b7280; padding: 6px; }
-
-.card-body .card-actions { margin-top: 12px; }
-
 .rating-display {
   display: flex;
   align-items: center;
@@ -645,25 +660,6 @@ export default {
   font-weight: 700;
   color: #111827;
 }
-
-/* Card CTA button overrides to match mockup: black filled primary and black outline secondary */
-.card-actions .btn {
-  border-radius: 999px;
-  padding: 10px 18px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.card-actions .btn-primary {
-  background: #000;
-  color: #fff;
-  border: 1px solid #000;
-}
-.card-actions .btn-outline {
-  background: #fff;
-  color: #000;
-  border: 1px solid #000;
-}
-.card-actions .btn-outline:hover { background: #fafafa; }
 
 /* Responsive */
 @media (max-width: 768px) {
