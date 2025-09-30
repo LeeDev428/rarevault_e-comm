@@ -75,24 +75,29 @@ export default {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
 .action-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: 12px;
+  padding: 14px 24px;
   border: none;
-  border-radius: 8px;
+  border-radius: 16px;
   font-weight: 500;
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   text-decoration: none;
-  min-height: 40px;
+  min-height: 48px;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 4px 16px rgba(139, 90, 60, 0.1);
+  border: 2px solid transparent;
 }
 
 .action-btn:hover:not(.action-btn--disabled):not(.action-btn--loading) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(139, 90, 60, 0.2);
 }
 
 .action-btn:active:not(.action-btn--disabled):not(.action-btn--loading) {
@@ -101,70 +106,83 @@ export default {
 
 /* Primary Button */
 .action-btn--primary {
-  background: #007bff;
+  background: #3b82f6;
   color: white;
+  border-color: #3b82f6;
 }
 
 .action-btn--primary:hover:not(.action-btn--disabled):not(.action-btn--loading) {
-  background: #0056b3;
+  background: #2563eb;
+  border-color: #2563eb;
 }
 
 /* Secondary Button */
 .action-btn--secondary {
-  background: #6c757d;
+  background: #6b7280;
   color: white;
+  border-color: #6b7280;
 }
 
 .action-btn--secondary:hover:not(.action-btn--disabled):not(.action-btn--loading) {
-  background: #545b62;
+  background: #4b5563;
+  border-color: #4b5563;
 }
 
 /* Success Button */
 .action-btn--success {
-  background: #28a745;
+  background: #10b981;
   color: white;
+  border-color: #10b981;
 }
 
 .action-btn--success:hover:not(.action-btn--disabled):not(.action-btn--loading) {
-  background: #1e7e34;
+  background: #059669;
+  border-color: #059669;
 }
 
 /* Warning Button */
 .action-btn--warning {
-  background: #ffc107;
-  color: #212529;
+  background: #f59e0b;
+  color: white;
+  border-color: #f59e0b;
 }
 
 .action-btn--warning:hover:not(.action-btn--disabled):not(.action-btn--loading) {
-  background: #e0a800;
+  background: #d97706;
+  color: white;
+  border-color: #d97706;
 }
 
 /* Danger Button */
 .action-btn--danger {
-  background: #dc3545;
+  background: #ef4444;
   color: white;
+  border-color: #ef4444;
 }
 
 .action-btn--danger:hover:not(.action-btn--disabled):not(.action-btn--loading) {
-  background: #c82333;
+  background: #dc2626;
+  border-color: #dc2626;
 }
 
 /* Info Button */
 .action-btn--info {
-  background: #17a2b8;
-  color: white;
+  background: linear-gradient(135deg, #f8f6f1 0%, #f0ede6 100%);
+  color: #5a4a3a;
+  border-color: #e8ddd4;
 }
 
 .action-btn--info:hover:not(.action-btn--disabled):not(.action-btn--loading) {
-  background: #138496;
+  background: linear-gradient(135deg, #f0ede6 0%, #e8ddd4 100%);
+  border-color: #d4af94;
 }
 
 /* Disabled State */
 .action-btn--disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
   transform: none !important;
-  box-shadow: none !important;
+  box-shadow: 0 2px 8px rgba(139, 90, 60, 0.05) !important;
 }
 
 /* Loading State */
@@ -173,17 +191,18 @@ export default {
 }
 
 .action-btn__icon {
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1;
 }
 
 .action-btn__text {
   line-height: 1;
+  font-weight: 500;
 }
 
 .action-btn__spinner {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border: 2px solid transparent;
   border-top: 2px solid currentColor;
   border-radius: 50%;
