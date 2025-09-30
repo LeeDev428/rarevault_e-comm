@@ -2,7 +2,7 @@
   <div v-if="show" class="modal-overlay" @click="closeModal">
     <div class="modal-content" @click.stop>
       <div class="modal-header">
-        <h2>Confirm Order</h2>
+        <h2 class="modal-title">Confirm Order</h2>
         <button @click="closeModal" class="close-btn">✕</button>
       </div>
       
@@ -317,6 +317,8 @@ export default {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&family=Inter:wght@300;400;500;600;700&display=swap');
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -332,7 +334,7 @@ export default {
 }
 
 .modal-content {
-  background: white;
+  background: #ffffff;
   border-radius: 12px;
   width: 100%;
   max-width: 600px;
@@ -350,10 +352,13 @@ export default {
   margin-bottom: 24px;
 }
 
-.modal-header h2 {
+.modal-title {
   margin: 0;
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-weight: 700;
   font-size: 24px;
-  font-weight: 600;
+  letter-spacing: -0.5px;
   color: #1f2937;
 }
 
@@ -381,10 +386,10 @@ export default {
   display: flex;
   gap: 16px;
   padding: 16px;
-  background: #f8fafc;
+  background: #ffffff;
   border-radius: 12px;
   margin-bottom: 24px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e5e7eb;
 }
 
 .summary-image {
