@@ -690,11 +690,15 @@ export default {
 </script>
 
 <style scoped>
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 /* Main Container */
 .create-message-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 32px;
+  font-family: 'Inter', sans-serif;
 }
 
 /* Page Header */
@@ -702,26 +706,28 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 48px;
+  padding: 32px;
+  background: linear-gradient(135deg, #f8f6f1 0%, #e8ddd4 100%);
+  border-radius: 24px;
+  border: 1px solid #d4af94;
+  box-shadow: 0 8px 25px rgba(139, 90, 60, 0.1);
 }
 
 .header-content h1.page-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: #111827;
+  font-family: 'Playfair Display', serif;
+  font-size: 36px;
+  font-weight: 600;
+  color: #8b5a3c;
   margin: 0 0 8px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  text-shadow: 0 2px 4px rgba(139, 90, 60, 0.1);
 }
 
 .page-subtitle {
   margin: 0;
-  color: #6b7280;
+  color: #8b5a3c;
   font-size: 16px;
+  opacity: 0.8;
 }
 
 .back-btn {
@@ -729,43 +735,53 @@ export default {
   align-items: center;
   gap: 8px;
   padding: 12px 20px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  color: #475569;
+  background: rgba(248, 246, 241, 0.7);
+  border: 1px solid #d4af94;
+  border-radius: 12px;
+  color: #8b5a3c;
   text-decoration: none;
   font-weight: 500;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
+  font-family: 'Inter', sans-serif;
 }
 
 .back-btn:hover {
-  background: #e2e8f0;
-  border-color: #cbd5e1;
-  color: #334155;
+  background: rgba(232, 221, 212, 0.8);
+  border-color: #8b5a3c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 90, 60, 0.15);
 }
 
 /* Error Banner */
 .error-banner {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+  border: 1px solid #f87171;
   color: #dc2626;
-  padding: 12px 16px;
-  border-radius: 8px;
+  padding: 16px 20px;
+  border-radius: 16px;
   margin-bottom: 24px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   position: relative;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.1);
 }
 
 .close-error {
   position: absolute;
-  right: 12px;
+  right: 16px;
   background: none;
   border: none;
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
   color: #dc2626;
+  padding: 4px;
+  border-radius: 8px;
+  transition: background 0.3s ease;
+}
+
+.close-error:hover {
+  background: rgba(220, 38, 38, 0.1);
 }
 
 /* Step Indicator */
@@ -774,31 +790,68 @@ export default {
   align-items: center;
   justify-content: center;
   margin-bottom: 48px;
+  padding: 32px;
+  background: linear-gradient(135deg, #f8f6f1 0%, #e8ddd4 100%);
+  border-radius: 20px;
+  border: 1px solid #d4af94;
 }
 
 .step {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .step-number {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: #e5e7eb;
-  color: #6b7280;
+  background: rgba(212, 175, 148, 0.3);
+  color: #8b5a3c;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  transition: all 0.3s;
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
 }
 
 .step.active .step-number {
-  background: #3b82f6;
-  color: white;
+  background: linear-gradient(135deg, #8b5a3c 0%, #d4af94 100%);
+  color: #f8f6f1;
+  border-color: #8b5a3c;
+  box-shadow: 0 4px 15px rgba(139, 90, 60, 0.3);
+}
+
+.step.completed .step-number {
+  background: linear-gradient(135deg, #d4af94 0%, #8b5a3c 100%);
+  color: #f8f6f1;
+  border-color: #d4af94;
+}
+
+.step-label {
+  font-size: 12px;
+  color: #8b5a3c;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+}
+
+.step.active .step-label {
+  color: #8b5a3c;
+  opacity: 1;
+  font-weight: 600;
+}
+
+.step-divider {
+  width: 80px;
+  height: 2px;
+  background: linear-gradient(90deg, #d4af94 0%, #e8ddd4 100%);
+  margin: 0 20px;
 }
 
 .step.completed .step-number {
