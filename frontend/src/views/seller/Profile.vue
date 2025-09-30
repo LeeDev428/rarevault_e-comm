@@ -332,49 +332,64 @@ export default {
 </script>
 
 <style scoped>
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Crimson+Text:wght@400;600;700&family=Libre+Baskerville:wght@400;700&display=swap');
+
 .seller-profile {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 32px;
+  font-family: 'Inter', sans-serif;
+  background: #ffffff;
 }
 
 .page-header {
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid #e9ecef;
+  margin-bottom: 48px;
+  padding: 32px;
+  background: #ffffff;
+  border-radius: 24px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .page-title {
   margin: 0 0 8px 0;
-  font-size: 32px;
-  font-weight: 700;
-  color: #343a40;
+  font-family: 'Playfair Display', serif;
+  font-size: 42px;
+  font-weight: 800;
+  color: #1f2937;
+  letter-spacing: -1px;
+  font-style: italic;
 }
 
 .page-subtitle {
   margin: 0;
-  color: #6c757d;
+  color: #6b7280;
   font-size: 16px;
+  opacity: 1;
 }
 
 .profile-container {
   display: grid;
   grid-template-columns: 1fr 350px;
-  gap: 32px;
+  gap: 48px;
   align-items: start;
 }
 
 .profile-form {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e9ecef;
+  background: #ffffff;
+  border-radius: 24px;
+  border: 1px solid #e5e7eb;
   padding: 32px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .section-title {
   margin: 0 0 24px 0;
+  font-family: 'Playfair Display', serif;
   font-size: 24px;
   font-weight: 600;
-  color: #343a40;
+  color: #1f2937;
 }
 
 .form-group {
@@ -385,53 +400,72 @@ export default {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #495057;
+  color: #8b5a3c;
   font-size: 14px;
 }
 
 .form-input {
   width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #d4af94;
+  border-radius: 12px;
   font-size: 14px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: rgba(248, 246, 241, 0.7);
+  color: #8b5a3c;
+  transition: all 0.3s ease;
+  font-family: 'Inter', sans-serif;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: #ffffff;
+}
+
+.form-input::placeholder {
+  color: #8b5a3c;
+  opacity: 0.6;
 }
 
 .form-textarea {
   width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #d4af94;
+  border-radius: 12px;
   font-size: 14px;
-  font-family: inherit;
+  font-family: 'Inter', sans-serif;
   resize: vertical;
-  min-height: 100px;
+  min-height: 120px;
+  background: rgba(248, 246, 241, 0.7);
+  color: #8b5a3c;
+  transition: all 0.3s ease;
 }
 
 .form-textarea:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: #8b5a3c;
+  box-shadow: 0 0 0 3px rgba(139, 90, 60, 0.1);
+  background: rgba(248, 246, 241, 1);
+}
+
+.form-textarea::placeholder {
+  color: #8b5a3c;
+  opacity: 0.6;
 }
 
 .form-help {
   display: block;
   margin-top: 4px;
   font-size: 12px;
-  color: #6c757d;
+  color: #8b5a3c;
+  opacity: 0.7;
 }
 
 .email-input-group,
 .phone-input-group {
   display: flex;
-  gap: 8px;
+  gap: 12px;
 }
 
 .email-input-group .form-input,
@@ -441,20 +475,23 @@ export default {
 
 .change-btn,
 .add-btn {
-  padding: 12px 16px;
-  border: 1px solid #007bff;
-  background: #007bff;
+  padding: 12px 20px;
+  border: 1px solid #8b5a3c;
+  background: linear-gradient(135deg, #8b5a3c 0%, #a06749 100%);
   color: white;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(139, 90, 60, 0.2);
 }
 
 .change-btn:hover,
 .add-btn:hover {
-  background: #0056b3;
+  background: linear-gradient(135deg, #744a32 0%, #8b5a3c 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 90, 60, 0.3);
 }
 
 .radio-group {
@@ -467,15 +504,24 @@ export default {
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: background 0.3s ease;
+}
+
+.radio-option:hover {
+  background: rgba(139, 90, 60, 0.05);
 }
 
 .radio-option input[type="radio"] {
   margin: 0;
+  accent-color: #8b5a3c;
 }
 
 .radio-label {
   font-size: 14px;
-  color: #495057;
+  color: #8b5a3c;
+  font-weight: 500;
 }
 
 .date-group {
@@ -485,67 +531,74 @@ export default {
 
 .date-select {
   flex: 1;
-  padding: 12px 16px;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #d4af94;
+  border-radius: 12px;
   font-size: 14px;
-  background: white;
+  background: rgba(248, 246, 241, 0.7);
+  color: #8b5a3c;
+  transition: all 0.3s ease;
+  font-family: 'Inter', sans-serif;
 }
 
 .date-select:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: #8b5a3c;
+  box-shadow: 0 0 0 3px rgba(139, 90, 60, 0.1);
+  background: rgba(248, 246, 241, 1);
 }
 
 .form-actions {
   margin-top: 32px;
   padding-top: 24px;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid #d4af94;
 }
 
 /* Profile Sidebar */
 .profile-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
 }
 
 .photo-section {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e9ecef;
-  padding: 24px;
+  background: linear-gradient(135deg, #f8f6f1 0%, #e8ddd4 100%);
+  border-radius: 24px;
+  border: 1px solid #d4af94;
+  padding: 32px;
+  box-shadow: 0 8px 25px rgba(139, 90, 60, 0.1);
 }
 
 .photo-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 20px;
+  margin-bottom: 20px;
 }
 
 .profile-photo {
-  width: 120px;
-  height: 120px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
   overflow: hidden;
-  border: 4px solid #f8f9fa;
+  border: 4px solid #d4af94;
+  box-shadow: 0 4px 15px rgba(139, 90, 60, 0.15);
 }
 
 .photo-placeholder {
   width: 100%;
   height: 100%;
-  background: #f8f9fa;
+  background: linear-gradient(135deg, #e8ddd4 0%, #d4af94 100%);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .photo-icon {
-  font-size: 48px;
-  color: #6c757d;
+  font-size: 52px;
+  color: #8b5a3c;
+  opacity: 0.7;
 }
 
 .photo-image {
@@ -555,17 +608,22 @@ export default {
 }
 
 .select-image-btn {
-  padding: 8px 16px;
-  border: 1px solid #dee2e6;
-  background: white;
-  border-radius: 6px;
+  padding: 12px 20px;
+  border: 1px solid #8b5a3c;
+  background: linear-gradient(135deg, #f8f6f1 0%, #e8ddd4 100%);
+  color: #8b5a3c;
+  border-radius: 12px;
   font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(139, 90, 60, 0.1);
 }
 
 .select-image-btn:hover {
-  background: #f8f9fa;
+  background: linear-gradient(135deg, #e8ddd4 0%, #d4af94 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 90, 60, 0.2);
 }
 
 .photo-info {
@@ -575,28 +633,32 @@ export default {
 .info-text {
   margin: 4px 0;
   font-size: 12px;
-  color: #6c757d;
+  color: #8b5a3c;
+  opacity: 0.7;
 }
 
 .meetup-section {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e9ecef;
-  padding: 24px;
+  background: linear-gradient(135deg, #f8f6f1 0%, #e8ddd4 100%);
+  border-radius: 24px;
+  border: 1px solid #d4af94;
+  padding: 32px;
+  box-shadow: 0 8px 25px rgba(139, 90, 60, 0.1);
 }
 
 .meetup-title {
   margin: 0 0 8px 0;
-  font-size: 18px;
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
   font-weight: 600;
-  color: #343a40;
+  color: #8b5a3c;
 }
 
 .meetup-subtitle {
-  margin: 0 0 20px 0;
+  margin: 0 0 24px 0;
   font-size: 14px;
-  color: #6c757d;
-  line-height: 1.4;
+  color: #8b5a3c;
+  opacity: 0.8;
+  line-height: 1.5;
 }
 
 .meetup-options {
@@ -608,19 +670,25 @@ export default {
 .meetup-option {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   cursor: pointer;
-  padding: 12px;
-  border-radius: 8px;
-  transition: background 0.2s ease;
+  padding: 16px;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  background: rgba(248, 246, 241, 0.5);
+  border: 1px solid rgba(212, 175, 148, 0.3);
 }
 
 .meetup-option:hover {
-  background: #f8f9fa;
+  background: rgba(212, 175, 148, 0.2);
+  border-color: #d4af94;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 90, 60, 0.1);
 }
 
 .meetup-checkbox {
   margin: 0;
+  accent-color: #8b5a3c;
 }
 
 .option-content {
@@ -631,19 +699,31 @@ export default {
 
 .option-icon {
   font-size: 20px;
+  color: #8b5a3c;
 }
 
 .option-text {
   font-size: 14px;
-  color: #495057;
+  color: #8b5a3c;
   font-weight: 500;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
+  .seller-profile {
+    padding: 24px;
+  }
+  
   .profile-container {
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: 32px;
+  }
+  
+  .page-header,
+  .profile-form,
+  .photo-section,
+  .meetup-section {
+    padding: 24px;
   }
   
   .radio-group {
@@ -658,6 +738,14 @@ export default {
   .email-input-group,
   .phone-input-group {
     flex-direction: column;
+  }
+  
+  .page-title {
+    font-size: 28px;
+  }
+  
+  .section-title {
+    font-size: 20px;
   }
 }
 </style>
