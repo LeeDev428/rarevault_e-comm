@@ -578,6 +578,9 @@ export default {
 </script>
 
 <style scoped>
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 /* Main Container */
 .messages-container {
   max-width: 1400px;
@@ -585,7 +588,8 @@ export default {
   height: calc(100vh - 120px);
   display: flex;
   flex-direction: column;
-  padding: 0 16px;
+  padding: 32px;
+  font-family: 'Inter', sans-serif;
 }
 
 /* Header */
@@ -593,20 +597,21 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 32px;
+  padding: 32px;
+  background: linear-gradient(135deg, #f8f6f1 0%, #e8ddd4 100%);
+  border-radius: 24px;
+  border: 1px solid #d4af94;
+  box-shadow: 0 8px 25px rgba(139, 90, 60, 0.1);
 }
 
 .page-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: #111827;
+  font-family: 'Playfair Display', serif;
+  font-size: 36px;
+  font-weight: 600;
+  color: #8b5a3c;
   margin: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  text-shadow: 0 2px 4px rgba(139, 90, 60, 0.1);
 }
 
 .header-stats {
@@ -616,27 +621,34 @@ export default {
 
 .stat-item {
   text-align: center;
+  padding: 16px;
+  background: rgba(248, 246, 241, 0.7);
+  border-radius: 16px;
+  border: 1px solid #d4af94;
+  min-width: 80px;
 }
 
 .stat-number {
   display: block;
-  font-size: 28px;
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
   font-weight: 700;
-  color: #3b82f6;
+  color: #8b5a3c;
   margin-bottom: 4px;
 }
 
 .stat-number.unread {
-  color: #ef4444;
+  color: #dc3545;
   animation: pulse 2s infinite;
 }
 
 .stat-label {
   font-size: 12px;
-  color: #6b7280;
+  color: #8b5a3c;
   text-transform: uppercase;
   font-weight: 600;
   letter-spacing: 0.5px;
+  opacity: 0.8;
 }
 
 @keyframes pulse {
@@ -646,37 +658,45 @@ export default {
 
 /* Error Banner */
 .error-banner {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+  border: 1px solid #f87171;
   color: #dc2626;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 16px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  margin-bottom: 20px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   position: relative;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.1);
 }
 
 .close-error {
   position: absolute;
-  right: 12px;
+  right: 16px;
   background: none;
   border: none;
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
   color: #dc2626;
+  padding: 4px;
+  border-radius: 8px;
+  transition: background 0.3s ease;
+}
+
+.close-error:hover {
+  background: rgba(220, 38, 38, 0.1);
 }
 
 /* Chat Interface */
 .chat-interface {
   display: flex;
   height: 100%;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, #f8f6f1 0%, #e8ddd4 100%);
+  border-radius: 24px;
+  box-shadow: 0 12px 35px rgba(139, 90, 60, 0.15);
   overflow: hidden;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #d4af94;
 }
 
 /* Conversations Sidebar */
