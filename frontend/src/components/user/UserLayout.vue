@@ -6,7 +6,7 @@
         <!-- Left Side - Logo -->
         <div class="header-left">
           <router-link to="/user/dashboard" class="logo">
-                     <h2 class="logo-text font-display" style="color: rgb(139, 90, 60); font-size: 28px;">RareVault</h2>
+            <h2 class="logo-text">RareVault</h2>
           </router-link>
         </div>
 
@@ -484,14 +484,16 @@ export default {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&family=Inter:wght@300;400;500;600;700&display=swap');
+
 .user-layout {
   min-height: 100vh;
-  background-color: #f8fafc;
+  background-color: #ffffff;
 }
 
 /* Header */
 .main-header {
-  background: white;
+  background: #ffffff;
   border-bottom: 1px solid #e5e7eb;
   position: sticky;
   top: 0;
@@ -511,13 +513,22 @@ export default {
 /* Logo */
 .logo {
   text-decoration: none;
-  color: #111827;
+  color: #1f2937;
 }
 
-.logo h1 {
-  font-size: 24px;
-  font-weight: 700;
+.logo-text {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: -1px;
+  color: #1f2937;
   margin: 0;
+  transition: color 0.2s ease;
+}
+
+.logo:hover .logo-text {
+  color: #3b82f6;
 }
 
 /* Search */
@@ -540,17 +551,18 @@ export default {
 .search-input {
   width: 100%;
   padding: 12px 16px 12px 48px;
-  border: 1px solid #d1d5db;
+  border: 1px solid #e5e7eb;
   border-radius: 24px;
   font-size: 14px;
-  background: #f9fafb;
+  font-family: 'Inter', sans-serif;
+  background: #ffffff;
   transition: all 0.2s ease;
 }
 
 .search-input:focus {
   outline: none;
   border-color: #3b82f6;
-  background: white;
+  background: #ffffff;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
