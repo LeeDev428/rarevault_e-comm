@@ -140,12 +140,7 @@
                 <td class="date">{{ formatDate(item.created_at) }}</td>
                 <td>
                   <div class="action-buttons">
-                    <ActionButton
-                      variant="info"
-                      icon="👁️"
-                      text="View"
-                      @click="viewItem(item)"
-                    />
+                   
                     <ActionButton
                       variant="secondary"
                       icon="✏️"
