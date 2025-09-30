@@ -17,42 +17,52 @@
 
     <!-- Hero Section -->
     <section class="hero">
-      <div class="container">
+      <div class="hero-container">
         <div class="hero-content">
-          <div class="hero-text">
-            <h1 class="hero-title font-display">
-              Got vintage treasures, antiques, or rare collectibles collecting dust?
-            </h1>
+          <h1 class="hero-title font-display">
+            Got vintage treasures, antiques, or rare collectibles collecting dust?
+          </h1>
+          <div class="hero-subtitle-box">
             <p class="hero-subtitle">
               Find fellow collectors and enthusiasts who value what you have.
             </p>
-            <div class="hero-buttons">
-              <router-link to="/register?role=admin" class="btn btn-primary btn-large">
-                as admin
-              </router-link>
-              <router-link to="/register?role=user" class="btn btn-dark btn-large">
-                seller / buyer
-              </router-link>
-            </div>
           </div>
-          
-          <!-- Vintage Item Visual -->
-          <div class="hero-visual">
-            <div class="vintage-item">
-              <div class="vintage-card">
-                <div class="card-content">
-                  <div class="vintage-icon">
-                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 2Z" fill="#8b5a3c"/>
-                    </svg>
-                  </div>
-                  <h3 class="vintage-title">Rare Collectibles</h3>
-                  <p class="vintage-desc">Discover unique vintage treasures</p>
+          <div class="hero-buttons">
+            <router-link to="/register?role=admin" class="btn btn-admin">
+              as admin
+            </router-link>
+            <router-link to="/register?role=user" class="btn btn-seller">
+              seller / buyer
+            </router-link>
+          </div>
+        </div>
+        
+        <!-- Vintage Item Visual -->
+        <div class="hero-visual">
+          <div class="vintage-camera">
+            <!-- Camera body -->
+            <div class="camera-body">
+              <!-- Camera lens -->
+              <div class="camera-lens">
+                <div class="lens-inner">
+                  <div class="lens-center"></div>
                 </div>
+              </div>
+              <!-- Camera details -->
+              <div class="camera-details">
+                <div class="camera-button"></div>
+                <div class="camera-button"></div>
               </div>
             </div>
           </div>
         </div>
+      </div>
+      
+      <!-- Curved bottom edge -->
+      <div class="hero-curve">
+        <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+          <path d="M0,0 C150,100 350,100 600,50 C850,0 1050,0 1200,50 L1200,120 L0,120 Z" fill="#f8fafc"></path>
+        </svg>
       </div>
     </section>
 
@@ -485,94 +495,180 @@ export default {
 }
 
 .hero {
-  padding: 4rem 0 6rem;
+  background: white;
+  position: relative;
+  padding: 4rem 0 8rem;
+  overflow: hidden;
+}
+
+.hero-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  text-align: center;
 }
 
 .hero-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  min-height: 60vh;
+  gap: 2rem;
+  margin-bottom: 4rem;
 }
 
 .hero-title {
-  font-size: 3.5rem;
-  font-weight: 600;
+  font-size: 3rem;
+  font-weight: 400;
   line-height: 1.2;
-  color: var(--text-primary);
-  margin-bottom: 1.5rem;
+  color: #1a1a1a;
+  margin: 0;
+  max-width: 600px;
+}
+
+.hero-subtitle-box {
+  background: #2d2d2d;
+  border-radius: 1.5rem;
+  padding: 1rem 2rem;
+  margin: 1rem 0;
 }
 
 .hero-subtitle {
-  font-size: 1.25rem;
-  color: var(--text-secondary);
-  margin-bottom: 2.5rem;
-  line-height: 1.6;
+  color: white;
+  font-size: 1rem;
+  margin: 0;
+  line-height: 1.4;
 }
 
 .hero-buttons {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
-.btn-large {
-  padding: 1rem 2rem;
-  font-size: 1rem;
-  min-height: 3.5rem;
-  font-weight: 600;
+.btn-admin {
+  background: #4285f4;
+  color: white;
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-admin:hover {
+  background: #3367d6;
+  transform: translateY(-2px);
+}
+
+.btn-seller {
+  background: #1a1a1a;
+  color: white;
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-seller:hover {
+  background: #333;
+  transform: translateY(-2px);
 }
 
 .hero-visual {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-top: 2rem;
 }
 
-.vintage-item {
+.vintage-camera {
   position: relative;
-  transform: perspective(1000px) rotateY(-15deg) rotateX(10deg);
-  animation: float 6s ease-in-out infinite;
+  z-index: 2;
 }
 
-.vintage-card {
-  background: white;
-  border-radius: 1rem;
-  padding: 2rem;
+.camera-body {
+  width: 120px;
+  height: 80px;
+  background: linear-gradient(135deg, #d4af94 0%, #b8936f 100%);
+  border-radius: 8px;
+  position: relative;
   box-shadow: 
-    0 10px 25px rgba(0, 0, 0, 0.1),
-    0 20px 40px rgba(0, 0, 0, 0.05),
-    0 0 0 1px rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(139, 90, 60, 0.1);
-  min-width: 280px;
-  text-align: center;
+    0 8px 24px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-.card-content {
+.camera-lens {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #8b7355 0%, #6d5a42 100%);
+  border-radius: 50%;
+  border: 3px solid #a68b6b;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.2),
+    inset 0 2px 4px rgba(255, 255, 255, 0.1);
+}
+
+.lens-inner {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, #2a2a2a 0%, #1a1a1a 70%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.lens-center {
+  width: 16px;
+  height: 16px;
+  background: radial-gradient(circle, #4a4a4a 0%, #2a2a2a 100%);
+  border-radius: 50%;
+  border: 1px solid #666;
+}
+
+.camera-details {
+  position: absolute;
+  top: 10px;
+  right: 10px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+  gap: 4px;
 }
 
-.vintage-icon {
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-  padding: 1.5rem;
-  border-radius: 50%;
-  border: 2px solid rgba(139, 90, 60, 0.1);
+.camera-button {
+  width: 8px;
+  height: 8px;
+  background: #6d5a42;
+  border-radius: 2px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.vintage-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
+.hero-curve {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  z-index: 1;
 }
 
-.vintage-desc {
-  color: var(--text-secondary);
-  margin: 0;
+.hero-curve svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .features {
@@ -945,27 +1041,49 @@ export default {
     text-align: center;
   }
   
-  .hero-content {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    text-align: center;
+  .hero {
+    padding: 3rem 0 6rem;
+  }
+  
+  .hero-container {
+    padding: 0 1rem;
   }
   
   .hero-title {
     font-size: 2.5rem;
   }
   
+  .hero-subtitle-box {
+    padding: 0.75rem 1.5rem;
+  }
+  
   .hero-buttons {
-    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px;
   }
   
-  .btn-large {
-    flex: 1;
-    min-width: 200px;
+  .btn-admin,
+  .btn-seller {
+    width: 100%;
+    text-align: center;
+    padding: 1rem 2rem;
   }
   
-  .vintage-item {
-    transform: none;
+  .camera-body {
+    width: 100px;
+    height: 65px;
+  }
+  
+  .camera-lens {
+    width: 40px;
+    height: 40px;
+    top: -12px;
+  }
+  
+  .lens-center {
+    width: 12px;
+    height: 12px;
   }
   
   .features-grid {
@@ -1003,12 +1121,13 @@ export default {
     font-size: 2rem;
   }
   
-  .hero-buttons {
-    flex-direction: column;
+  .hero-subtitle-box {
+    padding: 0.5rem 1rem;
+    margin: 0.5rem 0;
   }
   
-  .btn-large {
-    width: 100%;
+  .hero-subtitle {
+    font-size: 0.9rem;
   }
 
   /* Mobile-specific product styles */
