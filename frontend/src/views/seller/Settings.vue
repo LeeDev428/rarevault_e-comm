@@ -362,94 +362,114 @@ export default {
 </script>
 
 <style scoped>
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700;1,800&family=Inter:wght@300;400;500;600;700&family=Crimson+Text:wght@400;600;700&family=Libre+Baskerville:wght@400;700&display=swap');
+
 .seller-settings {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 32px;
+  font-family: 'Inter', sans-serif;
+  background: #ffffff;
 }
 
 .page-header {
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid #e9ecef;
+  margin-bottom: 48px;
+  padding: 32px;
+  background: #ffffff;
+  border-radius: 24px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .page-title {
   margin: 0 0 8px 0;
-  font-size: 32px;
-  font-weight: 700;
-  color: #343a40;
+  font-family: 'Playfair Display', serif;
+  font-size: 42px;
+  font-weight: 800;
+  color: #1f2937;
+  letter-spacing: -1px;
+  font-style: italic;
 }
 
 .page-subtitle {
   margin: 0;
-  color: #6c757d;
+  color: #8b5a3c;
   font-size: 16px;
+  opacity: 0.8;
 }
 
 .settings-container {
   display: grid;
-  grid-template-columns: 250px 1fr;
-  gap: 32px;
+  grid-template-columns: 280px 1fr;
+  gap: 48px;
   align-items: start;
 }
 
 .settings-nav {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e9ecef;
-  padding: 8px;
+  background: #ffffff;
+  border-radius: 24px;
+  border: 1px solid #e5e7eb;
+  padding: 16px;
   position: sticky;
-  top: 24px;
+  top: 32px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: 8px;
+  gap: 16px;
+  padding: 16px 20px;
+  border-radius: 16px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  margin-bottom: 4px;
+  transition: all 0.3s ease;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #8b5a3c;
 }
 
 .nav-item:hover {
-  background: #f8f9fa;
+  background: rgba(139, 90, 60, 0.1);
+  transform: translateX(4px);
 }
 
 .nav-item.active {
-  background: #e3f2fd;
-  color: #1976d2;
+  background: linear-gradient(135deg, #8b5a3c 0%, #a06749 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(139, 90, 60, 0.3);
 }
 
 .nav-icon {
-  font-size: 18px;
-  width: 20px;
+  font-size: 20px;
+  width: 24px;
   text-align: center;
 }
 
 .settings-content {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e9ecef;
-  padding: 32px;
+  background: linear-gradient(135deg, #f8f6f1 0%, #e8ddd4 100%);
+  border-radius: 24px;
+  border: 1px solid #d4af94;
+  padding: 48px;
+  box-shadow: 0 8px 25px rgba(139, 90, 60, 0.1);
 }
 
 .settings-section {
-  max-width: 600px;
+  max-width: 650px;
 }
 
 .section-title {
-  margin: 0 0 32px 0;
-  font-size: 24px;
+  margin: 0 0 40px 0;
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
   font-weight: 600;
-  color: #343a40;
+  color: #8b5a3c;
 }
 
 .setting-group {
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid #f1f3f4;
+  margin-bottom: 40px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid #d4af94;
 }
 
 .setting-group:last-child {
@@ -459,14 +479,15 @@ export default {
 }
 
 .group-title {
-  margin: 0 0 20px 0;
-  font-size: 18px;
+  margin: 0 0 24px 0;
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
   font-weight: 600;
-  color: #343a40;
+  color: #8b5a3c;
 }
 
 .setting-item {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .setting-item:last-child {
@@ -475,39 +496,50 @@ export default {
 
 .setting-label {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   font-weight: 500;
-  color: #495057;
+  color: #8b5a3c;
   font-size: 14px;
 }
 
 .setting-input,
 .setting-textarea {
   width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #d4af94;
+  border-radius: 12px;
   font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  background: rgba(248, 246, 241, 0.7);
+  color: #8b5a3c;
   margin-bottom: 8px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .setting-input:focus,
 .setting-textarea:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: #8b5a3c;
+  box-shadow: 0 0 0 3px rgba(139, 90, 60, 0.1);
+  background: rgba(248, 246, 241, 1);
+}
+
+.setting-input::placeholder,
+.setting-textarea::placeholder {
+  color: #8b5a3c;
+  opacity: 0.6;
 }
 
 .setting-textarea {
   resize: vertical;
-  font-family: inherit;
+  min-height: 120px;
 }
 
 .setting-help {
   display: block;
   font-size: 12px;
-  color: #6c757d;
+  color: #8b5a3c;
+  opacity: 0.7;
   margin-top: 4px;
 }
 
@@ -515,7 +547,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 0;
+  padding: 20px 0;
 }
 
 .toggle-content {
@@ -525,9 +557,9 @@ export default {
 .toggle-switch {
   position: relative;
   display: inline-block;
-  width: 48px;
-  height: 24px;
-  margin-left: 16px;
+  width: 56px;
+  height: 28px;
+  margin-left: 20px;
 }
 
 .toggle-switch input {
@@ -543,100 +575,125 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
-  border-radius: 24px;
-  transition: 0.3s;
+  background: linear-gradient(135deg, #d4af94 0%, #c19a7a 100%);
+  border-radius: 28px;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(139, 90, 60, 0.2);
 }
 
 .toggle-slider:before {
   position: absolute;
   content: "";
-  height: 18px;
-  width: 18px;
+  height: 22px;
+  width: 22px;
   left: 3px;
   bottom: 3px;
-  background-color: white;
+  background: white;
   border-radius: 50%;
-  transition: 0.3s;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(139, 90, 60, 0.3);
 }
 
 .toggle-switch input:checked + .toggle-slider {
-  background-color: #007bff;
+  background: linear-gradient(135deg, #8b5a3c 0%, #a06749 100%);
 }
 
 .toggle-switch input:checked + .toggle-slider:before {
-  transform: translateX(24px);
+  transform: translateX(28px);
 }
 
 .setting-actions {
-  margin-top: 32px;
-  padding-top: 24px;
-  border-top: 1px solid #e9ecef;
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid #d4af94;
 }
 
 .coming-soon-card {
   text-align: center;
-  padding: 48px 32px;
-  background: #f8f9fa;
-  border-radius: 12px;
-  border: 1px solid #e9ecef;
+  padding: 64px 48px;
+  background: linear-gradient(135deg, #f8f6f1 0%, #e8ddd4 100%);
+  border-radius: 24px;
+  border: 1px solid #d4af94;
+  box-shadow: 0 8px 25px rgba(139, 90, 60, 0.1);
 }
 
 .coming-soon-icon {
-  font-size: 64px;
-  margin-bottom: 24px;
+  font-size: 72px;
+  margin-bottom: 32px;
+  opacity: 0.7;
 }
 
 .coming-soon-card h3 {
-  margin: 0 0 16px 0;
-  font-size: 24px;
+  margin: 0 0 20px 0;
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
   font-weight: 600;
-  color: #343a40;
+  color: #8b5a3c;
 }
 
 .coming-soon-card p {
-  margin: 0 0 20px 0;
-  color: #6c757d;
+  margin: 0 0 24px 0;
+  color: #8b5a3c;
   font-size: 16px;
   line-height: 1.6;
+  opacity: 0.8;
 }
 
 .feature-list {
   text-align: left;
-  max-width: 300px;
+  max-width: 320px;
   margin: 0 auto;
-  color: #495057;
+  color: #8b5a3c;
 }
 
 .feature-list li {
   margin-bottom: 8px;
   font-size: 14px;
+  opacity: 0.9;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
+  .seller-settings {
+    padding: 24px;
+  }
+  
+  .page-header {
+    padding: 24px;
+  }
+  
   .settings-container {
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: 32px;
   }
   
   .settings-nav {
     position: static;
     display: flex;
     overflow-x: auto;
-    padding: 8px;
+    padding: 12px;
+    border-radius: 16px;
   }
   
   .nav-item {
     white-space: nowrap;
-    margin-right: 8px;
+    margin-right: 12px;
     margin-bottom: 0;
+    padding: 12px 16px;
+  }
+  
+  .nav-item:hover {
+    transform: translateX(0);
+  }
+  
+  .settings-content {
+    padding: 32px 24px;
   }
   
   .toggle-item {
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 16px;
   }
   
   .toggle-switch {
@@ -644,7 +701,19 @@ export default {
   }
   
   .coming-soon-card {
-    padding: 32px 24px;
+    padding: 48px 32px;
+  }
+  
+  .page-title {
+    font-size: 28px;
+  }
+  
+  .section-title {
+    font-size: 24px;
+  }
+  
+  .group-title {
+    font-size: 18px;
   }
 }
 </style>
