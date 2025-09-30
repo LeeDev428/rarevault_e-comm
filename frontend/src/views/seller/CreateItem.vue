@@ -569,87 +569,99 @@ export default {
 </script>
 
 <style scoped>
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 .create-item {
   max-width: 1400px;
   margin: 0 auto;
+  padding: 32px;
+  font-family: 'Inter', sans-serif;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid #e9ecef;
+  margin-bottom: 48px;
+  padding: 32px;
+  background: linear-gradient(135deg, #f8f6f1 0%, #e8ddd4 100%);
+  border-radius: 24px;
+  border: 1px solid #d4af94;
+  box-shadow: 0 8px 25px rgba(139, 90, 60, 0.1);
 }
 
 .page-title {
   margin: 0 0 8px 0;
-  font-size: 32px;
-  font-weight: 700;
-  color: #343a40;
+  font-family: 'Playfair Display', serif;
+  font-size: 36px;
+  font-weight: 600;
+  color: #8b5a3c;
+  text-shadow: 0 2px 4px rgba(139, 90, 60, 0.1);
 }
 
 .page-subtitle {
   margin: 0;
-  color: #6c757d;
+  color: #8b5a3c;
   font-size: 16px;
+  opacity: 0.8;
 }
 
 .create-container {
   display: grid;
-  grid-template-columns: 1fr 350px;
-  gap: 32px;
+  grid-template-columns: 2fr 1fr;
+  gap: 48px;
   align-items: start;
 }
 
 .item-form {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e9ecef;
-  padding: 32px;
+  background: linear-gradient(135deg, #f8f6f1 0%, #e8ddd4 100%);
+  border-radius: 24px;
+  border: 1px solid #d4af94;
+  padding: 0;
+  box-shadow: 0 8px 25px rgba(139, 90, 60, 0.1);
+  overflow: hidden;
 }
 
 .form-section {
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid #f1f3f4;
+  padding: 32px;
+  border-bottom: 1px solid #e8ddd4;
 }
 
 .form-section:last-child {
-  margin-bottom: 0;
-  padding-bottom: 0;
   border-bottom: none;
 }
 
 .section-title {
   margin: 0 0 8px 0;
-  font-size: 20px;
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
   font-weight: 600;
-  color: #343a40;
+  color: #8b5a3c;
 }
 
 .section-subtitle {
-  margin: 0 0 20px 0;
-  color: #6c757d;
+  margin: 0 0 24px 0;
+  color: #8b5a3c;
+  opacity: 0.8;
   font-size: 14px;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 24px;
 }
 
 .form-label {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   font-weight: 500;
-  color: #495057;
+  color: #8b5a3c;
   font-size: 14px;
 }
 
@@ -660,49 +672,71 @@ export default {
 
 .form-input {
   width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #d4af94;
+  border-radius: 12px;
   font-size: 14px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: rgba(248, 246, 241, 0.7);
+  color: #8b5a3c;
+  transition: all 0.3s ease;
+  font-family: 'Inter', sans-serif;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: #8b5a3c;
+  box-shadow: 0 0 0 3px rgba(139, 90, 60, 0.1);
+  background: rgba(248, 246, 241, 1);
+}
+
+.form-input::placeholder {
+  color: #8b5a3c;
+  opacity: 0.6;
 }
 
 .form-textarea {
   width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #d4af94;
+  border-radius: 12px;
   font-size: 14px;
-  font-family: inherit;
+  font-family: 'Inter', sans-serif;
   resize: vertical;
   min-height: 120px;
+  background: rgba(248, 246, 241, 0.7);
+  color: #8b5a3c;
+  transition: all 0.3s ease;
 }
 
 .form-textarea:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: #8b5a3c;
+  box-shadow: 0 0 0 3px rgba(139, 90, 60, 0.1);
+  background: rgba(248, 246, 241, 1);
+}
+
+.form-textarea::placeholder {
+  color: #8b5a3c;
+  opacity: 0.6;
 }
 
 .form-select {
   width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #d4af94;
+  border-radius: 12px;
   font-size: 14px;
-  background: white;
+  background: rgba(248, 246, 241, 0.7);
+  color: #8b5a3c;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.3s ease;
 }
 
 .form-select:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: #8b5a3c;
+  box-shadow: 0 0 0 3px rgba(139, 90, 60, 0.1);
+  background: rgba(248, 246, 241, 1);
 }
 
 .price-input {
