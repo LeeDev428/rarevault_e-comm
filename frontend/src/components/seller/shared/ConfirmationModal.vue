@@ -125,13 +125,16 @@ export default {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(139, 90, 60, 0.3);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -140,118 +143,129 @@ export default {
 }
 
 .confirmation-modal {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  max-width: 400px;
+  background: linear-gradient(135deg, #ffffff 0%, #fefdfb 100%);
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(139, 90, 60, 0.25);
+  max-width: 480px;
   width: 100%;
-  animation: modalSlideIn 0.3s ease;
+  animation: modalSlideIn 0.4s ease;
+  border: 2px solid #f5f1eb;
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px 0;
+  padding: 32px 32px 0;
 }
 
 .modal-title {
   margin: 0;
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 600;
-  color: #343a40;
+  color: #5a4a3a;
+  font-family: 'Playfair Display', serif;
 }
 
 .close-btn {
-  background: none;
-  border: none;
+  background: linear-gradient(135deg, #f8f6f1 0%, #f0ede6 100%);
+  border: 2px solid #e8ddd4;
   font-size: 24px;
   cursor: pointer;
-  color: #6c757d;
-  padding: 0;
-  width: 30px;
-  height: 30px;
+  color: #a0958a;
+  padding: 8px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
 }
 
 .close-btn:hover {
-  background: #f8f9fa;
-  color: #343a40;
+  background: linear-gradient(135deg, #f0ede6 0%, #e8ddd4 100%);
+  color: #8b7968;
+  border-color: #d4af94;
 }
 
 .modal-body {
-  padding: 24px;
+  padding: 32px;
   text-align: center;
 }
 
 .icon-container {
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
 .confirmation-icon {
-  font-size: 48px;
+  font-size: 64px;
   display: block;
 }
 
 .icon-warning {
-  color: #ffc107;
+  color: #d4af94;
 }
 
 .icon-danger {
-  color: #dc3545;
+  color: #b8936f;
 }
 
 .icon-info {
-  color: #17a2b8;
+  color: #8b5a3c;
 }
 
 .icon-success {
-  color: #28a745;
+  color: #8b5a3c;
 }
 
 .message {
-  font-size: 16px;
-  color: #495057;
-  line-height: 1.5;
+  font-size: 18px;
+  color: #5a4a3a;
+  line-height: 1.6;
   margin: 0;
+  font-family: 'Inter', sans-serif;
 }
 
 .modal-footer {
   display: flex;
-  gap: 12px;
-  padding: 0 24px 24px;
+  gap: 16px;
+  padding: 0 32px 32px;
   justify-content: flex-end;
 }
 
 .btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
+  padding: 14px 28px;
+  border: 2px solid transparent;
+  border-radius: 16px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 80px;
-  min-height: 40px;
+  min-width: 100px;
+  min-height: 48px;
+  font-size: 15px;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 4px 16px rgba(139, 90, 60, 0.1);
 }
 
 .btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .btn-cancel {
-  background: #6c757d;
-  color: white;
+  background: linear-gradient(135deg, #f8f6f1 0%, #f0ede6 100%);
+  color: #8b7968;
+  border-color: #e8ddd4;
 }
 
 .btn-cancel:hover:not(:disabled) {
-  background: #545b62;
+  background: linear-gradient(135deg, #f0ede6 0%, #e8ddd4 100%);
+  border-color: #d4af94;
+  color: #5a4a3a;
 }
 
 .btn-confirm {
@@ -259,41 +273,50 @@ export default {
 }
 
 .btn-warning {
-  background: #ffc107;
-  color: #212529;
+  background: linear-gradient(135deg, #e8ddd4 0%, #d4af94 100%);
+  border-color: #e8ddd4;
+  color: #5a4a3a;
 }
 
 .btn-warning:hover:not(:disabled) {
-  background: #e0a800;
+  background: linear-gradient(135deg, #d4af94 0%, #b8936f 100%);
+  border-color: #d4af94;
+  color: white;
 }
 
 .btn-danger {
-  background: #dc3545;
+  background: linear-gradient(135deg, #d4af94 0%, #b8936f 100%);
+  border-color: #d4af94;
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: #c82333;
+  background: linear-gradient(135deg, #b8936f 0%, #9c7a5a 100%);
+  border-color: #b8936f;
 }
 
 .btn-info {
-  background: #17a2b8;
+  background: linear-gradient(135deg, #8b5a3c 0%, #6d4528 100%);
+  border-color: #8b5a3c;
 }
 
 .btn-info:hover:not(:disabled) {
-  background: #138496;
+  background: linear-gradient(135deg, #6d4528 0%, #5a3621 100%);
+  border-color: #6d4528;
 }
 
 .btn-success {
-  background: #28a745;
+  background: linear-gradient(135deg, #8b5a3c 0%, #6d4528 100%);
+  border-color: #8b5a3c;
 }
 
 .btn-success:hover:not(:disabled) {
-  background: #1e7e34;
+  background: linear-gradient(135deg, #6d4528 0%, #5a3621 100%);
+  border-color: #6d4528;
 }
 
 .spinner {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border: 2px solid transparent;
   border-top: 2px solid currentColor;
   border-radius: 50%;
@@ -303,7 +326,7 @@ export default {
 @keyframes modalSlideIn {
   from {
     opacity: 0;
-    transform: scale(0.9) translateY(-20px);
+    transform: scale(0.9) translateY(-30px);
   }
   to {
     opacity: 1;
