@@ -36,34 +36,39 @@
             </router-link>
           </div>
         </div>
-        
-        <!-- Vintage Item Visual -->
-        <div class="hero-visual">
-          <div class="vintage-camera">
-            <!-- Camera body -->
-            <div class="camera-body">
-              <!-- Camera lens -->
-              <div class="camera-lens">
-                <div class="lens-inner">
-                  <div class="lens-center"></div>
-                </div>
-              </div>
-              <!-- Camera details -->
-              <div class="camera-details">
-                <div class="camera-button"></div>
-                <div class="camera-button"></div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
       
       <!-- Curved bottom edge -->
       <div class="hero-curve">
         <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
-          <path d="M0,0 C150,100 350,100 600,50 C850,0 1050,0 1200,50 L1200,120 L0,120 Z" fill="#f8fafc"></path>
+          <path d="M0,0 C150,100 350,100 600,50 C850,0 1050,0 1200,50 L1200,120 L0,120 Z" fill="#000000"></path>
         </svg>
       </div>
+      
+      <!-- Vintage Item Visual - positioned over the curve -->
+      <div class="hero-visual">
+        <div class="vintage-camera">
+          <!-- Camera body -->
+          <div class="camera-body">
+            <!-- Camera lens -->
+            <div class="camera-lens">
+              <div class="lens-inner">
+                <div class="lens-center"></div>
+              </div>
+            </div>
+            <!-- Camera details -->
+            <div class="camera-details">
+              <div class="camera-button"></div>
+              <div class="camera-button"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Black transition section -->
+    <section class="hero-transition">
+      <div class="transition-spacer"></div>
     </section>
 
     <!-- Features Section -->
@@ -513,7 +518,7 @@ export default {
   flex-direction: column;
   align-items: center;
   gap: 2rem;
-  margin-bottom: 4rem;
+  margin-bottom: 2rem;
 }
 
 .hero-title {
@@ -583,10 +588,11 @@ export default {
 }
 
 .hero-visual {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 2rem;
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
 }
 
 .vintage-camera {
@@ -601,7 +607,7 @@ export default {
   border-radius: 8px;
   position: relative;
   box-shadow: 
-    0 8px 24px rgba(0, 0, 0, 0.15),
+    0 8px 24px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
@@ -669,6 +675,15 @@ export default {
   width: 100%;
   height: 100%;
   display: block;
+}
+
+.hero-transition {
+  background: #000000;
+  padding: 4rem 0;
+}
+
+.transition-spacer {
+  height: 1px;
 }
 
 .features {
