@@ -1,43 +1,82 @@
 <template>
   <SellerLayout>
-    <div class="seller-dashboard" style="padding: 20px; background: white; margin: 20px; border-radius: 8px;">
-      <h1 style="color: #333; font-size: 24px; margin-bottom: 16px;">🎯 Seller Dashboard</h1>
-      <p style="color: #666; font-size: 16px; margin-bottom: 20px;">Welcome to your seller dashboard! This content should be visible.</p>
-      
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-        <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6;">
-          <h3 style="color: #007bff; margin: 0 0 8px 0;">📦 Total Items</h3>
-          <p style="font-size: 24px; font-weight: bold; margin: 0; color: #333;">{{ stats.totalItems }}</p>
-        </div>
-        
-        <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6;">
-          <h3 style="color: #28a745; margin: 0 0 8px 0;">✅ Active Items</h3>
-          <p style="font-size: 24px; font-weight: bold; margin: 0; color: #333;">{{ stats.activeItems }}</p>
-        </div>
-        
-        <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6;">
-          <h3 style="color: #ffc107; margin: 0 0 8px 0;">⏳ Pending Items</h3>
-          <p style="font-size: 24px; font-weight: bold; margin: 0; color: #333;">{{ stats.pendingItems }}</p>
-        </div>
-        
-        <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6;">
-          <h3 style="color: #dc3545; margin: 0 0 8px 0;">💰 Sold Items</h3>
-          <p style="font-size: 24px; font-weight: bold; margin: 0; color: #333;">{{ stats.soldItems }}</p>
+    <div class="seller-dashboard">
+      <!-- Dashboard Header -->
+      <div class="dashboard-header">
+        <div class="header-content">
+          <h1 class="page-title">Seller Dashboard</h1>
+          <p class="page-subtitle">Welcome to your seller dashboard! This content should be visible.</p>
         </div>
       </div>
       
-      <div style="margin-top: 24px;">
-        <button 
-          @click="goToCreateItem"
-          style="background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;"
-        >
-          ➕ Add New Item
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon total-items">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M7 4V2C7 1.45 7.45 1 8 1H16C16.55 1 17 1.45 17 2V4H20C20.55 4 21 4.45 21 5S20.55 6 20 6H19V19C19 20.1 18.1 21 17 21H7C5.9 21 5 20.1 5 19V6H4C3.45 6 3 5.55 3 5S3.45 4 4 4H7ZM9 3V4H15V3H9ZM7 6V19H17V6H7Z"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-label">Total Items</h3>
+            <p class="stat-value">{{ stats.totalItems }}</p>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon active-items">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-label">Active Items</h3>
+            <p class="stat-value">{{ stats.activeItems }}</p>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon pending-items">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12S6.48 22 12 22 22 17.52 22 12 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-label">Pending Items</h3>
+            <p class="stat-value">{{ stats.pendingItems }}</p>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon sold-items">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.9 1 3 1.9 3 3V21C3 22.1 3.9 23 5 23H19C20.1 23 21 22.1 21 21V9ZM19 9H14V4H5V21H19V9Z"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-label">Sold Items</h3>
+            <p class="stat-value">{{ stats.soldItems }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Action Button -->
+      <div class="dashboard-actions">
+        <button class="add-item-btn" @click="goToCreateItem">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+          </svg>
+          Add New Item
         </button>
       </div>
       
-      <div style="margin-top: 24px; padding: 16px; background: #e7f3ff; border-radius: 8px; border: 1px solid #b8daff;">
-        <h3 style="color: #0056b3; margin: 0 0 8px 0;">🎉 Content is Working!</h3>
-        <p style="color: #0056b3; margin: 0;">If you can see this message, the slot system is working correctly.</p>
+      <!-- Status Message -->
+      <div class="status-message">
+        <div class="status-icon">🎉</div>
+        <div class="status-content">
+          <h3>Content is Working!</h3>
+          <p>If you can see this message, the slot system is working correctly.</p>
+        </div>
       </div>
     </div>
   </SellerLayout>
