@@ -651,9 +651,12 @@ export default {
 
 .notification-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
   font-weight: 600;
-  color: #111827;
+  font-size: 1.125rem;
+  letter-spacing: -0.5px;
+  color: #1f2937;
 }
 
 .notification-actions {

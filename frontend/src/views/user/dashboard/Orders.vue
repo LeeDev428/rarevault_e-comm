@@ -496,6 +496,8 @@ export default {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&family=Inter:wght@300;400;500;600;700&display=swap');
+
 .orders-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -507,9 +509,12 @@ export default {
 }
 
 .page-title {
-  font-size: 32px;
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
   font-weight: 700;
-  color: #111827;
+  font-size: 32px;
+  letter-spacing: -1px;
+  color: #1f2937;
   margin: 0 0 24px 0;
 }
 
@@ -520,22 +525,25 @@ export default {
 }
 
 .stat-card {
-  background: white;
+  background: #ffffff;
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
   text-align: center;
 }
 
 .stat-number {
   display: block;
-  font-size: 28px;
+  font-family: 'Playfair Display', serif;
   font-weight: 700;
+  font-size: 28px;
   color: #3b82f6;
   margin-bottom: 4px;
 }
 
 .stat-label {
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: #6b7280;
   font-weight: 500;

@@ -626,6 +626,26 @@ export default {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+.page-title {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 2.5rem;
+  letter-spacing: -1px;
+  color: #1f2937;
+}
+
+h3 {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 1.25rem;
+  letter-spacing: -0.5px;
+  color: #1f2937;
+}
+
 .messages-container {
   max-width: 1200px;
   margin: 0 auto;

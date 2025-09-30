@@ -3,7 +3,7 @@
     <div class="marketplace-container">
       <!-- Header -->
       <div class="marketplace-header">
-        <h1>Other Items Marketplace</h1>
+        <h1 class="page-title">Other Items Marketplace</h1>
         <p>Browse miscellaneous vintage and collectible items</p>
       </div>
 
@@ -336,6 +336,25 @@ export default {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+.page-title {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 2.5rem;
+  letter-spacing: -1px;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.filter-label {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-weight: 500;
+  color: #374151;
+}
+
 .marketplace-container {
   max-width: 1200px;
   margin: 0 auto;

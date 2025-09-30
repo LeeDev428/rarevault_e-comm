@@ -657,15 +657,17 @@ export default {
 }
 
 .price-label {
+  font-family: 'Inter', sans-serif;
   font-size: 12px;
   color: #6b7280;
   font-weight: 500;
 }
 
 .price-value {
-  font-size: 18px;
+  font-family: 'Playfair Display', serif;
   font-weight: 700;
-  color: #111827;
+  font-size: 18px;
+  color: #1f2937;
 }
 
 /* Responsive */
