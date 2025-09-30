@@ -552,6 +552,7 @@ export default {
 }
 
 .seller-label span {
+  font-family: 'Inter', sans-serif;
   font-size: 12px;
   color: #6b7280;
   font-weight: 500;
@@ -560,9 +561,12 @@ export default {
 }
 
 .item-title {
-  font-size: 16px;
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
   font-weight: 600;
-  color: #111827;
+  font-size: 16px;
+  letter-spacing: -0.5px;
+  color: #1f2937;
   margin: 0 0 12px 0;
   line-height: 1.4;
   display: -webkit-box;
