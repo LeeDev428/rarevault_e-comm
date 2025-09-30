@@ -583,9 +583,9 @@ export default {
 
 /* Main Container */
 .messages-container {
-  max-width: 1400px;
+  max-width: 1100px;
   margin: 0 auto;
-  height: calc(100vh - 120px);
+  height: calc(100vh - 0px);
   display: flex;
   flex-direction: column;
   padding: 32px;
