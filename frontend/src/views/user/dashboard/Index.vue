@@ -103,7 +103,7 @@
         <!-- Empty State -->
         <div v-else-if="!loading && items.length === 0" class="empty-state">
           <div class="empty-icon">📦</div>
-          <h3 class="empty-title">No items found</h3>
+          <h3>No items found</h3>
           <p v-if="hasActiveFilters">Try adjusting your filters to see more items.</p>
           <p v-else>No items are currently available in the marketplace.</p>
         </div>
@@ -661,8 +661,6 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&family=Inter:wght@300;400;500;600;700&display=swap');
-
 /* Main Container */
 .marketplace-container {
   display: flex;
@@ -678,9 +676,8 @@ export default {
 }
 
 .filter-section {
-  background: #ffffff;
+  background: white;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
   padding: 24px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border: 1px solid #e5e7eb;
@@ -718,8 +715,7 @@ export default {
   border: 2px solid #e5e7eb;
   border-radius: 8px;
   font-size: 14px;
-  font-family: 'Inter', sans-serif;
-  background: #ffffff;
+  background: #fafafa;
   transition: all 0.2s ease;
 }
 
@@ -803,8 +799,7 @@ export default {
   border: 2px solid #e5e7eb;
   border-radius: 8px;
   font-size: 14px;
-  font-family: 'Inter', sans-serif;
-  background: #ffffff;
+  background: white;
   cursor: pointer;
 }
 
@@ -860,18 +855,14 @@ export default {
   opacity: 0.5;
 }
 
-.empty-title {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-weight: 600;
+.empty-state h3 {
   font-size: 24px;
-  letter-spacing: -0.5px;
+  font-weight: 600;
   color: #374151;
   margin-bottom: 8px;
 }
 
 .empty-state p {
-  font-family: 'Inter', sans-serif;
   font-size: 16px;
   max-width: 400px;
   line-height: 1.5;
