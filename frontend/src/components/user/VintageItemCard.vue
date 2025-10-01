@@ -357,16 +357,13 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&family=Inter:wght@300;400;500;600;700&display=swap');
-
 .vintage-item-card {
-  background: #ffffff;
+  background: white;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   cursor: pointer;
-  border: 1px solid #e5e7eb;
 }
 
 .vintage-item-card:hover {
@@ -552,7 +549,6 @@ export default {
 }
 
 .seller-label span {
-  font-family: 'Inter', sans-serif;
   font-size: 12px;
   color: #6b7280;
   font-weight: 500;
@@ -561,12 +557,9 @@ export default {
 }
 
 .item-title {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-weight: 600;
   font-size: 16px;
-  letter-spacing: -0.5px;
-  color: #1f2937;
+  font-weight: 600;
+  color: #111827;
   margin: 0 0 12px 0;
   line-height: 1.4;
   display: -webkit-box;
@@ -657,17 +650,15 @@ export default {
 }
 
 .price-label {
-  font-family: 'Inter', sans-serif;
   font-size: 12px;
   color: #6b7280;
   font-weight: 500;
 }
 
 .price-value {
-  font-family: 'Playfair Display', serif;
-  font-weight: 700;
   font-size: 18px;
-  color: #1f2937;
+  font-weight: 700;
+  color: #111827;
 }
 
 /* Responsive */
