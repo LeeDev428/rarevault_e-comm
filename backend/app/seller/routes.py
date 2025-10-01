@@ -429,6 +429,56 @@ def get_seller_profile():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@seller_bp.route('/seller/profile/<int:seller_id>', methods=['GET'])
+@jwt_required()
+def get_seller_profile_by_id(seller_id):
+    """Get seller profile by seller user ID - for viewing other sellers' public info"""
+    try:
+        # Get the seller user
+        seller_user = User.query.get(seller_id)
+        if not seller_user or seller_user.role not in ['seller', 'admin']:
+            return jsonify({'error': 'Seller not found or not a seller'}), 404
+        
+        # Get seller profile
+        seller_profile = SellerProfile.query.filter_by(user_id=seller_id).first()
+        
+        if seller_profile:
+            # Return public seller info including address for map display
+            profile_data = {
+                'id': seller_user.id,
+                'first_name': seller_user.first_name,
+                'last_name': seller_user.last_name,
+                'email': seller_user.email,
+                'business_name': seller_profile.business_name,
+                'address': seller_profile.address,
+                'phone': seller_profile.phone,
+                'description': seller_profile.description,
+                'rating': seller_profile.rating,
+                'total_sales': seller_profile.total_sales,
+                'created_at': seller_user.created_at.isoformat() if seller_user.created_at else None
+            }
+        else:
+            # If no profile exists, return basic user info
+            profile_data = {
+                'id': seller_user.id,
+                'first_name': seller_user.first_name,
+                'last_name': seller_user.last_name,
+                'email': seller_user.email,
+                'business_name': None,
+                'address': None,
+                'phone': None,
+                'description': None,
+                'rating': None,
+                'total_sales': 0,
+                'created_at': seller_user.created_at.isoformat() if seller_user.created_at else None
+            }
+        
+        return jsonify(profile_data), 200
+        
+    except Exception as e:
+        print(f"Error fetching seller profile: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 @seller_bp.route('/seller/profile', methods=['PUT'])
 @jwt_required()
 def update_seller_profile():
@@ -522,7 +572,6 @@ def get_seller_profile_by_id(seller_id):
                 'business_name': seller_profile.business_name,
                 'description': seller_profile.description,
                 'phone': seller_profile.phone,
-                'address': seller_profile.address,
                 'website': seller_profile.website,
                 'verification_status': seller_profile.verification_status,
                 'rating': float(seller_profile.rating) if seller_profile.rating else 0.0,
