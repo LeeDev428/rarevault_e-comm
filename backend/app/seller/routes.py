@@ -414,7 +414,17 @@ def get_seller_profile():
         if not user or user.role not in ['seller', 'admin']:
             return jsonify({'error': 'Access denied. Seller role required.'}), 403
         
-        return jsonify({'profile': user.to_dict()}), 200
+        # Get or create seller profile
+        seller_profile = SellerProfile.query.filter_by(user_id=current_user_id).first()
+        if not seller_profile:
+            seller_profile = SellerProfile(user_id=current_user_id)
+            db.session.add(seller_profile)
+            db.session.commit()
+        
+        profile_data = user.to_dict()
+        profile_data.update(seller_profile.to_dict())
+        
+        return jsonify({'profile': profile_data}), 200
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -431,7 +441,7 @@ def update_seller_profile():
         
         data = request.get_json()
         
-        # Update profile fields
+        # Update User table fields
         if 'first_name' in data:
             user.first_name = data['first_name']
         if 'last_name' in data:
@@ -443,12 +453,38 @@ def update_seller_profile():
                 return jsonify({'error': 'Email already in use'}), 400
             user.email = data['email']
         
+        # Get or create seller profile
+        seller_profile = SellerProfile.query.filter_by(user_id=current_user_id).first()
+        if not seller_profile:
+            seller_profile = SellerProfile(user_id=current_user_id)
+            db.session.add(seller_profile)
+        
+        # Update SellerProfile table fields
+        if 'business_name' in data:
+            seller_profile.business_name = data['business_name']
+        if 'description' in data:
+            seller_profile.description = data['description']
+        if 'phone' in data:
+            seller_profile.phone = data['phone']
+        if 'address' in data:
+            seller_profile.address = data['address']
+        if 'website' in data:
+            seller_profile.website = data['website']
+        if 'social_media' in data:
+            seller_profile.social_media = data['social_media']
+        
         user.updated_at = datetime.utcnow()
+        seller_profile.updated_at = datetime.utcnow()
+        
         db.session.commit()
+        
+        # Return combined profile data
+        profile_data = user.to_dict()
+        profile_data.update(seller_profile.to_dict())
         
         return jsonify({
             'message': 'Profile updated successfully',
-            'profile': user.to_dict()
+            'profile': profile_data
         }), 200
         
     except Exception as e:
@@ -486,6 +522,7 @@ def get_seller_profile_by_id(seller_id):
                 'business_name': seller_profile.business_name,
                 'description': seller_profile.description,
                 'phone': seller_profile.phone,
+                'address': seller_profile.address,
                 'website': seller_profile.website,
                 'verification_status': seller_profile.verification_status,
                 'rating': float(seller_profile.rating) if seller_profile.rating else 0.0,

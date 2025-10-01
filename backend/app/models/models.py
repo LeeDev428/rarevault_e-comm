@@ -346,9 +346,12 @@ class SellerProfile(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, unique=True)
-    shop_name = db.Column(db.String(255))
-    shop_description = db.Column(db.Text)
-    meetup_preferences = db.Column(db.JSON)
+    business_name = db.Column(db.String(255))
+    description = db.Column(db.Text)
+    phone = db.Column(db.String(20))
+    address = db.Column(db.Text)
+    website = db.Column(db.String(255))
+    social_media = db.Column(db.JSON)
     verification_status = db.Column(db.Enum('pending', 'verified', 'rejected'), default='pending')
     rating = db.Column(Numeric(3, 2), default=0.00)
     total_sales = db.Column(db.Integer, default=0)
@@ -361,9 +364,12 @@ class SellerProfile(db.Model):
         return {
             'id': self.id,
             'user_id': self.user_id,
-            'shop_name': self.shop_name,
-            'shop_description': self.shop_description,
-            'meetup_preferences': self.meetup_preferences,
+            'business_name': self.business_name,
+            'description': self.description,
+            'phone': self.phone,
+            'address': self.address,
+            'website': self.website,
+            'social_media': self.social_media,
             'verification_status': self.verification_status,
             'rating': float(self.rating) if self.rating else 0.00,
             'total_sales': self.total_sales,

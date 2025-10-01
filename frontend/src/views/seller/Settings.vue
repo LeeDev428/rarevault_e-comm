@@ -37,40 +37,75 @@
             <h2 class="section-title">Account Settings</h2>
             
             <div class="setting-group">
-              <h3 class="group-title">Profile Information</h3>
+              <h3 class="group-title">Business Address</h3>
               <div class="setting-item">
-                <label class="setting-label">Display Name</label>
-                <input v-model="settings.account.displayName" type="text" class="setting-input">
-                <small class="setting-help">This name will be visible to buyers</small>
-              </div>
-              
-              <div class="setting-item">
-                <label class="setting-label">Email Address</label>
-                <input v-model="settings.account.email" type="email" class="setting-input">
-                <ActionButton
-                  variant="secondary"
-                  icon="✏️"
-                  text="Change Email"
-                  @click="changeEmail"
-                />
-              </div>
-              
-              <div class="setting-item">
-                <label class="setting-label">Phone Number</label>
-                <input v-model="settings.account.phone" type="tel" class="setting-input">
+                <label class="setting-label">Business Address</label>
+                <textarea v-model="settings.account.address" class="setting-textarea" rows="3" placeholder="Enter your business address..."></textarea>
+                <small class="setting-help">Physical address for your business (optional)</small>
               </div>
             </div>
 
             <div class="setting-group">
-              <h3 class="group-title">Shop Settings</h3>
+              <h3 class="group-title">Online Presence</h3>
               <div class="setting-item">
-                <label class="setting-label">Shop Name</label>
-                <input v-model="settings.account.shopName" type="text" class="setting-input">
+                <label class="setting-label">Website URL</label>
+                <input v-model="settings.account.website" type="url" class="setting-input" placeholder="https://your-website.com">
+                <small class="setting-help">Your business website or online portfolio</small>
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <h3 class="group-title">Social Media Links</h3>
+              <div class="setting-item">
+                <label class="setting-label">Facebook</label>
+                <input v-model="settings.account.socialMedia.facebook" type="url" class="setting-input" placeholder="https://facebook.com/yourpage">
               </div>
               
               <div class="setting-item">
-                <label class="setting-label">Shop Description</label>
-                <textarea v-model="settings.account.shopDescription" class="setting-textarea" rows="4"></textarea>
+                <label class="setting-label">Instagram</label>
+                <input v-model="settings.account.socialMedia.instagram" type="url" class="setting-input" placeholder="https://instagram.com/youraccount">
+              </div>
+              
+              <div class="setting-item">
+                <label class="setting-label">Twitter</label>
+                <input v-model="settings.account.socialMedia.twitter" type="url" class="setting-input" placeholder="https://twitter.com/youraccount">
+              </div>
+
+              <div class="setting-item">
+                <label class="setting-label">LinkedIn</label>
+                <input v-model="settings.account.socialMedia.linkedin" type="url" class="setting-input" placeholder="https://linkedin.com/in/yourprofile">
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <h3 class="group-title">Account Status</h3>
+              <div class="setting-item read-only-item">
+                <label class="setting-label">Verification Status</label>
+                <div class="status-badge" :class="settings.account.verificationStatus">
+                  <span class="status-icon">{{ getVerificationIcon(settings.account.verificationStatus) }}</span>
+                  <span class="status-text">{{ getVerificationText(settings.account.verificationStatus) }}</span>
+                </div>
+                <small class="setting-help">Contact support to update your verification status</small>
+              </div>
+              
+              <div class="setting-item read-only-item">
+                <label class="setting-label">Seller Rating</label>
+                <div class="rating-display">
+                  <div class="stars">
+                    <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= Math.floor(settings.account.rating) }">⭐</span>
+                  </div>
+                  <span class="rating-value">{{ settings.account.rating.toFixed(1) }}/5.0</span>
+                </div>
+                <small class="setting-help">Based on buyer reviews and feedback</small>
+              </div>
+              
+              <div class="setting-item read-only-item">
+                <label class="setting-label">Total Sales</label>
+                <div class="sales-display">
+                  <span class="sales-number">{{ settings.account.totalSales.toLocaleString() }}</span>
+                  <span class="sales-text">items sold</span>
+                </div>
+                <small class="setting-help">Total number of successful sales</small>
               </div>
             </div>
 
@@ -275,11 +310,17 @@ export default {
       activeTab: 'account',
       settings: {
         account: {
-          displayName: 'John Seller',
-          email: 'john.seller@example.com',
-          phone: '+1 (555) 123-4567',
-          shopName: 'John\'s Vintage Store',
-          shopDescription: 'Specializing in vintage collectibles and rare items with over 10 years of experience.'
+          address: '',
+          website: '',
+          socialMedia: {
+            facebook: '',
+            instagram: '',
+            twitter: '',
+            linkedin: ''
+          },
+          verificationStatus: 'pending', // pending, verified, rejected
+          rating: 0.0,
+          totalSales: 0
         },
         notifications: {
           newMessages: true,
@@ -305,14 +346,109 @@ export default {
     }
   },
   methods: {
-    saveAccountSettings() {
+    async saveAccountSettings() {
       this.saveLoading.account = true;
       
-      setTimeout(() => {
-        console.log('Saving account settings:', this.settings.account);
-        this.showToast('Account settings saved successfully', 'success', 'Settings Saved');
-        this.saveLoading.account = false;
-      }, 1500);
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+        console.log('Token found:', token ? 'Yes' : 'No', token ? `(${token.substring(0, 20)}...)` : '');
+        
+        if (!token) {
+          this.showToast('Please log in to save settings', 'error', 'Authentication Required');
+          this.saveLoading.account = false;
+          return;
+        }
+
+        // Prepare data for API - only send fields managed by Settings page
+        const profileData = {
+          address: this.settings.account.address,
+          website: this.settings.account.website,
+          social_media: this.settings.account.socialMedia
+        };
+
+        const response = await fetch('/api/seller/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(profileData)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          console.log('Settings updated successfully:', data);
+          this.showToast('Business settings saved successfully', 'success', 'Settings Saved');
+          
+          // Update local data with response
+          if (data.profile) {
+            this.updateLocalProfile(data.profile);
+          }
+        } else {
+          console.error('Failed to save profile:', data);
+          this.showToast(data.error || 'Failed to save settings', 'error', 'Save Failed');
+        }
+      } catch (error) {
+        console.error('Error saving account settings:', error);
+        this.showToast('Network error. Please try again.', 'error', 'Connection Error');
+      }
+      
+      this.saveLoading.account = false;
+    },
+
+    updateLocalProfile(profile) {
+      // Update local settings with server response - only fields managed by Settings
+      if (profile.address !== undefined) {
+        this.settings.account.address = profile.address;
+      }
+      if (profile.website !== undefined) {
+        this.settings.account.website = profile.website;
+      }
+      if (profile.social_media !== undefined) {
+        this.settings.account.socialMedia = profile.social_media || {
+          facebook: '',
+          instagram: '',
+          twitter: '',
+          linkedin: ''
+        };
+      }
+      if (profile.verification_status !== undefined) {
+        this.settings.account.verificationStatus = profile.verification_status;
+      }
+      if (profile.rating !== undefined) {
+        this.settings.account.rating = profile.rating;
+      }
+      if (profile.total_sales !== undefined) {
+        this.settings.account.totalSales = profile.total_sales;
+      }
+    },
+
+    async loadProfileData() {
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+        console.log('Loading profile - Token found:', token ? 'Yes' : 'No');
+        
+        if (!token) {
+          console.log('No token found for profile loading');
+          return;
+        }
+
+        const response = await fetch('/api/seller/profile', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.profile) {
+          this.updateLocalProfile(data.profile);
+        }
+      } catch (error) {
+        console.error('Error loading profile data:', error);
+      }
     },
     
     saveNotificationSettings() {
@@ -356,7 +492,63 @@ export default {
     
     hideMessage() {
       this.showMessage = false;
+    },
+
+    getVerificationIcon(status) {
+      switch (status) {
+        case 'verified':
+          return '✅';
+        case 'pending':
+          return '⏳';
+        case 'rejected':
+          return '❌';
+        default:
+          return '❓';
+      }
+    },
+
+    getVerificationText(status) {
+      switch (status) {
+        case 'verified':
+          return 'Verified Seller';
+        case 'pending':
+          return 'Verification Pending';
+        case 'rejected':
+          return 'Verification Rejected';
+        default:
+          return 'Unknown Status';
+      }
+    },
+
+    // Debug helper function - can be called from browser console
+    debugAuth() {
+      console.log('=== Authentication Debug ===');
+      console.log('access_token:', localStorage.getItem('access_token'));
+      console.log('token:', localStorage.getItem('token'));
+      console.log('user_role:', localStorage.getItem('user_role'));
+      console.log('user_info:', localStorage.getItem('user_info'));
+      
+      const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+      console.log('Token to use:', token ? token.substring(0, 50) + '...' : 'None');
+      
+      return {
+        hasToken: !!token,
+        token: token,
+        role: localStorage.getItem('user_role'),
+        userInfo: localStorage.getItem('user_info')
+      };
     }
+  },
+  
+  mounted() {
+    // Debug localStorage contents
+    console.log('Settings mounted - localStorage debug:');
+    console.log('access_token:', localStorage.getItem('access_token') ? 'Found' : 'Not found');
+    console.log('token:', localStorage.getItem('token') ? 'Found' : 'Not found');
+    console.log('user_role:', localStorage.getItem('user_role'));
+    console.log('user_info:', localStorage.getItem('user_info'));
+    
+    this.loadProfileData();
   }
 }
 </script>
@@ -715,5 +907,123 @@ export default {
   .group-title {
     font-size: 18px;
   }
+}
+
+/* New styles for seller profile fields */
+.read-only-item {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.read-only-item .setting-label {
+  color: #374151;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.status-badge.verified {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.status-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.status-badge.rejected {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.rating-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.star {
+  font-size: 16px;
+  opacity: 0.3;
+  transition: opacity 0.2s;
+}
+
+.star.filled {
+  opacity: 1;
+}
+
+.rating-value {
+  font-weight: 600;
+  color: #374151;
+  font-size: 16px;
+}
+
+.sales-display {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.sales-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: #8b5a3c;
+}
+
+.sales-text {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* Enhanced styles for social media inputs */
+.setting-item input[type="url"] {
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.setting-item input[type="url"]:focus {
+  background: #ffffff;
+  border-color: #8b5a3c;
+  box-shadow: 0 0 0 3px rgba(139, 90, 60, 0.1);
+}
+
+/* Textarea enhancements */
+.setting-textarea {
+  min-height: 100px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+/* Status icons styling */
+.status-icon {
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.status-text {
+  font-weight: 600;
+  letter-spacing: 0.025em;
 }
 </style>

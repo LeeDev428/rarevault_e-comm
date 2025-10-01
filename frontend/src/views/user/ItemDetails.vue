@@ -25,9 +25,13 @@
           <span class="breadcrumb-current">{{ item.title }}</span>
         </nav>
 
-        <div class="item-details-layout">
-          <!-- Left Side - Images -->
-          <div class="item-images-section">
+        <div class="main-layout">
+          <!-- Left Side - Image Gallery -->
+          <div class="image-gallery-section">
+            <div class="item-title-header">
+              <h1 class="item-title">{{ item.title }}</h1>
+            </div>
+            
             <!-- Main Image -->
             <div class="main-image-container">
               <img 
@@ -58,153 +62,92 @@
 
           <!-- Right Side - Item Information -->
           <div class="item-info-section">
-            <!-- Item Title and Basic Info -->
-            <div class="item-header">
-              <h1 class="item-title">{{ item.title }}</h1>
-              <div class="item-meta">
-                <span class="item-category">{{ formatCategoryName(item.category) }}</span>
-                <span class="item-condition">{{ formatCondition(item.condition || item.condition_status) }}</span>
-                <span v-if="item.year" class="item-year">{{ item.year }}</span>
-              </div>
-            </div>
-
-            <!-- Price and Stock -->
-            <div class="price-section">
-              <div class="price-info">
-                <span class="price-label">Price</span>
-                <span class="price-value">₱{{ formatPrice(item.price || 0) }}</span>
-                <span v-if="item.isNegotiable" class="negotiable-tag">Negotiable</span>
-              </div>
-              <div class="stock-info">
-                <span class="stock-label">Stock:</span>
-                <span class="stock-value" :class="{ 'low-stock': (item.stock || 0) < 5, 'out-of-stock': (item.stock || 0) === 0 }">
-                  {{ (item.stock || 0) > 0 ? `${item.stock} available` : 'Out of stock' }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Rating and Sales Info -->
-            <div v-if="(item.rating && item.rating > 0) || (item.soldCount && item.soldCount > 0)" class="stats-section">
-              <div v-if="item.rating && item.rating > 0" class="rating-display">
-                <div class="stars">
-                  <span v-for="star in 5" :key="star" 
-                        :class="['star', { filled: star <= Math.round(item.rating || 0) }]">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
-                    </svg>
-                  </span>
-                </div>
-                <span class="rating-text">{{ (item.rating || 0).toFixed(1) }} ({{ item.ratingCount || 0 }} reviews)</span>
-              </div>
-              
-              <div v-if="item.soldCount && item.soldCount > 0" class="sold-info">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-                  <line x1="3" y1="6" x2="21" y2="6"/>
-                  <path d="M16 10a4 4 0 0 1-8 0"/>
-                </svg>
-                <span>{{ item.soldCount }} sold</span>
-              </div>
-            </div>
-
-            <!-- Seller Information -->
-            <div class="seller-section">
-              <h3 class="section-title">Seller Information</h3>
-              <div class="seller-info">
-                <div class="seller-avatar">
-                  <div class="avatar-circle">
-                    {{ getSellerInitials() }}
-                  </div>
-                </div>
-                <div class="seller-details">
-                  <div class="seller-main-info">
-                    <span class="seller-name">{{ getSellerDisplayName() }}</span>
-                    <span class="seller-role-badge">{{ seller?.role || 'Seller' }}</span>
-                  </div>
-                  
-                  <div class="seller-meta">
-                    <div v-if="seller?.created_at" class="seller-since">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <circle cx="12" cy="12" r="3"></circle>
-                        <path d="M12 1v6m0 6v6"></path>
-                        <path d="m21 12-6 0m-6 0-6 0"></path>
-                      </svg>
-                      Member since {{ formatDate(seller.created_at) }}
-                    </div>
-                    
-                    <div v-if="sellerProfile?.total_sales && sellerProfile.total_sales > 0" class="seller-sales">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-                        <line x1="3" y1="6" x2="21" y2="6"/>
-                        <path d="M16 10a4 4 0 0 1-8 0"/>
-                      </svg>
-                      {{ sellerProfile.total_sales }} total sales
-                    </div>
-                    
-                    <div v-if="sellerProfile?.rating && sellerProfile.rating > 0" class="seller-rating">
-                      <div class="seller-stars">
-                        <span v-for="star in 5" :key="star" 
-                              :class="['star', { filled: star <= Math.round(sellerProfile.rating) }]">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
-                          </svg>
-                        </span>
-                      </div>
-                      <span class="seller-rating-text">{{ sellerProfile.rating.toFixed(1) }} seller rating</span>
-                    </div>
-                  </div>
-                  
-                  <div v-if="sellerProfile?.business_name" class="seller-business">
-                    <strong>{{ sellerProfile.business_name }}</strong>
-                  </div>
-                  
-                  <div v-if="sellerProfile?.description" class="seller-description">
-                    {{ sellerProfile.description }}
-                  </div>
-                  
-                  <div v-if="sellerProfile?.verification_status === 'verified'" class="seller-verified">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <path d="M9 12l2 2 4-4"/>
-                      <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"/>
-                      <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"/>
-                      <path d="M12 3c0 1-1 3-3 3s-3-2-3-3 1-3 3-3 3 2 3 3"/>
-                      <path d="M12 21c0-1-1-3-3-3s-3 2-3 3 1 3 3 3 3-2 3-3"/>
-                    </svg>
-                    <span>Verified Seller</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Item Description -->
+            <!-- Description Section -->
             <div class="description-section">
               <h3 class="section-title">Description</h3>
+              <div class="item-price">₱{{ formatPrice(item.price || 0) }}</div>
               <div class="description-content">
                 <p v-if="item.description">{{ item.description }}</p>
                 <p v-else class="no-description">No description provided for this item.</p>
               </div>
             </div>
 
-            <!-- Tags -->
-            <div v-if="item.tags && item.tags.length > 0" class="tags-section">
-              <h3 class="section-title">Tags</h3>
-              <div class="tags-container">
-                <span v-for="tag in item.tags" :key="tag" class="tag">{{ tag }}</span>
+            <!-- Details Section -->
+            <div class="details-section">
+              <h3 class="section-title">Details</h3>
+              <div class="details-grid">
+                <div class="detail-row">
+                  <div class="detail-item">
+                    <span class="detail-label">Condition</span>
+                    <span class="detail-value">{{ formatCondition(item.condition || item.condition_status) }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Category</span>
+                    <span class="detail-value">{{ formatCategoryName(item.category) }}</span>
+                  </div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-item">
+                    <span class="detail-label">Price</span>
+                    <span class="detail-value price">₱{{ formatPrice(item.price || 0) }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Stock</span>
+                    <span class="detail-value" :class="{ 'low-stock': (item.stock || 0) < 5, 'out-of-stock': (item.stock || 0) === 0 }">
+                      {{ (item.stock || 0) > 0 ? `${item.stock} available` : 'Out of stock' }}
+                    </span>
+                  </div>
+                </div>
+                <div v-if="item.isNegotiable" class="detail-row">
+                  <div class="detail-item">
+                    <span class="detail-label">Negotiable</span>
+                    <span class="detail-value negotiable">Yes</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="action-section">
-              <button 
-                v-if="(item.stock || 0) > 0"
-                @click="showOrderModal = true"
-                class="primary-btn order-btn"
-                :disabled="(item.stock || 0) === 0"
-              >
-                Order Now
-              </button>
-              
-          
+            <!-- Map Section -->
+            <div class="map-section">
+              <h3 class="section-title">Location</h3>
+              <div v-if="sellerProfile?.address" class="map-container">
+                <div id="seller-map" class="seller-map"></div>
+                <p class="address-text">{{ sellerProfile.address }}</p>
+              </div>
+              <div v-else class="no-map-container">
+                <p class="no-map-text">Seller location not available</p>
+                <p class="debug-info">Debug: sellerProfile = {{ !!sellerProfile }}, address = {{ sellerProfile?.address }}</p>
+              </div>
+            </div>
+
+            <!-- Message Section -->
+            <div class="message-section">
+              <h3 class="section-title">Send seller a message</h3>
+              <div class="message-input-container">
+                <textarea 
+                  v-model="messageText"
+                  placeholder="Is this available?"
+                  class="message-input"
+                  rows="3"
+                ></textarea>
+              </div>
+              <div class="action-buttons">
+                <button 
+                  @click="sendMessage"
+                  :disabled="!messageText.trim() || isSendingMessage"
+                  class="send-btn"
+                >
+                  {{ isSendingMessage ? 'SENDING...' : 'SEND' }}
+                </button>
+                <button 
+                  @click="toggleWishlist"
+                  :disabled="isAddingToWishlist"
+                  class="wishlist-btn"
+                  :class="{ 'in-wishlist': isInWishlist }"
+                >
+                  {{ isInWishlist ? 'REMOVE FROM WISHLIST' : 'ADD TO WISHLIST' }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -227,6 +170,8 @@
 import UserLayout from '@/components/user/UserLayout.vue'
 import ConfirmOrderModal from '@/components/user/ConfirmOrderModal.vue'
 import axios from 'axios'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 
 export default {
   name: 'ItemDetails',
@@ -244,7 +189,11 @@ export default {
       selectedImage: null,
       showOrderModal: false,
       isAddingToWishlist: false,
-      orderLoading: false
+      orderLoading: false,
+      map: null,
+      isInWishlist: false,
+      messageText: '',
+      isSendingMessage: false
     }
   },
   computed: {
@@ -271,10 +220,23 @@ export default {
       }
       
       return images
+    },
+    
+    sellerInitials() {
+      if (!this.seller?.first_name || !this.seller?.last_name) {
+        return 'S'
+      }
+      return `${this.seller.first_name.charAt(0)}${this.seller.last_name.charAt(0)}`.toUpperCase()
     }
   },
   async mounted() {
-    await this.fetchItemDetails()
+    await this.fetchItemDetails();
+    await this.checkWishlistStatus();
+    
+    // Initialize map after seller profile is loaded
+    if (this.sellerProfile) {
+      this.initMap();
+    }
   },
   methods: {
     async fetchItemDetails() {
@@ -318,264 +280,316 @@ export default {
     
     async fetchSellerDetails(sellerId) {
       try {
+        console.log('👤 Fetching seller details for seller ID:', sellerId);
         // Fetch basic seller information
         const response = await axios.get(`http://localhost:5000/api/users/${sellerId}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         })
+        console.log('👤 Seller basic info response:', response.data);
         this.seller = response.data
         
-        // Fetch seller profile if they are a seller
-        if (response.data.role === 'seller') {
-          await this.fetchSellerProfile(sellerId)
-        }
+        // Fetch seller profile with additional details
+        await this.fetchSellerProfile(sellerId)
       } catch (error) {
-        console.error('Error fetching seller details:', error)
-        // Don't show error for seller details, it's optional
+        console.error('❌ Error fetching seller details:', error)
+        console.error('❌ Error response:', error.response?.data)
+        // Don't show error, seller info is optional
       }
     },
     
     async fetchSellerProfile(sellerId) {
       try {
-        const response = await axios.get(`http://localhost:5000/api/seller/profile/${sellerId}`, {
+        console.log('🏪 Fetching seller profile for seller ID:', sellerId);
+        const apiUrl = `http://localhost:5000/api/seller/profile/${sellerId}`;
+        console.log('🌐 API URL:', apiUrl);
+        const response = await axios.get(apiUrl, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         })
+        console.log('🏪 Seller profile response:', response.data);
         this.sellerProfile = response.data
+        console.log('🏪 Seller profile set:', this.sellerProfile);
+        console.log('📍 Address from profile:', this.sellerProfile?.address);
+        
+        // Initialize map after seller profile is loaded
+        this.$nextTick(() => {
+          console.log('⏭️ Calling initMap from fetchSellerProfile');
+          this.initMap();
+        });
       } catch (error) {
-        console.error('Error fetching seller profile:', error)
+        console.error('❌ Error fetching seller profile:', error)
+        console.error('❌ Error response:', error.response?.data)
+        console.error('❌ Error status:', error.response?.status)
         // Seller profile is optional, don't show error
       }
     },
     
-    getItemImage(item) {
-      // Handle direct image property
-      if (item?.image && typeof item.image === 'string') {
-        return item.image
-      }
-      
-      // Handle primary image from API
-      if (item?.primary_image?.url) {
-        return item.primary_image.url
-      }
-      
-      // Handle primary_image as string
-      if (item?.primary_image && typeof item.primary_image === 'string') {
-        return item.primary_image
-      }
-      
-      // Handle images array from API  
-      if (item?.images && Array.isArray(item.images) && item.images.length > 0) {
-        const primaryImage = item.images.find(img => img.isPrimary)
-        if (primaryImage?.url) {
-          return primaryImage.url
-        }
-        if (item.images[0]?.url) {
-          return item.images[0].url
-        }
-      }
-      
-      // Handle image_url property
-      if (item?.image_url) {
-        return item.image_url
-      }
-      
-      // Default placeholder
-      return 'http://localhost:5000/uploads/placeholder.svg'
-    },
-    
-    handleImageError(event) {
-      event.target.src = 'http://localhost:5000/uploads/placeholder.svg'
-    },
-    
-    formatPrice(price) {
-      const numPrice = parseFloat(price)
-      if (isNaN(numPrice)) {
-        return '0.00'
-      }
-      return numPrice.toFixed(2)
-    },
-    
-    formatCategoryName(category) {
-      if (!category) return 'Uncategorized'
-      return category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-    },
-    
-    formatCondition(condition) {
-      if (!condition) return 'Not specified'
-      return condition.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-    },
-    
-    formatDate(dateString) {
-      const date = new Date(dateString)
-      return date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long' 
-      })
-    },
-    
-    async addToWishlist() {
+    async checkWishlistStatus() {
       try {
-        this.isAddingToWishlist = true
-        
-        await axios.post(`http://localhost:5000/api/wishlist`, {
-          item_id: this.item.id
-        }, {
+        const response = await axios.get(`http://localhost:5000/api/wishlist/check/${this.item.id}`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json'
+            'Authorization': `Bearer ${localStorage.getItem('access_token') || localStorage.getItem('token')}`
           }
-        })
-        
-        // Show success message (you can implement a toast notification)
-        alert('Item added to wishlist!')
-        
+        });
+        this.isInWishlist = response.data.inWishlist;
       } catch (error) {
-        console.error('Error adding to wishlist:', error)
-        const errorMessage = error.response?.data?.error || 'Failed to add item to wishlist'
-        alert(errorMessage)
-      } finally {
-        this.isAddingToWishlist = false
+        console.error('Error checking wishlist status:', error);
+        // Don't show error, wishlist status is not critical
       }
-    },
-    
-    getSellerInitials() {
-      if (this.seller?.first_name && this.seller?.last_name) {
-        return `${this.seller.first_name.charAt(0)}${this.seller.last_name.charAt(0)}`.toUpperCase()
-      } else if (this.seller?.username) {
-        return this.seller.username.charAt(0).toUpperCase()
-      } else if (this.item?.seller) {
-        return this.item.seller.charAt(0).toUpperCase()
-      }
-      return 'S'
-    },
-    
-    getSellerDisplayName() {
-      if (this.seller?.first_name && this.seller?.last_name) {
-        return `${this.seller.first_name} ${this.seller.last_name}`
-      } else if (this.seller?.username) {
-        return this.seller.username
-      } else if (this.item?.seller) {
-        return this.item.seller
-      }
-      return 'Seller'
     },
     
     async handleOrderSubmit(orderData) {
-      // Prevent double submission
-      if (this.orderLoading) {
-        return;
-      }
-      
       try {
-        this.orderLoading = true;
+        this.orderLoading = true
         
-        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
-        if (!token) {
-          this.$router.push('/login');
-          return;
-        }
-        
-        // Use item from the order data or current item
-        const item = orderData.item || this.item;
-        if (!item || !item.id) {
-          throw new Error('Item information is missing. Please try again.');
-        }
-        
-        const submitData = {
-          item_id: item.id,
-          quantity: orderData.quantity || 1,
-          customer_name: orderData.customerName || '',
-          customer_phone: orderData.customerPhone || '',
-          customer_email: orderData.customerEmail || '',
-          shipping_address: orderData.shippingAddress || '',
-          payment_method: orderData.paymentMethod || 'cash_on_delivery',
-          customer_notes: orderData.customerNotes || ''
-        };
-        
-        console.log('Submitting order for item:', item.id);
-        console.log('Order data:', submitData);
-        
-        const response = await fetch('http://localhost:5000/api/user/orders', {
-          method: 'POST',
+        const response = await axios.post('http://localhost:5000/api/orders', {
+          item_id: this.item.id,
+          quantity: orderData.quantity,
+          notes: orderData.notes
+        }, {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(submitData)
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          console.error('Backend error response:', errorData);
-          console.error('Response status:', response.status);
-          
-          // Only throw error for actual failures
-          if (response.status >= 500) {
-            throw new Error(errorData.error || `Server error! status: ${response.status}`);
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
-          // For 4xx errors, still try to process as success if order was created
-        }
+        })
         
-        let data;
-        try {
-          data = await response.json();
-        } catch (e) {
-          // If we can't parse JSON but got a reasonable status, assume success
-          console.log('Order submission completed (no JSON response)');
-        }
+        this.showOrderModal = false
+        this.showToast('success', 'Order placed successfully!')
         
-        console.log('Order created:', data);
-        
-        // Show success message
-        this.showToast('success', 'Order placed successfully! The seller will contact you soon.');
-        this.showOrderModal = false;
-        
-        // Navigate to orders page
+        // Optionally redirect to orders page or show confirmation
         setTimeout(() => {
-          this.$router.push('/user/orders');
-        }, 1500);
+          this.$router.push('/user/orders')
+        }, 2000)
         
       } catch (error) {
-        console.error('Error creating order:', error);
-        // FORCE SUCCESS MESSAGE - order is likely saved anyway
-        this.showToast('success', 'Order placed successfully! The seller will contact you soon.');
-        this.showOrderModal = false;
-        
-        // Navigate to orders page
-        setTimeout(() => {
-          this.$router.push('/user/orders');
-        }, 1500);
+        console.error('Error placing order:', error)
+        this.showToast('error', error.response?.data?.error || 'Failed to place order')
       } finally {
-        this.orderLoading = false;
+        this.orderLoading = false
       }
     },
     
+    getItemImage(item) {
+      if (!item) return '/api/placeholder/400/400'
+      
+      // Try different image properties
+      if (item.primary_image?.url) {
+        return item.primary_image.url
+      } else if (item.primary_image && typeof item.primary_image === 'string') {
+        return item.primary_image
+      } else if (item.image_url) {
+        return item.image_url
+      } else if (item.images && item.images.length > 0) {
+        return item.images[0].url || item.images[0]
+      }
+      
+      return '/api/placeholder/400/400'
+    },
+    
+    handleImageError(event) {
+      console.warn('Image failed to load:', event.target.src)
+      event.target.src = '/api/placeholder/400/400'
+    },
+    
+    formatPrice(price) {
+      return new Intl.NumberFormat('en-PH', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(price)
+    },
+    
+    formatCategoryName(category) {
+      if (!category) return 'Unknown'
+      
+      // Handle both object and string formats
+      if (typeof category === 'object' && category.name) {
+        return category.name
+      }
+      
+      // Handle string format - convert to title case
+      return category.toString()
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ')
+    },
+    
+    formatCondition(condition) {
+      if (!condition) return 'Unknown'
+      
+      const conditionMap = {
+        'mint': 'Mint',
+        'excellent': 'Excellent', 
+        'very_good': 'Very Good',
+        'good': 'Good',
+        'fair': 'Fair',
+        'poor': 'Poor',
+        'new': 'New',
+        'like_new': 'Like New',
+        'used': 'Used'
+      }
+      
+      return conditionMap[condition] || condition.charAt(0).toUpperCase() + condition.slice(1)
+    },
+    
     showToast(type, message) {
-      // Simple toast implementation
+      // Create toast element
       const toast = document.createElement('div');
-      toast.className = `toast toast-${type}`;
+      toast.className = `toast ${type}`;
       toast.textContent = message;
-      toast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 12px 24px;
-        border-radius: 6px;
-        color: white;
-        font-weight: 500;
-        z-index: 10000;
-        ${type === 'success' ? 'background-color: #10b981;' : 'background-color: #ef4444;'}
-      `;
+      
+      // Add to page
       document.body.appendChild(toast);
       
+      // Remove after 3 seconds
       setTimeout(() => {
         if (toast.parentNode) {
           toast.parentNode.removeChild(toast);
         }
       }, 3000);
+    },
+
+    async sendMessage() {
+      if (!this.messageText.trim()) return;
+      
+      try {
+        this.isSendingMessage = true;
+        
+        await axios.post('http://localhost:5000/api/messages', {
+          seller_id: this.item.seller_id,
+          item_id: this.item.id,
+          message: this.messageText.trim()
+        }, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token') || localStorage.getItem('token')}`
+          }
+        });
+        
+        this.messageText = '';
+        this.showToast('success', 'Message sent successfully');
+      } catch (error) {
+        console.error('Error sending message:', error);
+        this.showToast('error', 'Failed to send message');
+      } finally {
+        this.isSendingMessage = false;
+      }
+    },
+
+    async toggleWishlist() {
+      try {
+        this.isAddingToWishlist = true;
+        
+        if (this.isInWishlist) {
+          // Remove from wishlist
+          await axios.delete(`http://localhost:5000/api/wishlist/${this.item.id}`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('access_token') || localStorage.getItem('token')}`
+            }
+          });
+          this.isInWishlist = false;
+          this.showToast('success', 'Removed from wishlist');
+        } else {
+          // Add to wishlist
+          await axios.post(`http://localhost:5000/api/wishlist`, {
+            item_id: this.item.id
+          }, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('access_token') || localStorage.getItem('token')}`
+            }
+          });
+          this.isInWishlist = true;
+          this.showToast('success', 'Added to wishlist');
+        }
+      } catch (error) {
+        console.error('Error toggling wishlist:', error);
+        this.showToast('error', 'Failed to update wishlist');
+      } finally {
+        this.isAddingToWishlist = false;
+      }
+    },
+
+    async initMap() {
+      console.log('🗺️ initMap called');
+      console.log('sellerProfile:', this.sellerProfile);
+      console.log('address:', this.sellerProfile?.address);
+      
+      if (!this.sellerProfile?.address) {
+        console.warn('❌ No seller profile or address available');
+        return;
+      }
+
+      try {
+        console.log('⏳ Waiting for DOM element...');
+        // Wait for the DOM element to be available
+        await this.$nextTick();
+        
+        const mapElement = document.getElementById('seller-map');
+        console.log('🎯 Map element found:', !!mapElement);
+        if (!mapElement) {
+          console.warn('❌ Map element not found');
+          return;
+        }
+
+        console.log('🌍 Starting geocoding for:', this.sellerProfile.address);
+        // Geocode the address to get coordinates
+        const coordinates = await this.geocodeAddress(this.sellerProfile.address);
+        console.log('📍 Coordinates obtained:', coordinates);
+        
+        if (coordinates) {
+          console.log('🗺️ Initializing Leaflet map...');
+          // Initialize the map
+          this.map = L.map('seller-map').setView([coordinates.lat, coordinates.lng], 13);
+
+          // Add tile layer
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+          }).addTo(this.map);
+
+          // Add marker for seller location
+          L.marker([coordinates.lat, coordinates.lng])
+            .addTo(this.map)
+            .bindPopup(`
+              <div>
+                <strong>${this.sellerProfile.business_name || 'Seller Location'}</strong><br>
+                ${this.sellerProfile.address}
+              </div>
+            `);
+          
+          console.log('✅ Map initialized successfully!');
+        }
+      } catch (error) {
+        console.error('❌ Error initializing map:', error);
+      }
+    },
+
+    async geocodeAddress(address) {
+      try {
+        // Use Nominatim API for geocoding (free OpenStreetMap service)
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`);
+        const data = await response.json();
+        
+        if (data && data.length > 0) {
+          return {
+            lat: parseFloat(data[0].lat),
+            lng: parseFloat(data[0].lon)
+          };
+        }
+        
+        // Fallback to Philippines center if geocoding fails
+        console.warn('Could not geocode address, using default location');
+        return {
+          lat: 14.5995,  // Manila coordinates as fallback
+          lng: 120.9842
+        };
+      } catch (error) {
+        console.error('Geocoding error:', error);
+        // Fallback to Philippines center
+        return {
+          lat: 14.5995,
+          lng: 120.9842
+        };
+      }
     }
   }
 }
@@ -584,28 +598,36 @@ export default {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&family=Inter:wght@300;400;500;600;700&display=swap');
 
-.item-title {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-weight: 700;
-  font-size: 2.5rem;
-  letter-spacing: -1px;
-  color: #1f2937;
-}
-
-.section-title {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-weight: 600;
-  font-size: 1.5rem;
-  letter-spacing: -0.5px;
-  color: #1f2937;
-}
-
 .item-details-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.breadcrumb-link {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.breadcrumb-link:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb-separator {
+  color: #9ca3af;
+}
+
+.breadcrumb-current {
+  color: #6b7280;
 }
 
 /* Loading and Error States */
@@ -645,98 +667,82 @@ export default {
   background: #fef2f2;
   border: 1px solid #fecaca;
   border-radius: 8px;
-  max-width: 400px;
-}
-
-.error-message h3 {
   color: #dc2626;
-  margin-bottom: 10px;
 }
 
 .retry-btn {
-  margin-top: 15px;
+  margin-top: 20px;
   padding: 10px 20px;
   background: #3b82f6;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 5px;
   cursor: pointer;
 }
 
-/* Breadcrumb */
-.breadcrumb {
-  margin-bottom: 30px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-}
-
-.breadcrumb-link {
-  color: #3b82f6;
-  text-decoration: none;
-}
-
-.breadcrumb-link:hover {
-  text-decoration: underline;
-}
-
-.breadcrumb-separator {
-  color: #6b7280;
-}
-
-.breadcrumb-current {
-  color: #374151;
-  font-weight: 500;
-}
-
-/* Main Layout */
-.item-details-layout {
+/* Main Layout - Matches the image exactly */
+.main-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
-  margin-top: 20px;
+  grid-template-columns: 1fr 350px;
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* Images Section */
-.item-images-section {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+/* Left Side - Image Gallery */
+.image-gallery-section {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.item-title-header {
+  padding: 20px 20px 15px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.item-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+  line-height: 1.3;
 }
 
 .main-image-container {
-  width: 100%;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 400px;
-  border-radius: 12px;
-  overflow: hidden;
-  background: #f9fafb;
 }
 
 .main-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
 }
 
 .image-thumbnails {
   display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding: 10px 0;
+  gap: 8px;
+  padding: 15px 20px;
+  background: #f8f9fa;
+  border-top: 1px solid #e5e7eb;
 }
 
 .thumbnail-container {
-  flex-shrink: 0;
-  width: 80px;
-  height: 80px;
-  border-radius: 8px;
+  width: 60px;
+  height: 60px;
+  border-radius: 4px;
   overflow: hidden;
   cursor: pointer;
   border: 2px solid transparent;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s;
 }
 
+.thumbnail-container:hover,
 .thumbnail-container.active {
   border-color: #3b82f6;
 }
@@ -747,293 +753,41 @@ export default {
   object-fit: cover;
 }
 
-/* Item Info Section */
+/* Right Side - Item Information */
 .item-info-section {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 20px;
 }
 
-.item-header {
-  border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 20px;
-}
-
-.item-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: #111827;
-  margin-bottom: 15px;
-  line-height: 1.2;
-}
-
-.item-meta {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-}
-
-.item-category,
-.item-condition,
-.item-year {
-  padding: 6px 12px;
-  background: #f3f4f6;
-  border-radius: 20px;
-  font-size: 14px;
-  color: #374151;
-  font-weight: 500;
-}
-
-/* Price Section */
-.price-section {
-  padding: 20px;
-  background: #f8fafc;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-}
-
-.price-info {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 15px;
-}
-
-.price-label {
-  font-size: 16px;
-  color: #6b7280;
-}
-
-.price-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: #059669;
-}
-
-.negotiable-tag {
-  padding: 4px 8px;
-  background: #dcfce7;
-  color: #166534;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.stock-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.stock-label {
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.stock-value {
-  font-size: 14px;
-  font-weight: 500;
-  color: #059669;
-}
-
-.stock-value.low-stock {
-  color: #d97706;
-}
-
-.stock-value.out-of-stock {
-  color: #dc2626;
-}
-
-/* Stats Section */
-.stats-section {
-  display: flex;
-  align-items: center;
-  gap: 30px;
-  padding: 15px 0;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.rating-display {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.stars {
-  display: flex;
-  gap: 2px;
-}
-
-.star {
-  color: #d1d5db;
-}
-
-.star.filled {
-  color: #fbbf24;
-}
-
-.rating-text {
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.sold-info {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  color: #6b7280;
-}
-
-/* Seller Section */
-.seller-section {
-  padding: 25px;
+/* Description Section */
+.description-section {
   background: white;
+  border-radius: 8px;
+  padding: 20px;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .section-title {
   font-size: 18px;
   font-weight: 600;
-  color: #111827;
-  margin-bottom: 20px;
+  color: #1f2937;
+  margin: 0 0 15px 0;
 }
 
-.seller-info {
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
-}
-
-.seller-avatar {
-  flex-shrink: 0;
-}
-
-.avatar-circle {
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 20px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.seller-details {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.seller-main-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.seller-name {
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
-}
-
-.seller-role-badge {
-  padding: 4px 12px;
-  background: #e0f2fe;
-  color: #0277bd;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: capitalize;
-}
-
-.seller-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.seller-since,
-.seller-sales,
-.seller-rating {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.seller-rating {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.seller-stars {
-  display: flex;
-  gap: 2px;
-}
-
-.seller-stars .star {
-  color: #d1d5db;
-}
-
-.seller-stars .star.filled {
-  color: #fbbf24;
-}
-
-.seller-rating-text {
-  font-size: 13px;
-  color: #6b7280;
-}
-
-.seller-business {
-  margin-top: 8px;
+.item-price {
   font-size: 16px;
+  font-weight: 600;
+  color: #059669;
+  margin-bottom: 15px;
+}
+
+.description-content {
   color: #374151;
-}
-
-.seller-description {
-  margin-top: 8px;
-  font-size: 14px;
-  color: #6b7280;
-  line-height: 1.5;
-  max-width: 400px;
-}
-
-.seller-verified {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 10px;
-  padding: 8px 12px;
-  background: #dcfce7;
-  color: #166534;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  width: fit-content;
-}
-
-/* Description Section */
-.description-section {
-  padding: 20px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  line-height: 1.6;
 }
 
 .description-content p {
-  line-height: 1.6;
-  color: #374151;
   margin: 0;
 }
 
@@ -1042,105 +796,252 @@ export default {
   font-style: italic;
 }
 
-/* Tags Section */
-.tags-section {
-  padding: 20px;
+/* Details Section */
+.details-section {
   background: white;
+  border-radius: 8px;
+  padding: 20px;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
 }
 
-.tags-container {
+.details-grid {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.tag {
-  padding: 6px 12px;
-  background: #eff6ff;
-  color: #1d4ed8;
-  border-radius: 20px;
+.detail-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-label {
   font-size: 12px;
   font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-/* Action Section */
-.action-section {
-  display: flex;
-  gap: 15px;
-  padding-top: 20px;
+.detail-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
 }
 
-.primary-btn,
-.secondary-btn {
-  padding: 15px 30px;
+.detail-value.price {
+  color: #059669;
+}
+
+.detail-value.negotiable {
+  color: #3b82f6;
+}
+
+.detail-value.low-stock {
+  color: #f59e0b;
+}
+
+.detail-value.out-of-stock {
+  color: #dc2626;
+}
+
+/* Map Section */
+.map-section {
+  background: white;
   border-radius: 8px;
-  font-size: 16px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+}
+
+.map-container {
+  height: 200px;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.seller-map {
+  height: 100%;
+  width: 100%;
+  border-radius: 6px;
+}
+
+.address-text {
+  margin: 10px 0 0 0;
+  font-size: 14px;
+  color: #6b7280;
+  text-align: center;
+}
+
+.no-map-container {
+  padding: 40px 20px;
+  text-align: center;
+  background: #f9fafb;
+  border-radius: 6px;
+}
+
+.no-map-text {
+  margin: 0 0 10px 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.debug-info {
+  margin: 0;
+  font-size: 12px;
+  color: #9ca3af;
+  font-family: monospace;
+}
+
+/* Message Section */
+.message-section {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+}
+
+.message-input-container {
+  margin-bottom: 15px;
+}
+
+.message-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.message-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.message-input::placeholder {
+  color: #9ca3af;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.send-btn,
+.wishlist-btn {
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  justify-content: center;
-  min-width: 150px;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.primary-btn {
-  background: #3b82f6;
+.send-btn {
+  background: #1f2937;
   color: white;
-  border: none;
 }
 
-.primary-btn:hover:not(:disabled) {
-  background: #2563eb;
-  transform: translateY(-1px);
+.send-btn:hover:not(:disabled) {
+  background: #111827;
 }
 
-.primary-btn:disabled {
+.send-btn:disabled {
   background: #9ca3af;
   cursor: not-allowed;
 }
 
-.secondary-btn {
-  background: white;
-  color: #374151;
-  border: 2px solid #d1d5db;
+.wishlist-btn {
+  background: #3b82f6;
+  color: white;
 }
 
-.secondary-btn:hover:not(:disabled) {
-  border-color: #9ca3af;
-  background: #f9fafb;
+.wishlist-btn:hover:not(:disabled) {
+  background: #2563eb;
 }
 
-.secondary-btn:disabled {
+.wishlist-btn.in-wishlist {
+  background: #dc2626;
+}
+
+.wishlist-btn.in-wishlist:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.wishlist-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
+/* Toast notifications */
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 6px;
+  color: white;
+  font-weight: 500;
+  z-index: 1000;
+  animation: slideIn 0.3s ease-out;
+}
+
+.toast.success {
+  background: #059669;
+}
+
+.toast.error {
+  background: #dc2626;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
-  .item-details-layout {
+  .main-layout {
     grid-template-columns: 1fr;
-    gap: 30px;
+    gap: 20px;
   }
   
-  .item-title {
-    font-size: 24px;
+  .item-details-container {
+    padding: 15px;
   }
   
-  .price-value {
-    font-size: 24px;
-  }
-  
-  .action-section {
+  .action-buttons {
     flex-direction: column;
   }
   
-  .primary-btn,
-  .secondary-btn {
-    width: 100%;
+  .detail-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .image-thumbnails {
+    flex-wrap: wrap;
   }
 }
 </style>

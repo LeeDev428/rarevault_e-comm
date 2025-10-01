@@ -78,6 +78,12 @@ const routes = [
     component: () => import('@/views/user/dashboard/ItemDetails.vue'),
     meta: { requiresAuth: true, role: 'user' }
   },
+  {
+    path: '/user/live',
+    name: 'UserLive',
+    component: () => import('@/views/user/live/Index.vue'),
+    meta: { requiresAuth: true, role: 'user' }
+  },
   // Category Routes
   {
     path: '/user/collectibles',

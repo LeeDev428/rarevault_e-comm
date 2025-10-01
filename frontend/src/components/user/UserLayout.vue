@@ -177,6 +177,18 @@
         </router-link>
 
         <router-link 
+          to="/user/live" 
+          class="category-item" 
+          :class="{ active: $route.path === '/user/live' }"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="9,9l5,3l-5,3z"/>
+          </svg>
+          <span>Live</span>
+        </router-link>
+
+        <router-link 
           to="/user/others" 
           class="category-item" 
           :class="{ active: $route.path === '/user/others' }"

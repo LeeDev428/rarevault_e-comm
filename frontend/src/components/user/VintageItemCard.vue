@@ -359,16 +359,16 @@ export default {
 <style scoped>
 .vintage-item-card {
   background: white;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 24px rgba(139, 90, 60, 0.12);
   transition: all 0.3s ease;
   cursor: pointer;
 }
 
 .vintage-item-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 12px 32px rgba(139, 90, 60, 0.18);
 }
 
 /* Image Container */

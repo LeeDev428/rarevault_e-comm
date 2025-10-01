@@ -10,13 +10,15 @@
     "serve": "vite --host"
   },
   "dependencies": {
-    "vue": "^3.4.0",
-    "vue-router": "^4.2.5",
     "axios": "^1.6.0",
-    "pinia": "^2.1.7"
+    "leaflet": "^1.9.4",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.0",
+    "vue-router": "^4.2.5"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.5.0",
+    "sass-embedded": "^1.93.2",
     "vite": "^5.0.0"
   }
 }
