@@ -280,21 +280,18 @@ export default {
     
     async fetchSellerDetails(sellerId) {
       try {
-        console.log('👤 Fetching seller details for seller ID:', sellerId);
         // Fetch basic seller information
         const response = await axios.get(`http://localhost:5000/api/users/${sellerId}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         })
-        console.log('👤 Seller basic info response:', response.data);
         this.seller = response.data
         
         // Fetch seller profile with additional details
         await this.fetchSellerProfile(sellerId)
       } catch (error) {
-        console.error('❌ Error fetching seller details:', error)
-        console.error('❌ Error response:', error.response?.data)
+        console.error('Error fetching seller details:', error)
         // Don't show error, seller info is optional
       }
     },
@@ -302,9 +299,7 @@ export default {
     async fetchSellerProfile(sellerId) {
       try {
         console.log('🏪 Fetching seller profile for seller ID:', sellerId);
-        const apiUrl = `http://localhost:5000/api/seller/profile/${sellerId}`;
-        console.log('🌐 API URL:', apiUrl);
-        const response = await axios.get(apiUrl, {
+        const response = await axios.get(`http://localhost:5000/api/seller/profile/${sellerId}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -312,7 +307,6 @@ export default {
         console.log('🏪 Seller profile response:', response.data);
         this.sellerProfile = response.data
         console.log('🏪 Seller profile set:', this.sellerProfile);
-        console.log('📍 Address from profile:', this.sellerProfile?.address);
         
         // Initialize map after seller profile is loaded
         this.$nextTick(() => {
@@ -321,8 +315,6 @@ export default {
         });
       } catch (error) {
         console.error('❌ Error fetching seller profile:', error)
-        console.error('❌ Error response:', error.response?.data)
-        console.error('❌ Error status:', error.response?.status)
         // Seller profile is optional, don't show error
       }
     },
