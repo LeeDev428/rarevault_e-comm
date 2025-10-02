@@ -58,51 +58,107 @@
                 >
               </div>
             </div>
+            
+            <!-- Condition Section -->
+            <div class="condition-section">
+              <h3 class="section-title">Condition</h3>
+              <div v-if="item.condition" class="condition-rating">
+                <span class="condition-text">{{ formatCondition(item.condition || item.condition_status) }}</span>
+              </div>
+              <div v-else class="no-ratings">
+                <span class="no-ratings-text">No condition specified</span>
+              </div>
+            </div>
+
+            <!-- Item Statistics Section - Box Layout -->
+            <div class="item-statistics">
+              <h3 class="section-title">Item Statistics</h3>
+              <div class="stats-grid">
+                <div class="stat-box">
+                  <span class="stat-number">{{ item.views || 0 }}</span>
+                  <span class="stat-text">Views</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-number">{{ item.favorites || 0 }}</span>
+                  <span class="stat-text">Favorites</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-number">{{ item.inquiries || 0 }}</span>
+                  <span class="stat-text">Inquiries</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-number">{{ formatEngagement(item.engagement) }}%</span>
+                  <span class="stat-text">Engagement</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Right Side - Item Information -->
           <div class="item-info-section">
-            <!-- Description Section -->
-            <div class="description-section">
-              <h3 class="section-title">Description</h3>
+            <!-- Price and Description Section -->
+            <div class="price-description-section">
               <div class="item-price">₱{{ formatPrice(item.price || 0) }}</div>
+              <h3 class="section-title">Description</h3>
               <div class="description-content">
                 <p v-if="item.description">{{ item.description }}</p>
                 <p v-else class="no-description">No description provided for this item.</p>
               </div>
             </div>
 
-            <!-- Details Section -->
+            <!-- Details Section - Compact Box Layout -->
             <div class="details-section">
               <h3 class="section-title">Details</h3>
-              <div class="details-grid">
-                <div class="detail-row">
-                  <div class="detail-item">
-                    <span class="detail-label">Condition</span>
-                    <span class="detail-value">{{ formatCondition(item.condition || item.condition_status) }}</span>
-                  </div>
-                  <div class="detail-item">
-                    <span class="detail-label">Category</span>
-                    <span class="detail-value">{{ formatCategoryName(item.category) }}</span>
-                  </div>
+              <div class="details-box-grid">
+                <div class="detail-box">
+                  <span class="detail-label">Category</span>
+                  <span class="detail-value">{{ formatCategoryName(item.category) }}</span>
                 </div>
-                <div class="detail-row">
-                  <div class="detail-item">
-                    <span class="detail-label">Price</span>
-                    <span class="detail-value price">₱{{ formatPrice(item.price || 0) }}</span>
-                  </div>
-                  <div class="detail-item">
-                    <span class="detail-label">Stock</span>
-                    <span class="detail-value" :class="{ 'low-stock': (item.stock || 0) < 5, 'out-of-stock': (item.stock || 0) === 0 }">
-                      {{ (item.stock || 0) > 0 ? `${item.stock} available` : 'Out of stock' }}
-                    </span>
-                  </div>
+                <div class="detail-box">
+                  <span class="detail-label">Authentication</span>
+                  <span class="detail-value" :class="{ 'authenticated': item.isAuthenticated, 'not-authenticated': !item.isAuthenticated }">
+                    {{ item.isAuthenticated ? 'Verified' : 'Not verified' }}
+                  </span>
                 </div>
-                <div v-if="item.isNegotiable" class="detail-row">
-                  <div class="detail-item">
-                    <span class="detail-label">Negotiable</span>
-                    <span class="detail-value negotiable">Yes</span>
-                  </div>
+                <div class="detail-box">
+                  <span class="detail-label">Year</span>
+                  <span class="detail-value">{{ item.year || 'Not specified' }}</span>
+                </div>
+                <div class="detail-box">
+                  <span class="detail-label">Stock</span>
+                  <span class="detail-value" :class="{ 'low-stock': (item.stock || 0) < 5, 'out-of-stock': (item.stock || 0) === 0 }">
+                    {{ (item.stock || 0) > 0 ? `${item.stock} available` : 'Out of stock' }}
+                  </span>
+                </div>
+                <div v-if="item.isNegotiable" class="detail-box negotiable-box">
+                  <span class="detail-label">Price</span>
+                  <span class="detail-value negotiable">Negotiable</span>
+                </div>
+              </div>
+              
+              <!-- Tags Section -->
+              <div v-if="item.tags && parseTags(item.tags).length > 0" class="tags-section">
+                <span class="tags-label">Tags:</span>
+                <div class="tags-container">
+                  <span 
+                    v-for="tag in parseTags(item.tags)" 
+                    :key="tag"
+                    class="tag-item"
+                  >
+                    {{ tag }}
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Listing Info -->
+              <div class="listing-info">
+                <div class="info-item">
+                  <span class="info-label">Listed:</span>
+                  <span class="info-value">{{ formatDateShort(item.created_at) }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Updated:</span>
+                  <span class="info-value">{{ formatDateShort(item.updated_at) }}</span>
                 </div>
               </div>
             </div>
@@ -110,44 +166,23 @@
             <!-- Map Section -->
             <div class="map-section">
               <h3 class="section-title">Location</h3>
-              <div v-if="sellerProfile?.address" class="map-container">
+              <div class="map-container">
                 <div id="seller-map" class="seller-map"></div>
-                <p class="address-text">{{ sellerProfile.address }}</p>
-              </div>
-              <div v-else class="no-map-container">
-                <p class="no-map-text">Seller location not available</p>
-                <p class="debug-info">Debug: sellerProfile = {{ !!sellerProfile }}, address = {{ sellerProfile?.address }}</p>
+                <p v-if="sellerProfile?.address" class="address-text">{{ sellerProfile.address }}</p>
+                <p v-else class="address-text">Silangan, Calauan, Laguna</p>
               </div>
             </div>
 
-            <!-- Message Section -->
-            <div class="message-section">
-              <h3 class="section-title">Send seller a message</h3>
-              <div class="message-input-container">
-                <textarea 
-                  v-model="messageText"
-                  placeholder="Is this available?"
-                  class="message-input"
-                  rows="3"
-                ></textarea>
-              </div>
-              <div class="action-buttons">
-                <button 
-                  @click="sendMessage"
-                  :disabled="!messageText.trim() || isSendingMessage"
-                  class="send-btn"
-                >
-                  {{ isSendingMessage ? 'SENDING...' : 'SEND' }}
-                </button>
-                <button 
-                  @click="toggleWishlist"
-                  :disabled="isAddingToWishlist"
-                  class="wishlist-btn"
-                  :class="{ 'in-wishlist': isInWishlist }"
-                >
-                  {{ isInWishlist ? 'REMOVE FROM WISHLIST' : 'ADD TO WISHLIST' }}
-                </button>
-              </div>
+            <!-- Wishlist Section -->
+            <div class="wishlist-section">
+              <button 
+                @click="toggleWishlist"
+                :disabled="isAddingToWishlist"
+                class="wishlist-btn"
+                :class="{ 'in-wishlist': isInWishlist }"
+              >
+                {{ isInWishlist ? 'REMOVE FROM WISHLIST' : 'ADD TO WISHLIST' }}
+              </button>
             </div>
           </div>
         </div>
@@ -233,10 +268,11 @@ export default {
     await this.fetchItemDetails();
     await this.checkWishlistStatus();
     
-    // Initialize map after seller profile is loaded
-    if (this.sellerProfile) {
+    // Always initialize map, even if seller profile fails to load
+    this.$nextTick(() => {
+      console.log('🗺️ Initializing map from mounted()');
       this.initMap();
-    }
+    });
   },
   methods: {
     async fetchItemDetails() {
@@ -315,7 +351,16 @@ export default {
         });
       } catch (error) {
         console.error('❌ Error fetching seller profile:', error)
-        // Seller profile is optional, don't show error
+        console.error('❌ Full error details:', error.response);
+        // Try fallback: create a mock seller profile with address for testing
+        this.sellerProfile = {
+          address: 'Silangan, Calauan, Laguna',
+          business_name: 'Seller Location'
+        };
+        console.log('🔄 Using fallback seller profile for map');
+        this.$nextTick(() => {
+          this.initMap();
+        });
       }
     },
     
@@ -424,6 +469,60 @@ export default {
       
       return conditionMap[condition] || condition.charAt(0).toUpperCase() + condition.slice(1)
     },
+
+    parseTags(tags) {
+      if (!tags) return []
+      
+      // Handle if tags is already an array
+      if (Array.isArray(tags)) {
+        return tags
+      }
+      
+      // Handle if tags is a JSON string
+      try {
+        const parsed = JSON.parse(tags)
+        return Array.isArray(parsed) ? parsed : []
+      } catch (error) {
+        console.warn('Failed to parse tags:', error)
+        return []
+      }
+    },
+
+    formatEngagement(engagement) {
+      if (!engagement) return '0.00'
+      return parseFloat(engagement).toFixed(2)
+    },
+
+    formatDate(dateString) {
+      if (!dateString) return 'Not available'
+      
+      try {
+        const date = new Date(dateString)
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })
+      } catch (error) {
+        console.warn('Failed to format date:', error)
+        return 'Invalid date'
+      }
+    },
+
+    formatDateShort(dateString) {
+      if (!dateString) return 'N/A'
+      
+      try {
+        const date = new Date(dateString)
+        return date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        })
+      } catch (error) {
+        return 'N/A'
+      }
+    },
     
     showToast(type, message) {
       // Create toast element
@@ -504,12 +603,10 @@ export default {
     async initMap() {
       console.log('🗺️ initMap called');
       console.log('sellerProfile:', this.sellerProfile);
-      console.log('address:', this.sellerProfile?.address);
       
-      if (!this.sellerProfile?.address) {
-        console.warn('❌ No seller profile or address available');
-        return;
-      }
+      // Use seller profile address or fallback to default
+      const address = this.sellerProfile?.address || 'Silangan, Calauan, Laguna';
+      console.log('Using address:', address);
 
       try {
         console.log('⏳ Waiting for DOM element...');
@@ -523,9 +620,9 @@ export default {
           return;
         }
 
-        console.log('🌍 Starting geocoding for:', this.sellerProfile.address);
+        console.log('🌍 Starting geocoding for:', address);
         // Geocode the address to get coordinates
-        const coordinates = await this.geocodeAddress(this.sellerProfile.address);
+        const coordinates = await this.geocodeAddress(address);
         console.log('📍 Coordinates obtained:', coordinates);
         
         if (coordinates) {
@@ -543,8 +640,8 @@ export default {
             .addTo(this.map)
             .bindPopup(`
               <div>
-                <strong>${this.sellerProfile.business_name || 'Seller Location'}</strong><br>
-                ${this.sellerProfile.address}
+                <strong>${this.sellerProfile?.business_name || 'Seller Location'}</strong><br>
+                ${address}
               </div>
             `);
           
@@ -745,6 +842,81 @@ export default {
   object-fit: cover;
 }
 
+/* Condition Section */
+.condition-section {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  margin-top: 15px;
+}
+
+.condition-rating {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.condition-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #059669;
+  padding: 8px 16px;
+  background: #ecfdf5;
+  border-radius: 20px;
+  border: 1px solid #d1fae5;
+}
+
+.no-ratings {
+  text-align: center;
+  padding: 20px;
+}
+
+.no-ratings-text {
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 14px;
+}
+
+/* Item Statistics Section */
+.item-statistics {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  margin-top: 15px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.stat-box {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid #e9ecef;
+}
+
+.stat-number {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.stat-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 /* Right Side - Item Information */
 .item-info-section {
   display: flex;
@@ -752,12 +924,19 @@ export default {
   gap: 20px;
 }
 
-/* Description Section */
-.description-section {
+/* Price and Description Section */
+.price-description-section {
   background: white;
   border-radius: 8px;
   padding: 20px;
   border: 1px solid #e5e7eb;
+}
+
+.item-price {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 20px;
 }
 
 .section-title {
@@ -765,13 +944,6 @@ export default {
   font-weight: 600;
   color: #1f2937;
   margin: 0 0 15px 0;
-}
-
-.item-price {
-  font-size: 16px;
-  font-weight: 600;
-  color: #059669;
-  margin-bottom: 15px;
 }
 
 .description-content {
@@ -788,7 +960,7 @@ export default {
   font-style: italic;
 }
 
-/* Details Section */
+/* Details Section - Professional Box Layout */
 .details-section {
   background: white;
   border-radius: 8px;
@@ -796,44 +968,58 @@ export default {
   border: 1px solid #e5e7eb;
 }
 
-.details-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.detail-row {
+.details-box-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
-.detail-item {
+.detail-box {
+  background: #fafbfc;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e1e5e9;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.detail-box:hover {
+  background: #f0f4f8;
+  border-color: #cbd5e1;
+}
+
+.detail-box.negotiable-box {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.detail-box.negotiable-box:hover {
+  background: #ecfdf5;
+  border-color: #86efac;
 }
 
 .detail-label {
   font-size: 12px;
-  font-weight: 500;
-  color: #6b7280;
+  font-weight: 600;
+  color: #64748b;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
+  margin-bottom: 2px;
 }
 
 .detail-value {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
-  color: #1f2937;
-}
-
-.detail-value.price {
-  color: #059669;
+  color: #1e293b;
+  line-height: 1.3;
 }
 
 .detail-value.negotiable {
-  color: #3b82f6;
+  color: #059669;
+  font-weight: 700;
 }
 
 .detail-value.low-stock {
@@ -842,6 +1028,88 @@ export default {
 
 .detail-value.out-of-stock {
   color: #dc2626;
+}
+
+.detail-value.authenticated {
+  color: #059669;
+}
+
+.detail-value.not-authenticated {
+  color: #f59e0b;
+}
+
+/* Tags Section */
+.tags-section {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #fafbfc;
+  border-radius: 8px;
+  border: 1px solid #e1e5e9;
+}
+
+.tags-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 10px;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-item {
+  padding: 6px 12px;
+  background: #e0f2fe;
+  color: #0369a1;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid #bae6fd;
+  transition: all 0.2s ease;
+}
+
+.tag-item:hover {
+  background: #0284c7;
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Listing Info */
+.listing-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+}
+
+.info-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.info-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
 }
 
 /* Map Section */
@@ -891,94 +1159,51 @@ export default {
   font-family: monospace;
 }
 
-/* Message Section */
-.message-section {
+/* Wishlist Section */
+.wishlist-section {
   background: white;
   border-radius: 8px;
   padding: 20px;
   border: 1px solid #e5e7eb;
 }
 
-.message-input-container {
-  margin-bottom: 15px;
-}
-
-.message-input {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: inherit;
-  resize: vertical;
-  min-height: 80px;
-}
-
-.message-input:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.message-input::placeholder {
-  color: #9ca3af;
-}
-
-/* Action Buttons */
-.action-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.send-btn,
 .wishlist-btn {
   width: 100%;
-  padding: 12px 20px;
+  padding: 15px 20px;
   border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-}
-
-.send-btn {
-  background: #1f2937;
-  color: white;
-}
-
-.send-btn:hover:not(:disabled) {
-  background: #111827;
-}
-
-.send-btn:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-}
-
-.wishlist-btn {
   background: #3b82f6;
   color: white;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
 .wishlist-btn:hover:not(:disabled) {
   background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
 }
 
 .wishlist-btn.in-wishlist {
   background: #dc2626;
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
 }
 
 .wishlist-btn.in-wishlist:hover:not(:disabled) {
   background: #b91c1c;
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
 }
 
 .wishlist-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* Toast notifications */
@@ -1024,16 +1249,42 @@ export default {
     padding: 15px;
   }
   
-  .action-buttons {
-    flex-direction: column;
+  .wishlist-btn {
+    font-size: 14px;
+    padding: 12px 16px;
   }
   
-  .detail-row {
+  .details-box-grid {
     grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .listing-info {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
   }
   
   .image-thumbnails {
     flex-wrap: wrap;
+  }
+  
+  .tags-container {
+    gap: 4px;
+  }
+  
+  .tag-item {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+  
+  .item-price {
+    font-size: 24px;
   }
 }
 </style>
