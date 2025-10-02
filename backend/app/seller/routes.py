@@ -541,48 +541,6 @@ def update_seller_profile():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-@seller_bp.route('/seller/profile/<int:seller_id>', methods=['GET'])
-@jwt_required()
-def get_seller_profile_by_id(seller_id):
-    """Get seller profile information by seller ID (public information)"""
-    try:
-        # Get the seller user
-        seller = User.query.get_or_404(seller_id)
-        
-        # Check if user is actually a seller
-        if seller.role != 'seller':
-            return jsonify({'error': 'User is not a seller'}), 404
-        
-        # Get seller profile if exists
-        seller_profile = SellerProfile.query.filter_by(user_id=seller_id).first()
-        
-        # Prepare response data
-        response_data = {
-            'id': seller.id,
-            'username': seller.username,
-            'first_name': seller.first_name,
-            'last_name': seller.last_name,
-            'role': seller.role,
-            'created_at': seller.created_at.isoformat() if seller.created_at else None
-        }
-        
-        # Add seller profile data if available
-        if seller_profile:
-            response_data.update({
-                'business_name': seller_profile.business_name,
-                'description': seller_profile.description,
-                'phone': seller_profile.phone,
-                'website': seller_profile.website,
-                'verification_status': seller_profile.verification_status,
-                'rating': float(seller_profile.rating) if seller_profile.rating else 0.0,
-                'total_sales': seller_profile.total_sales
-            })
-        
-        return jsonify(response_data), 200
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
 # ORDER MANAGEMENT ENDPOINTS
 @seller_bp.route('/seller/orders', methods=['GET'])
 @jwt_required()
