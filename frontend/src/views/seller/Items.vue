@@ -713,12 +713,12 @@ export default {
 }
 
 .items-table {
-  background: linear-gradient(135deg, #f8f6f1 0%, #e8ddd4 100%);
-  border-radius: 20px;
-  border: 1px solid #d4af94;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
   overflow: hidden;
-  margin-bottom: 32px;
-  box-shadow: 0 8px 25px rgba(139, 90, 60, 0.1);
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .table-container {
@@ -731,47 +731,48 @@ table {
 }
 
 th, td {
-  padding: 20px;
+  padding: 16px;
   text-align: left;
-  border-bottom: 1px solid #e8ddd4;
+  border-bottom: 1px solid #f3f4f6;
 }
 
 th {
-  background: linear-gradient(135deg, #8b5a3c 0%, #d4af94 100%);
-  font-family: 'Playfair Display', serif;
+  background: #f9fafb;
+  font-family: 'Inter', sans-serif;
   font-weight: 600;
-  color: #f8f6f1;
-  font-size: 16px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  color: #374151;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 th:first-child {
   border-top-left-radius: 20px;
 }
 
-th:last-child {
-  border-top-right-radius: 20px;
+td {
+  background: #ffffff;
+  color: #111827;
+  font-size: 14px;
 }
 
-td {
-  background: rgba(248, 246, 241, 0.7);
-  color: #8b5a3c;
+tbody tr:hover td {
+  background: #f9fafb;
 }
 
 .item-info {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .item-image {
-  width: 72px;
-  height: 72px;
+  width: 60px;
+  height: 60px;
   flex-shrink: 0;
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
-  border: 1px solid #d4af94;
-  box-shadow: 0 2px 8px rgba(139, 90, 60, 0.1);
+  border: 1px solid #e5e7eb;
 }
 
 .item-image img {
@@ -783,21 +784,20 @@ td {
 .image-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #e8ddd4 0%, #d4af94 100%);
-  border-radius: 12px;
+  background: #f3f4f6;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
-  color: #8b5a3c;
-  opacity: 0.7;
+  font-size: 20px;
+  color: #9ca3af;
 }
 
 .item-details {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .item-main-info {
@@ -806,28 +806,27 @@ td {
 
 .item-title {
   margin: 0 0 4px 0;
-  font-family: 'Playfair Display', serif;
-  font-size: 18px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
   font-weight: 600;
-  color: #8b5a3c;
+  color: #111827;
 }
 
 .item-description {
   margin: 0;
-  font-size: 14px;
-  color: #8b5a3c;
-  opacity: 0.8;
+  font-size: 13px;
+  color: #6b7280;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 220px;
+  max-width: 200px;
 }
 
 .item-stats {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-top: 4px;
+  gap: 12px;
+  margin-top: 0;
 }
 
 .stat-item {
@@ -848,54 +847,68 @@ td {
 }
 
 .star {
-  color: #ddd;
+  color: #e5e7eb;
   font-size: 12px;
   transition: color 0.2s;
 }
 
 .star.filled {
-  color: #ffc107;
+  color: #000000;
 }
 
 .rating-value {
-  color: #6c757d;
+  color: #6b7280;
   font-weight: 500;
   margin-left: 2px;
+  font-size: 12px;
 }
 
 .sold-count {
-  color: #28a745;
+  color: #6b7280;
   font-weight: 500;
+  font-size: 12px;
 }
 
 .price {
   font-weight: 600;
-  color: #28a745;
-  font-size: 16px;
+  color: #111827;
+  font-size: 14px;
 }
 
 .category {
-  color: #495057;
+  color: #6b7280;
   font-weight: 500;
+  font-size: 13px;
+}
+
+.stock {
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.date {
+  color: #9ca3af;
+  font-size: 13px;
 }
 
 .status-badge {
   display: inline-block;
-  padding: 6px 12px;
-  border-radius: 16px;
+  padding: 4px 10px;
+  border-radius: 6px;
   font-size: 12px;
   font-weight: 500;
   text-transform: capitalize;
 }
 
 .status-active {
-  background: #d4edda;
-  color: #155724;
+  background: #d1fae5;
+  color: #065f46;
 }
 
 .status-pending {
-  background: #fff3cd;
-  color: #856404;
+  background: #fef3c7;
+  color: #92400e;
 }
 
 .status-sold {
