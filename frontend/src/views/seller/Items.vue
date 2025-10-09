@@ -912,50 +912,42 @@ tbody tr:hover td {
 }
 
 .status-sold {
-  background: #d1ecf1;
-  color: #0c5460;
+  background: #dbeafe;
+  color: #1e40af;
 }
 
 .status-removed {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.stock {
-  color: #6c757d;
-  font-weight: 500;
-}
-
-.date {
-  color: #6c757d;
-  font-size: 14px;
+  background: #fee2e2;
+  color: #991b1b;
 }
 
 .action-buttons {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .bulk-actions {
-  background: white;
-  padding: 16px 24px;
+  background: #ffffff;
+  padding: 16px 20px;
   border-radius: 8px;
-  border: 1px solid #e9ecef;
+  border: 1px solid #e5e7eb;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .bulk-info {
-  font-weight: 500;
-  color: #495057;
+  font-weight: 600;
+  color: #111827;
+  font-size: 14px;
 }
 
 .bulk-buttons {
   display: flex;
-  gap: 12px;
+  gap: 8px;
 }
 
 .empty-state {
@@ -971,14 +963,15 @@ tbody tr:hover td {
 }
 
 .empty-icon {
-  font-size: 64px;
-  opacity: 0.5;
+  font-size: 48px;
+  opacity: 0.3;
+  color: #9ca3af;
 }
 
 .empty-content p {
   margin: 0;
-  color: #6c757d;
-  font-size: 16px;
+  color: #6b7280;
+  font-size: 14px;
 }
 
 /* Modal Styles */
@@ -994,12 +987,13 @@ tbody tr:hover td {
   justify-content: center;
   z-index: 1060;
   padding: 20px;
+  backdrop-filter: blur(4px);
 }
 
 .bulk-modal {
-  background: white;
+  background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   max-width: 400px;
   width: 100%;
   animation: modalSlideIn 0.3s ease;
@@ -1010,14 +1004,15 @@ tbody tr:hover td {
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .modal-header h3 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: #343a40;
+  color: #000000;
+  font-family: 'Inter', sans-serif;
 }
 
 .close-btn {
@@ -1025,7 +1020,7 @@ tbody tr:hover td {
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: #6c757d;
+  color: #6b7280;
   padding: 0;
   width: 30px;
   height: 30px;
@@ -1033,11 +1028,12 @@ tbody tr:hover td {
   align-items: center;
   justify-content: center;
   border-radius: 6px;
+  transition: all 0.2s ease;
 }
 
 .close-btn:hover {
-  background: #f8f9fa;
-  color: #343a40;
+  background: #f3f4f6;
+  color: #000000;
 }
 
 .modal-body {
@@ -1048,22 +1044,27 @@ tbody tr:hover td {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #495057;
+  color: #000000;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
 }
 
 .form-select {
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid #dee2e6;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
-  background: white;
+  background: #ffffff;
   font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  color: #111827;
+  transition: all 0.2s ease;
 }
 
 .form-select:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: #000000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
 .modal-footer {
