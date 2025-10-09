@@ -4,7 +4,7 @@
     <header class="header">
       <div class="header-content">
         <div class="logo">
-          <h2 class="logo-text">RareVault</h2>
+          <h2 class="logo-text">RareVault.</h2>
         </div>
         
         <div class="search-container">
