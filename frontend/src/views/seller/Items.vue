@@ -602,117 +602,114 @@ export default {
 </script>
 
 <style scoped>
-/* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 .items-management {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 32px;
-  font-family: 'Inter', sans-serif;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 48px;
-  padding: 32px;
-  background: linear-gradient(135deg, #f8f6f1 0%, #e8ddd4 100%);
-  border-radius: 24px;
-  border: 1px solid #d4af94;
-  box-shadow: 0 8px 25px rgba(139, 90, 60, 0.1);
+  margin-bottom: 24px;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
 }
 
 .header-content h1 {
-  margin: 0 0 8px 0;
-  font-family: 'Playfair Display', serif;
-  font-size: 36px;
-  font-weight: 600;
-  color: #8b5a3c;
-  text-shadow: 0 2px 4px rgba(139, 90, 60, 0.1);
+  margin: 0 0 4px 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.5px;
 }
 
 .header-content p {
   margin: 0;
-  color: #8b5a3c;
-  font-size: 16px;
-  opacity: 0.8;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 400;
 }
 
 .filters-section {
   display: flex;
-  gap: 24px;
-  margin-bottom: 32px;
+  gap: 16px;
+  margin-bottom: 24px;
   flex-wrap: wrap;
-  padding: 24px;
-  background: linear-gradient(135deg, #f8f6f1 0%, #e8ddd4 100%);
-  border-radius: 20px;
-  border: 1px solid #d4af94;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  border: none;
 }
 
 .search-box {
   position: relative;
   flex: 1;
-  min-width: 300px;
+  min-width: 280px;
 }
 
 .search-input {
   width: 100%;
-  padding: 16px 16px 16px 48px;
-  border: 1px solid #d4af94;
-  border-radius: 12px;
-  background: rgba(248, 246, 241, 0.7);
+  padding: 10px 16px 10px 40px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
   font-size: 14px;
-  color: #8b5a3c;
-  transition: all 0.3s ease;
+  color: #111827;
+  transition: all 0.2s ease;
   font-family: 'Inter', sans-serif;
 }
 
 .search-input:focus {
   outline: none;
-  border-color: #8b5a3c;
-  box-shadow: 0 0 0 3px rgba(139, 90, 60, 0.1);
-  background: rgba(248, 246, 241, 1);
+  border-color: #000000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+  background: #ffffff;
 }
 
 .search-input::placeholder {
-  color: #8b5a3c;
-  opacity: 0.6;
+  color: #9ca3af;
 }
 
 .search-icon {
   position: absolute;
-  left: 16px;
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #8b5a3c;
-  font-size: 18px;
-  opacity: 0.7;
+  color: #6b7280;
+  font-size: 16px;
 }
 
 .filter-controls {
   display: flex;
-  gap: 16px;
+  gap: 12px;
 }
 
 .filter-select {
-  padding: 16px;
-  border: 1px solid #d4af94;
-  border-radius: 12px;
-  background: rgba(248, 246, 241, 0.7);
+  padding: 10px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
   font-size: 14px;
-  min-width: 150px;
-  color: #8b5a3c;
+  min-width: 140px;
+  color: #111827;
   font-family: 'Inter', sans-serif;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  font-weight: 500;
 }
 
 .filter-select:focus {
   outline: none;
-  border-color: #8b5a3c;
-  box-shadow: 0 0 0 3px rgba(139, 90, 60, 0.1);
-  background: rgba(248, 246, 241, 1);
+  border-color: #000000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
 .items-table {
