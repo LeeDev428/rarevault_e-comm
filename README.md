@@ -1,283 +1,394 @@
-# RareVault - Vintage Treasures & Antiques Platform
+# RareVault E-Commerce Platform
 
-A full-stack web application for collectors and enthusiasts to buy, sell, and discover vintage treasures, antiques, and rare collectibles.
+A full-stack e-commerce platform for vintage and rare items, built with Vue.js 3 and Flask.
 
-## 🎨 Features
+## 📋 Table of Contents
+- [System Requirements](#system-requirements)
+- [Quick Start](#quick-start)
+- [Detailed Setup Instructions](#detailed-setup-instructions)
+- [Project Structure](#project-structure)
+- [Running the Application](#running-the-application)
+- [Troubleshooting](#troubleshooting)
 
-- **Landing Page**: Beautifully designed home page matching the provided design
-- **Authentication**: Login and registration with role-based access (User/Admin)
-- **User Dashboard**: Personal dashboard for collectors to manage their listings
-- **Admin Dashboard**: Administrative panel for user and platform management
-- **Responsive Design**: Mobile-friendly interface that works on all devices
-- **Clean Architecture**: Well-organized project structure with separation of concerns
+---
 
-## 🛠 Tech Stack
+## 🖥️ System Requirements
 
-### Backend
-- **Python 3.8+**
-- **Flask** - Web framework
-- **MySQL** - Database
-- **SQLAlchemy** - ORM
-- **JWT** - Authentication
-- **Flask-CORS** - Cross-origin requests
+### Required Software
+1. **Python 3.10 or higher**
+   - Download: https://www.python.org/downloads/
+   - During installation, CHECK "Add Python to PATH"
 
-### Frontend
-- **Vue.js 3** - Progressive framework
-- **Vue Router** - Client-side routing
-- **Axios** - HTTP client
-- **Vite** - Build tool
-- **CSS3** - Custom styling with CSS variables
+2. **Node.js 16.x or higher**
+   - Download: https://nodejs.org/ (LTS version recommended)
+   - Includes npm (Node Package Manager)
+
+3. **MySQL 8.0 or higher**
+   - Download: https://dev.mysql.com/downloads/installer/
+   - OR use XAMPP: https://www.apachefriends.org/
+   - OR use WAMP: https://www.wampserver.com/
+
+4. **Git** (optional, for version control)
+   - Download: https://git-scm.com/downloads
+
+### Operating System
+- Windows 10/11
+- macOS 10.15+
+- Linux (Ubuntu 20.04+)
+
+---
+
+## 🚀 Quick Start
+
+### For First-Time Setup (Choose One Method)
+
+#### Method 1: Automated Setup (Recommended)
+```bash
+# Navigate to project folder
+cd rarevault
+
+# Run the setup script
+# On Windows PowerShell:
+.\SETUP.ps1
+
+# On Windows CMD or Git Bash:
+bash SETUP.sh
+
+# On macOS/Linux:
+bash SETUP.sh
+```
+
+#### Method 2: Manual Setup
+Follow the [Detailed Setup Instructions](#detailed-setup-instructions) below.
+
+---
+
+## 📚 Detailed Setup Instructions
+
+### Step 1: Extract the Project
+1. Extract the `rarevault` folder from Google Drive to your desired location
+2. Example: `C:\Projects\rarevault` or `D:\Development\rarevault`
+
+### Step 2: Install MySQL and Create Database
+
+#### Option A: Using MySQL Server
+1. Install MySQL Server from https://dev.mysql.com/downloads/installer/
+2. During installation:
+   - Remember your **root password**
+   - Note the **port** (default: 3306)
+3. Open MySQL Workbench or MySQL Command Line
+4. Run the following command:
+   ```sql
+   CREATE DATABASE rarevault_db;
+   ```
+5. Import the database schema:
+   ```sql
+   mysql -u root -p rarevault_db < rarevault_db.sql
+   ```
+   OR in MySQL Workbench:
+   - File → Run SQL Script
+   - Select `rarevault_db.sql`
+   - Execute
+
+#### Option B: Using XAMPP
+1. Install XAMPP from https://www.apachefriends.org/
+2. Start the XAMPP Control Panel
+3. Start **Apache** and **MySQL** services
+4. Click **Admin** button next to MySQL (opens phpMyAdmin)
+5. Create a new database named `rarevault_db`
+6. Import `rarevault_db.sql`:
+   - Click on `rarevault_db` database
+   - Go to "Import" tab
+   - Choose file: `rarevault_db.sql`
+   - Click "Go"
+
+### Step 3: Backend Setup (Flask/Python)
+
+1. **Open Terminal/Command Prompt** and navigate to backend folder:
+   ```bash
+   cd rarevault/backend
+   ```
+
+2. **Create Python Virtual Environment**:
+   ```bash
+   # On Windows:
+   python -m venv venv
+   
+   # On macOS/Linux:
+   python3 -m venv venv
+   ```
+
+3. **Activate Virtual Environment**:
+   ```bash
+   # On Windows PowerShell:
+   .\venv\Scripts\Activate.ps1
+   
+   # On Windows CMD:
+   venv\Scripts\activate.bat
+   
+   # On macOS/Linux:
+   source venv/bin/activate
+   ```
+   
+   You should see `(venv)` at the start of your command prompt.
+
+4. **Install Python Dependencies**:
+   ```bash
+   pip install --upgrade pip
+   pip install -r requirements.txt
+   ```
+
+5. **Configure Environment Variables**:
+   - Open the file `backend\.env` in a text editor
+   - Update the following values:
+   ```properties
+   SECRET_KEY=your-secret-key-here-change-in-production
+   DATABASE_URL=mysql+pymysql://root:YOUR_MYSQL_PASSWORD@localhost/rarevault_db
+   JWT_SECRET_KEY=jwt-secret-string-change-in-production
+   ```
+   
+   **Important**: Replace `YOUR_MYSQL_PASSWORD` with your actual MySQL root password
+   
+   Example:
+   ```properties
+   DATABASE_URL=mysql+pymysql://root:mypassword123@localhost/rarevault_db
+   ```
+
+6. **Test Database Connection**:
+   ```bash
+   python check_database.py
+   ```
+   This should show all database tables and confirm the connection works.
+
+### Step 4: Frontend Setup (Vue.js)
+
+1. **Open a NEW Terminal/Command Prompt** and navigate to frontend folder:
+   ```bash
+   cd rarevault/frontend
+   ```
+
+2. **Install Node.js Dependencies**:
+   ```bash
+   npm install
+   ```
+   
+   This may take 2-5 minutes. You should see a `node_modules` folder created.
+
+3. **Verify Installation**:
+   ```bash
+   npm list vue
+   ```
+   Should show Vue 3.4.0 or similar.
+
+---
+
+## ▶️ Running the Application
+
+You need to run **BOTH** backend and frontend servers.
+
+### Terminal 1: Start Backend Server
+
+```bash
+# Navigate to backend folder
+cd rarevault/backend
+
+# Activate virtual environment (if not already activated)
+# Windows PowerShell:
+.\venv\Scripts\Activate.ps1
+
+# Run the Flask server
+python run.py
+```
+
+**Expected Output:**
+```
+ * Running on http://0.0.0.0:5000
+ * Running on http://127.0.0.1:5000
+ * Running on http://YOUR_LOCAL_IP:5000
+```
+
+Keep this terminal **OPEN**. The backend is now running on http://localhost:5000
+
+### Terminal 2: Start Frontend Server
+
+```bash
+# Navigate to frontend folder
+cd rarevault/frontend
+
+# Run the development server
+npm run dev
+```
+
+**Expected Output:**
+```
+  VITE v5.0.0  ready in 500 ms
+
+  ➜  Local:   http://localhost:3001/
+  ➜  Network: http://192.168.x.x:3001/
+```
+
+Keep this terminal **OPEN**. The frontend is now running on http://localhost:3001
+
+### Access the Application
+
+Open your web browser and go to:
+```
+http://localhost:3001
+```
+
+---
 
 ## 📁 Project Structure
 
 ```
-rarevault-app/
-├── backend/
+rarevault/
+├── backend/              # Flask Backend API
 │   ├── app/
-│   │   ├── models/
-│   │   │   ├── __init__.py
-│   │   │   └── models.py          # Database models
-│   │   ├── routes/
-│   │   │   ├── auth.py            # Authentication routes
-│   │   │   └── main.py            # Main API routes
-│   │   ├── admin/
-│   │   │   ├── __init__.py
-│   │   │   └── routes.py          # Admin-specific routes
-│   │   ├── user/
-│   │   │   ├── __init__.py
-│   │   │   └── routes.py          # User-specific routes
-│   │   └── __init__.py            # Flask app factory
-│   ├── requirements.txt           # Python dependencies
-│   ├── .env                       # Environment variables
-│   └── run.py                     # Application entry point
-├── frontend/
+│   │   ├── models/      # Database models
+│   │   ├── routes/      # API endpoints
+│   │   ├── admin/       # Admin routes
+│   │   ├── seller/      # Seller routes
+│   │   └── user/        # User routes
+│   ├── uploads/         # Uploaded images
+│   ├── venv/           # Python virtual environment (created during setup)
+│   ├── .env            # Environment variables (CONFIGURE THIS)
+│   ├── requirements.txt # Python dependencies
+│   └── run.py          # Backend entry point
+│
+├── frontend/           # Vue.js Frontend
 │   ├── src/
-│   │   ├── views/
-│   │   │   ├── Landing.vue        # Landing page
-│   │   │   ├── Login.vue          # Login page
-│   │   │   ├── Register.vue       # Registration page
-│   │   │   ├── admin/
-│   │   │   │   └── Dashboard.vue  # Admin dashboard
-│   │   │   └── user/
-│   │   │       └── Dashboard.vue  # User dashboard
-│   │   ├── router/
-│   │   │   └── index.js           # Vue Router configuration
-│   │   ├── assets/
-│   │   │   └── styles.css         # Global styles
-│   │   ├── App.vue                # Root component
-│   │   └── main.js                # Vue app entry point
-│   ├── package.json               # Node.js dependencies
-│   ├── vite.config.js             # Vite configuration
-│   └── index.html                 # HTML template
-└── README.md                      # This file
+│   │   ├── views/     # Page components
+│   │   ├── components/# Reusable components
+│   │   ├── router/    # Vue Router config
+│   │   └── assets/    # Static assets
+│   ├── node_modules/  # Node dependencies (created during setup)
+│   ├── package.json   # Frontend dependencies
+│   └── vite.config.js # Vite configuration
+│
+├── rarevault_db.sql   # Database schema and seed data
+├── README.md          # This file
+└── SETUP_GUIDE.md     # Detailed setup instructions
 ```
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Python 3.8 or higher
-- Node.js 16 or higher
-- MySQL 8.0 or higher
-- Git
-
-### Database Setup
-
-1. **Create MySQL Database**
-   ```sql
-   CREATE DATABASE rarevault_db;
-   CREATE USER 'rarevault_user'@'localhost' IDENTIFIED BY 'your_password';
-   GRANT ALL PRIVILEGES ON rarevault_db.* TO 'rarevault_user'@'localhost';
-   FLUSH PRIVILEGES;
-   ```
-
-### Backend Setup
-
-1. **Navigate to backend directory**
-   ```bash
-   cd backend
-   ```
-
-2. **Create virtual environment**
-   ```bash
-   python -m venv venv
-   ```
-
-3. **Activate virtual environment**
-   ```bash
-   # Windows
-   venv\\Scripts\\activate
-   
-   # Linux/Mac
-   source venv/bin/activate
-   ```
-
-4. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-5. **Configure environment variables**
-   Update `.env` file with your database credentials:
-   ```env
-   SECRET_KEY=your-super-secret-key-here
-   DATABASE_URL=mysql+pymysql://rarevault_user:your_password@localhost/rarevault_db
-   JWT_SECRET_KEY=your-jwt-secret-key-here
-   ```
-
-6. **Run the application**
-   ```bash
-   python run.py
-   ```
-
-   The backend will start on `http://localhost:5000`
-
-### Frontend Setup
-
-1. **Navigate to frontend directory**
-   ```bash
-   cd frontend
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start development server**
-   ```bash
-   npm run dev
-   ```
-
-   The frontend will start on `http://localhost:3000`
-
-## 🎯 Usage
-
-### Account Types
-
-1. **User/Collector Account**
-   - Register as a seller/buyer
-   - Add and manage item listings
-   - Browse other collectors' items
-   - Update profile information
-
-2. **Admin Account**
-   - Register as an admin
-   - View platform statistics
-   - Manage all users
-   - Activate/deactivate user accounts
-   - Monitor platform activity
-
-### Key Features
-
-1. **Landing Page**
-   - Eye-catching hero section with call-to-action buttons
-   - Feature highlights for the platform
-   - Navigation to login/register
-
-2. **Authentication**
-   - Secure login/register forms
-   - Social login buttons (UI only - ready for integration)
-   - Role-based redirects after authentication
-
-3. **User Dashboard**
-   - Quick action cards for common tasks
-   - Item management interface
-   - Add new items with detailed forms
-   - View and edit existing listings
-
-4. **Admin Dashboard**
-   - Platform statistics overview
-   - User management table
-   - User activation/deactivation controls
-   - Real-time data updates
-
-## 🔧 API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `GET /api/auth/profile` - Get user profile
-- `POST /api/auth/logout` - User logout
-
-### User Routes
-- `GET /api/user/dashboard` - User dashboard data
-- `POST /api/user/items` - Create new item
-- `PUT /api/user/items/:id` - Update item
-- `DELETE /api/user/items/:id` - Delete item
-
-### Admin Routes
-- `GET /api/admin/dashboard` - Admin dashboard stats
-- `GET /api/admin/users` - Get all users
-- `PATCH /api/admin/users/:id/toggle-status` - Toggle user status
-
-### Public Routes
-- `GET /api/items` - Get all available items
-- `GET /api/items/:id` - Get specific item
-
-## 🎨 Design Features
-
-### Landing Page
-- Modern, clean design with vintage-inspired elements
-- Responsive layout that works on all devices
-- Beautiful typography using Playfair Display and Inter fonts
-- Smooth animations and hover effects
-- Professional gradient backgrounds
-
-### Authentication Pages
-- Clean, minimal forms with excellent UX
-- Social login integration (UI ready)
-- Form validation and error handling
-- Consistent branding throughout
-
-### Dashboard Interfaces
-- Card-based layouts for easy scanning
-- Intuitive navigation and actions
-- Real-time data updates
-- Mobile-responsive design
-- Professional color scheme
-
-## 🔒 Security Features
-
-- JWT-based authentication
-- Password hashing with bcrypt
-- CORS protection
-- SQL injection prevention through SQLAlchemy ORM
-- Input validation and sanitization
-- Role-based access control
-
-## 🚀 Deployment
-
-### Backend Deployment
-1. Set up production database
-2. Update environment variables for production
-3. Use a production WSGI server like Gunicorn
-4. Set up reverse proxy with Nginx
-
-### Frontend Deployment
-1. Build the production bundle:
-   ```bash
-   npm run build
-   ```
-2. Deploy the `dist` folder to your web server
-3. Configure routing for SPA
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License.
-
-## 📞 Support
-
-For support, please contact the development team or create an issue in the repository.
 
 ---
 
-**RareVault** - Connecting collectors and preserving history, one treasure at a time. 🏺✨
+## 🔧 Troubleshooting
+
+### Backend Issues
+
+#### "ModuleNotFoundError: No module named 'flask'"
+**Solution**: Make sure the virtual environment is activated and dependencies are installed:
+```bash
+cd backend
+.\venv\Scripts\Activate.ps1  # Windows
+pip install -r requirements.txt
+```
+
+#### "Access denied for user 'root'@'localhost'"
+**Solution**: Update your `backend\.env` file with the correct MySQL password:
+```properties
+DATABASE_URL=mysql+pymysql://root:YOUR_CORRECT_PASSWORD@localhost/rarevault_db
+```
+
+#### "Can't connect to MySQL server"
+**Solution**: 
+- Make sure MySQL service is running
+- On Windows: Open Services (services.msc) and start "MySQL80" service
+- With XAMPP: Open XAMPP Control Panel and start MySQL
+
+#### "Port 5000 is already in use"
+**Solution**: 
+- Close any application using port 5000
+- OR change the port in `backend/run.py`:
+  ```python
+  app.run(debug=True, host='0.0.0.0', port=5001)  # Changed to 5001
+  ```
+
+### Frontend Issues
+
+#### "npm: command not found" or "'npm' is not recognized"
+**Solution**: 
+- Install Node.js from https://nodejs.org/
+- Restart your terminal after installation
+- Verify: `node --version` and `npm --version`
+
+#### "ENOENT: no such file or directory"
+**Solution**: Make sure you're in the correct directory:
+```bash
+cd rarevault/frontend
+npm install
+```
+
+#### "Module not found" errors when running
+**Solution**: Delete `node_modules` and reinstall:
+```bash
+rm -rf node_modules
+npm install
+```
+
+#### Port 3001 is already in use
+**Solution**: Kill the process or change the port in `frontend/vite.config.js`:
+```javascript
+server: {
+  port: 3002,  // Changed to 3002
+  // ... rest of config
+}
+```
+
+### Database Issues
+
+#### Cannot import SQL file
+**Solution**:
+1. Make sure the database exists: `CREATE DATABASE rarevault_db;`
+2. Use the correct command:
+   ```bash
+   # From project root
+   mysql -u root -p rarevault_db < rarevault_db.sql
+   ```
+3. Or use MySQL Workbench GUI: File → Run SQL Script
+
+#### "Table doesn't exist" errors
+**Solution**: Re-import the database:
+```bash
+mysql -u root -p
+DROP DATABASE rarevault_db;
+CREATE DATABASE rarevault_db;
+exit
+
+mysql -u root -p rarevault_db < rarevault_db.sql
+```
+
+---
+
+## 🔐 Default Accounts
+
+After importing the database, you may have default test accounts. Check the SQL file or create new accounts through the registration page.
+
+---
+
+## 📞 Support
+
+For issues or questions:
+1. Check the [Troubleshooting](#troubleshooting) section
+2. Review error messages carefully
+3. Check that all prerequisites are installed correctly
+4. Verify MySQL is running and credentials are correct
+
+---
+
+## 🌟 Features
+
+- **User Management**: Registration, login, profile management
+- **Seller Dashboard**: List items, manage inventory, view analytics
+- **Admin Panel**: User management, item moderation, system monitoring
+- **Marketplace**: Browse items, search, filter, favorites
+- **Messaging System**: Buyer-seller communication
+- **Order Management**: Purchase flow, order tracking
+- **Image Uploads**: Multiple images per item
+- **Notifications**: Real-time updates for users and sellers
+
+---
+
+## 📝 License
+
+Proprietary - All rights reserved
