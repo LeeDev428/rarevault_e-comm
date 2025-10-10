@@ -1,9 +1,10 @@
 <template>
   <UserLayout>
     <div class="wishlist-container">
+      <!-- Clean Header -->
       <div class="wishlist-header">
         <h1 class="page-title">My Wishlist</h1>
-        <div class="wishlist-info">
+        <div class="header-actions">
           <span class="item-count">{{ totalItems }} item{{ totalItems !== 1 ? 's' : '' }}</span>
           <button v-if="wishlistItems.length > 0" @click="clearWishlist" class="clear-btn">
             Clear All
@@ -17,81 +18,54 @@
         <p>Loading wishlist...</p>
       </div>
 
-    
-      <!-- Wishlist Grid -->
+      <!-- Wishlist Grid - Clean Cards -->
       <div v-if="!loading && wishlistItems.length > 0" class="wishlist-grid">
         <div 
           v-for="item in wishlistItems" 
           :key="item.id"
-          class="wishlist-item"
+          class="wishlist-card"
         >
-        
-
           <!-- Item Image -->
-          <div class="item-image-container">
+          <div class="card-image">
             <img 
               :src="getItemImage(item)" 
               :alt="item.title || 'Item'" 
-              class="item-image"
               @error="handleImageError"
             />
-            
             <!-- Remove Button -->
-            <button @click="removeFromWishlist(item.wishlist_id)" class="remove-btn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <button @click="removeFromWishlist(item.wishlist_id)" class="remove-btn" title="Remove from wishlist">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"/>
                 <line x1="6" y1="6" x2="18" y2="18"/>
               </svg>
             </button>
           </div>
 
-          <!-- Item Details -->
-          <div class="item-details">
-            <div class="seller-label">
-              <span>{{ getSellerName(item) }}</span>
-            </div>
+          <!-- Item Info -->
+          <div class="card-info">
+            <div class="seller-tag">{{ getSellerName(item) }}</div>
             
-            <h3 class="item-title">{{ item.title || 'Item Deleted' }}</h3>
+            <h3 class="card-title">{{ item.title || 'Item Deleted' }}</h3>
             
-            <div class="item-price">
-              <span class="current-price">₱{{ (item.price || 0).toFixed(2) }}</span>
-            </div>
+            <div class="card-category">{{ formatCategory(item.category) }}</div>
 
-            <div class="item-status">
-              <span class="status-indicator available">
-                {{ item.category || 'N/A' }}
-              </span>
+            <div class="card-footer">
+              <div class="card-price">₱{{ formatPrice(item.price || 0) }}</div>
               
-              <!-- Stock Information -->
-              <div class="stock-info">
-                <span v-if="item.stock > 0" class="stock-available">
-                  {{ item.stock }} {{ item.stock === 1 ? 'item' : 'items' }} left
-                </span>
-                <span v-else-if="item.stock === 0" class="stock-out">
-                  Out of stock
-                </span>
-                <span v-else class="stock-unknown">
-                  Stock unavailable
-                </span>
+              <div class="stock-badge" :class="getStockClass(item.stock)">
+                {{ getStockText(item.stock) }}
               </div>
-              
-              <span v-if="item.added_to_wishlist" class="date-added">
-                Added {{ formatDate(item.added_to_wishlist) }}
-              </span>
             </div>
 
-            <!-- Item Actions -->
-            <div class="item-actions">
-              <button 
-                @click="orderItem(item)" 
-                :disabled="!item.id || item.stock <= 0"
-                class="action-btn primary"
-                :class="{ disabled: !item.id || item.stock <= 0 }"
-              >
-                {{ getOrderButtonText(item) }}
-              </button>
-             
-            </div>
+            <!-- Action Button -->
+            <button 
+              @click="orderItem(item)" 
+              :disabled="!item.id || item.stock <= 0"
+              class="order-btn"
+              :class="{ 'disabled': !item.id || item.stock <= 0 }"
+            >
+              {{ getOrderButtonText(item) }}
+            </button>
           </div>
         </div>
       </div>
@@ -587,435 +561,411 @@ export default {
 
     getSellerName(item) {
       return item.seller_name || item.seller?.username || 'Unknown Seller';
+    },
+
+    formatCategory(category) {
+      if (!category) return 'N/A';
+      return category.toString()
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+    },
+
+    formatPrice(price) {
+      return new Intl.NumberFormat('en-PH', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(price);
+    },
+
+    getStockClass(stock) {
+      if (!stock || stock === 0) return 'out-of-stock';
+      if (stock < 5) return 'low-stock';
+      return 'in-stock';
+    },
+
+    getStockText(stock) {
+      if (!stock || stock === 0) return 'Out of stock';
+      if (stock === 1) return '1 item left';
+      return `${stock} available`;
     }
   }
 }
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-.page-title {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-weight: 700;
-  font-size: 2.5rem;
-  letter-spacing: -1px;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-}
-
-.item-title {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-weight: 600;
-  font-size: 1.25rem;
-  letter-spacing: -0.5px;
-  color: #1f2937;
-}
-
-.item-price {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-weight: 600;
-  font-size: 1.125rem;
-  letter-spacing: -0.25px;
-}
-
+/* Container */
 .wishlist-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 2rem 1.5rem;
+  background: #f9fafb;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Wishlist Header */
+/* Header - Clean & Minimal */
 .wishlist-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .page-title {
-  font-size: 32px;
+  font-size: 1.875rem;
   font-weight: 700;
   color: #111827;
   margin: 0;
+  letter-spacing: -0.025em;
 }
 
-.wishlist-info {
+.header-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 1.25rem;
 }
 
 .item-count {
-  font-size: 16px;
+  font-size: 0.938rem;
   color: #6b7280;
+  font-weight: 500;
 }
 
 .clear-btn {
-  padding: 8px 16px;
-  background: #ef4444;
-  color: white;
-  border: none;
+  padding: 0.5rem 1rem;
+  background: white;
+  color: #ef4444;
+  border: 1.5px solid #e5e7eb;
   border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.2s;
 }
 
 .clear-btn:hover {
-  background: #dc2626;
-}
-
-/* Wishlist Actions */
-.wishlist-actions {
-  background: white;
-  padding: 20px 24px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.selection-controls {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.select-all {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.selected-count {
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.bulk-actions {
-  display: flex;
-  gap: 12px;
-}
-
-/* Wishlist Grid */
-.wishlist-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 24px;
-}
-
-.wishlist-item {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.wishlist-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-/* Item Selection */
-.item-selection {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 10;
-}
-
-.selection-checkbox {
-  width: 18px;
-  height: 18px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(4px);
-}
-
-/* Item Image */
-.item-image-container {
-  position: relative;
-  width: 100%;
-  height: 200px;
-  overflow: hidden;
-}
-
-.item-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.remove-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(239, 68, 68, 0.9);
-  color: white;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  opacity: 0;
-}
-
-.wishlist-item:hover .remove-btn {
-  opacity: 1;
-}
-
-.remove-btn:hover {
-  background: #dc2626;
-  transform: scale(1.1);
-}
-
-/* Item Details */
-.item-details {
-  padding: 20px;
-}
-
-.seller-label span {
-  font-size: 12px;
-  color: #6b7280;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.item-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
-  margin: 8px 0 12px 0;
-  line-height: 1.4;
-}
-
-.item-price {
-  margin-bottom: 12px;
-}
-
-.current-price {
-  font-size: 20px;
-  font-weight: 700;
-  color: #111827;
-  margin-right: 8px;
-}
-
-.original-price {
-  font-size: 16px;
-  color: #9ca3af;
-  text-decoration: line-through;
-}
-
-.item-status {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.status-indicator {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  align-self: flex-start;
-}
-
-.status-indicator.available {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.status-indicator.unavailable {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-/* Stock Information */
-.stock-info {
-  display: flex;
-  align-items: center;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.stock-available {
-  color: #059669;
-  background: #d1fae5;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-}
-
-.stock-out {
-  color: #dc2626;
-  background: #fee2e2;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-}
-
-.stock-unknown {
-  color: #6b7280;
-  background: #f3f4f6;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-}
-
-.date-added {
-  font-size: 12px;
-  color: #9ca3af;
-}
-
-/* Item Actions */
-.item-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.action-btn {
-  flex: 1;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.action-btn.primary {
-  background: #3b82f6;
-  color: white;
-}
-
-.action-btn.primary:hover:not(:disabled) {
-  background: #2563eb;
-}
-
-.action-btn.primary:disabled,
-.action-btn.primary.disabled {
-  background: #9ca3af;
-  color: #ffffff;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.action-btn.secondary {
-  background: #f3f4f6;
-  color: #374151;
-}
-
-.action-btn.secondary:hover {
-  background: #e5e7eb;
-}
-
-/* Empty Wishlist */
-.empty-wishlist {
-  text-align: center;
-  padding: 80px 20px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.empty-icon {
-  margin-bottom: 24px;
-  color: #d1d5db;
-}
-
-.empty-wishlist h2 {
-  font-size: 24px;
-  font-weight: 600;
-  color: #374151;
-  margin: 0 0 8px 0;
-}
-
-.empty-wishlist p {
-  font-size: 16px;
-  color: #6b7280;
-  margin: 0 0 32px 0;
-}
-
-.btn-primary {
-  display: inline-block;
-  padding: 12px 24px;
-  background: #3b82f6;
-  color: white;
-  text-decoration: none;
-  border-radius: 8px;
-  font-weight: 500;
-  transition: background 0.2s ease;
-}
-
-.btn-primary:hover {
-  background: #2563eb;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .wishlist-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-  
-  .wishlist-actions {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
-  
-  .bulk-actions {
-    justify-content: center;
-  }
-  
-  .wishlist-grid {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 16px;
-  }
-  
-  .item-actions {
-    flex-direction: column;
-  }
+  border-color: #ef4444;
+  background: #fef2f2;
 }
 
 /* Loading State */
 .loading-state {
-  text-align: center;
-  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #007bff;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #111827;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 16px;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  color: #6b7280;
+  font-size: 0.938rem;
+}
+
+/* Wishlist Grid - Clean Cards */
+.wishlist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+/* Wishlist Card - Minimal Design */
+.wishlist-card {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.wishlist-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+/* Card Image */
+.card-image {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  overflow: hidden;
+  background: #f9fafb;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.wishlist-card:hover .card-image img {
+  transform: scale(1.05);
+}
+
+/* Remove Button */
+.remove-btn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 36px;
+  height: 36px;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.wishlist-card:hover .remove-btn {
+  opacity: 1;
+}
+
+.remove-btn:hover {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.remove-btn svg {
+  stroke-width: 2.5;
+}
+
+/* Card Info */
+.card-info {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.seller-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.card-category {
+  font-size: 0.813rem;
+  color: #9ca3af;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.card-price {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Stock Badge */
+.stock-badge {
+  padding: 0.25rem 0.625rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.stock-badge.in-stock {
+  background: #ecfdf5;
+  color: #10b981;
+}
+
+.stock-badge.low-stock {
+  background: #fef3c7;
+  color: #f59e0b;
+}
+
+.stock-badge.out-of-stock {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+/* Order Button */
+.order-btn {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 0.75rem;
+  background: #111827;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.order-btn:hover:not(.disabled) {
+  background: #000;
+  transform: translateY(-1px);
+}
+
+.order-btn.disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Empty Wishlist State */
+.empty-wishlist {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.empty-icon {
+  margin-bottom: 1.5rem;
+  color: #d1d5db;
+}
+
+.empty-wishlist h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.75rem 0;
+}
+
+.empty-wishlist p {
+  font-size: 1rem;
+  color: #6b7280;
+  margin: 0 0 2rem 0;
+  max-width: 400px;
+}
+
+.btn-primary {
+  padding: 0.875rem 2rem;
+  background: #111827;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 0.938rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: inline-block;
+}
+
+.btn-primary:hover {
+  background: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .wishlist-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .wishlist-container {
+    padding: 1.5rem 1rem;
+  }
+
+  .wishlist-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .wishlist-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.875rem;
+  }
+
+  .card-image {
+    height: 220px;
+  }
+}
+
+@media (max-width: 480px) {
+  .wishlist-container {
+    padding: 1rem 0.75rem;
+  }
+
+  .wishlist-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .card-image {
+    height: 180px;
+  }
+
+  .card-info {
+    padding: 0.75rem;
+  }
+
+  .card-title {
+    font-size: 0.875rem;
+  }
+
+  .card-price {
+    font-size: 1rem;
+  }
 }
 </style>
