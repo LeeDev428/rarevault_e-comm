@@ -1,9 +1,10 @@
 <template>
-  <div class="manage-listings">
-    <div class="page-header">
-      <h1>Manage Listings</h1>
-      <p class="subtitle">View and manage all item listings in the marketplace</p>
-    </div>
+  <AdminLayout>
+    <div class="manage-listings">
+      <div class="page-header">
+        <h1>Manage Listings</h1>
+        <p class="subtitle">View and manage all item listings in the marketplace</p>
+      </div>
 
     <!-- Filters Section -->
     <div class="filters-section">
@@ -170,7 +171,7 @@
                   </svg>
                 </button>
                 <button @click="deleteListing(listing.id)" class="btn-icon btn-danger" title="Delete">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2">
                     <polyline points="3 6 5 6 21 6"></polyline>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                   </svg>
@@ -223,12 +224,18 @@
         Next
       </button>
     </div>
-  </div>
+    </div>
+  </AdminLayout>
 </template>
 
 <script>
+import AdminLayout from '@/components/admin/AdminLayout.vue'
+
 export default {
   name: 'ManageListings',
+  components: {
+    AdminLayout
+  },
   data() {
     return {
       listings: [],
@@ -483,9 +490,8 @@ export default {
 
 <style scoped>
 .manage-listings {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 32px 24px;
+  width: 100%;
+  padding: 0;
 }
 
 /* Page Header */
