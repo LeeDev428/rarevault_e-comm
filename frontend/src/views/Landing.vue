@@ -9,7 +9,7 @@
           </div>
           <nav class="nav-links">
             <router-link to="/login" class="nav-link">Log In</router-link>
-            <router-link to="/register" class="btn btn-primary">Sign Up</router-link>
+            <router-link to="/register" class="nav-link">Sign Up</router-link>
           </nav>
         </div>
       </div>
@@ -143,9 +143,12 @@
               @click="selectCategory(category.value)"
               :class="['category-btn', { active: selectedCategory === category.value }]"
             >
-              <div class="category-icon">
-                <component :is="category.icon" />
-              </div>
+              <AllItemsIcon v-if="category.icon === 'AllItemsIcon'" />
+              <VintageIcon v-else-if="category.icon === 'VintageIcon'" />
+              <CollectiblesIcon v-else-if="category.icon === 'CollectiblesIcon'" />
+              <AntiquesIcon v-else-if="category.icon === 'AntiquesIcon'" />
+              <CoinsIcon v-else-if="category.icon === 'CoinsIcon'" />
+              <OthersIcon v-else-if="category.icon === 'OthersIcon'" />
               <span>{{ category.label }}</span>
             </button>
           </div>
@@ -549,7 +552,7 @@ export default {
 }
 
 .btn-admin {
-  background: #4285f4;
+  background: #000000;
   color: white;
   padding: 0.75rem 2rem;
   border-radius: 0.5rem;
@@ -562,7 +565,7 @@ export default {
 }
 
 .btn-admin:hover {
-  background: #3367d6;
+   background: #333;
   transform: translateY(-2px);
 }
 
@@ -788,10 +791,10 @@ export default {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  border: 2px solid var(--border-light);
+  border: 2px solid #e5e7eb;
   border-radius: 2rem;
   background: white;
-  color: var(--text-secondary);
+  color: #6b7280;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -799,26 +802,24 @@ export default {
   min-height: 3rem;
 }
 
+.category-btn svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
 .category-btn:hover {
-  border-color: var(--primary-color);
-  color: var(--primary-color);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(139, 90, 60, 0.15);
+  border-color: #333;
+  color: #000000;
+
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
 }
 
 .category-btn.active {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
+  background: #000000;
+  
   color: white;
-  box-shadow: 0 4px 12px rgba(139, 90, 60, 0.25);
-}
-
-.category-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
 }
 
 .products-grid {
@@ -908,9 +909,9 @@ export default {
 }
 
 .product-price {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--primary-color);
+  font-size: 1rem;
+  font-weight: 500;
+
 }
 
 .product-condition {
