@@ -107,13 +107,7 @@
               >
                 {{ order.isRated ? 'Already Rated' : 'Rate Item' }}
               </button>
-              <button 
-                v-if="order.status === 'pending' || order.status === 'processing'" 
-                class="action-btn secondary"
-                @click.stop="trackOrder(order)"
-              >
-                Track Order
-              </button>
+            
               <button 
                 v-if="order.status === 'confirmed'" 
                 class="action-btn success"
@@ -509,8 +503,7 @@ export default {
 }
 
 .page-title {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
+
   font-weight: 700;
   font-size: 32px;
   letter-spacing: -1px;
@@ -535,15 +528,15 @@ export default {
 
 .stat-number {
   display: block;
-  font-family: 'Playfair Display', serif;
+
   font-weight: 700;
   font-size: 28px;
-  color: #3b82f6;
+  color: #000000;
   margin-bottom: 4px;
 }
 
 .stat-label {
-  font-family: 'Inter', sans-serif;
+
   font-size: 14px;
   color: #6b7280;
   font-weight: 500;
