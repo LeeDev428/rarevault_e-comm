@@ -128,6 +128,18 @@ const routes = [
     component: AdminDashboard,
     meta: { requiresAuth: true, role: 'admin' }
   },
+  {
+    path: '/admin/listings',
+    name: 'AdminListings',
+    component: () => import('@/views/admin/listings/Index.vue'),
+    meta: { requiresAuth: true, role: 'admin' }
+  },
+  {
+    path: '/admin/reports',
+    name: 'AdminReports',
+    component: () => import('@/views/admin/reports/Index.vue'),
+    meta: { requiresAuth: true, role: 'admin' }
+  },
   // Seller Routes
   {
     path: '/seller/dashboard',
