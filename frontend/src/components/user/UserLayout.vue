@@ -6,7 +6,7 @@
         <!-- Left Side - Logo -->
         <div class="header-left">
           <router-link to="/user/dashboard" class="logo">
-            <h2 class="logo-text">RareVault</h2>
+           <h2 class="logo-text" style="font-size: 32px;">RareVault.</h2>
           </router-link>
         </div>
 
@@ -530,11 +530,11 @@ export default {
 
 .logo-text {
   font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-weight: 800;
-  font-size: 28px;
-  letter-spacing: -1px;
-  color: #1f2937;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 32px;
+  letter-spacing: 0;
+  color: #000000;
   margin: 0;
   transition: color 0.2s ease;
 }
