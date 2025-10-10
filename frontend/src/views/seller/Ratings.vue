@@ -655,12 +655,12 @@ export default {
   display: grid;
   grid-template-columns: 200px 250px 120px 1fr 120px 140px;
   gap: 20px;
-  padding: 24px 32px;
-  background: rgba(139, 90, 60, 0.08);
-  border-bottom: 1px solid #d4af94;
-  font-family: 'Playfair Display', serif;
+  padding: 20px 32px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  font-family: 'Inter', sans-serif;
   font-weight: 600;
-  color: #8b5a3c;
+  color: #111827;
   font-size: 14px;
 }
 
@@ -668,14 +668,13 @@ export default {
   display: grid;
   grid-template-columns: 200px 250px 120px 1fr 120px 140px;
   gap: 20px;
-  padding: 24px 32px;
-  border-bottom: 1px solid rgba(212, 175, 148, 0.3);
-  transition: all 0.3s ease;
+  padding: 20px 32px;
+  border-bottom: 1px solid #f3f4f6;
+  transition: all 0.2s ease;
 }
 
 .table-row:hover {
-  background: rgba(139, 90, 60, 0.05);
-  transform: translateY(-1px);
+  background: #f9fafb;
 }
 
 .table-row:last-child {
@@ -686,7 +685,7 @@ export default {
   display: flex;
   align-items: flex-start;
   font-size: 14px;
-  color: #8b5a3c;
+  color: #374151;
 }
 
 /* Customer Cell */
@@ -701,8 +700,8 @@ export default {
   height: 48px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2px solid #d4af94;
-  box-shadow: 0 2px 8px rgba(139, 90, 60, 0.2);
+  border: 2px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .customer-avatar img {
@@ -712,15 +711,15 @@ export default {
 }
 
 .customer-name {
-  font-weight: 500;
-  color: #8b5a3c;
+  font-weight: 600;
+  color: #111827;
   margin-bottom: 2px;
 }
 
 .customer-email {
   font-size: 12px;
-  color: #8b5a3c;
-  opacity: 0.7;
+  color: #6b7280;
+  opacity: 1;
 }
 
 /* Product Cell */
@@ -733,23 +732,23 @@ export default {
 .product-image {
   width: 60px;
   height: 60px;
-  border-radius: 12px;
+  border-radius: 8px;
   object-fit: cover;
-  border: 2px solid #d4af94;
-  box-shadow: 0 2px 8px rgba(139, 90, 60, 0.1);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .product-title {
-  font-weight: 500;
-  color: #8b5a3c;
+  font-weight: 600;
+  color: #111827;
   margin-bottom: 4px;
   line-height: 1.3;
 }
 
 .product-price {
   font-size: 12px;
-  color: #8b5a3c;
-  opacity: 0.7;
+  color: #6b7280;
+  opacity: 1;
   font-weight: 600;
 }
 
@@ -778,7 +777,7 @@ export default {
 .rating-number {
   font-size: 12px;
   font-weight: 600;
-  color: #8b5a3c;
+  color: #111827;
 }
 
 /* Review Cell */
@@ -789,14 +788,14 @@ export default {
 .review-text p {
   margin: 0 0 8px 0;
   line-height: 1.5;
-  color: #8b5a3c;
-  opacity: 0.9;
+  color: #374151;
+  opacity: 1;
 }
 
 .expand-btn {
   background: none;
   border: none;
-  color: #8b5a3c;
+  color: #000000;
   cursor: pointer;
   font-size: 12px;
   text-decoration: underline;
@@ -804,12 +803,12 @@ export default {
 }
 
 .expand-btn:hover {
-  opacity: 0.8;
+  opacity: 0.7;
 }
 
 .no-review {
-  color: #8b5a3c;
-  opacity: 0.5;
+  color: #9ca3af;
+  opacity: 1;
   font-style: italic;
 }
 
@@ -826,9 +825,9 @@ export default {
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.3s ease;
-  border: 2px solid #d4af94;
-  box-shadow: 0 2px 8px rgba(139, 90, 60, 0.1);
+  transition: transform 0.2s ease;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .photo-thumbnail:hover {
@@ -847,15 +846,15 @@ export default {
 }
 
 .date {
-  font-weight: 500;
-  color: #8b5a3c;
+  font-weight: 600;
+  color: #111827;
   margin-bottom: 2px;
 }
 
 .time {
   font-size: 12px;
-  color: #8b5a3c;
-  opacity: 0.7;
+  color: #6b7280;
+  opacity: 1;
 }
 
 /* Actions Cell */
@@ -880,27 +879,29 @@ export default {
 }
 
 .respond-btn {
-  background: linear-gradient(135deg, #e8ddd4 0%, #d4af94 100%);
-  color: #8b5a3c;
-  border: 1px solid #d4af94;
+  background: #f9fafb;
+  color: #000000;
+  border: 1px solid #e5e7eb;
 }
 
 .respond-btn:hover {
-  background: linear-gradient(135deg, #d4af94 0%, #c19a7a 100%);
+  background: #ffffff;
+  border-color: #000000;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(139, 90, 60, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .report-btn {
-  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
 }
 
 .report-btn:hover {
-  background: linear-gradient(135deg, #f5c6cb 0%, #f1b0b7 100%);
+  background: #fee2e2;
+  border-color: #dc2626;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(114, 28, 36, 0.2);
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.1);
 }
 
 /* Loading and Empty States */
@@ -913,30 +914,30 @@ export default {
 .loading-spinner {
   width: 48px;
   height: 48px;
-  border: 4px solid rgba(139, 90, 60, 0.1);
-  border-top: 4px solid #8b5a3c;
+  border: 4px solid #f3f4f6;
+  border-top: 4px solid #000000;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 20px auto;
 }
 
 .empty-icon {
-  color: #8b5a3c;
-  opacity: 0.5;
+  color: #9ca3af;
+  opacity: 1;
   margin-bottom: 20px;
 }
 
 .empty-state h3 {
-  font-family: 'Playfair Display', serif;
-  font-size: 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
   font-weight: 600;
-  color: #8b5a3c;
+  color: #111827;
   margin: 0 0 8px 0;
 }
 
 .empty-state p {
-  color: #8b5a3c;
-  opacity: 0.7;
+  color: #6b7280;
+  opacity: 1;
   margin: 0;
 }
 
