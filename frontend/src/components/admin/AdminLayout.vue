@@ -4,7 +4,7 @@
     <header class="top-header">
       <div class="header-content">
         <div class="logo">
-          <h1 class="logo-text font-display" style="color: rgb(139, 90, 60); font-size: 24px;">RareVault.</h1>
+          <h1 class="logo-text font-display" style=" font-size: 30px;">RareVault.</h1>
         </div>
         <!-- <div class="search-section">
           <div class="search-bar">
@@ -80,7 +80,7 @@
               </svg>
               <router-link to="/admin/dashboard" class="nav-link">Manage user page</router-link>
             </div>
-<!--             
+        
             <div class="nav-item" :class="{ active: $route.path.includes('/admin/listings') }">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -89,9 +89,9 @@
                 <line x1="3" y1="10" x2="21" y2="10"></line>
               </svg>
               <router-link to="/admin/listings" class="nav-link">Manage Listings Page</router-link>
-            </div> -->
+            </div> 
             
-            <!-- <div class="nav-item" :class="{ active: $route.path.includes('/admin/reports') }">
+    <div class="nav-item" :class="{ active: $route.path.includes('/admin/reports') }">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                 <polyline points="14,2 14,8 20,8"></polyline>
@@ -100,9 +100,8 @@
                 <polyline points="10,9 9,9 8,9"></polyline>
               </svg>
               <router-link to="/admin/reports" class="nav-link">Reports / Logs Page</router-link>
-            </div> -->
-          </nav>
-        </div>
+            </div> 
+          </nav>   </div>
       </aside>
 
       <!-- Main Content -->
