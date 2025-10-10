@@ -5,12 +5,7 @@
       <div class="messages-header">
         <h1 class="page-title">Messages</h1>
         <div class="header-actions">
-          <button @click="openSellersModal" class="action-btn primary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
-            </svg>
-            Message a Seller
-          </button>
+         
           <div class="unread-count" v-if="totalUnreadCount > 0">
             {{ totalUnreadCount }} unread message{{ totalUnreadCount > 1 ? 's' : '' }}
           </div>
@@ -80,18 +75,13 @@
             <!-- Chat Header -->
             <div class="chat-header">
               <div class="chat-partner-info">
-                <div class="partner-avatar" :class="selectedPartnerRole">{{ selectedPartnerName.charAt(0).toUpperCase() }}</div>
-                <div>
+              <div>
                   <h4>{{ selectedPartnerName }}</h4>
                   <span class="partner-role">{{ selectedPartnerRole === 'seller' ? 'Seller' : selectedPartnerRole }}</span>
                 </div>
               </div>
               <div class="chat-actions">
-                <button @click="refreshMessages" :disabled="messagesLoading" class="action-btn secondary">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-8 3.58-8 8s3.58 8 8 8c3.74 0 6.85-2.58 7.75-6h-2.08c-.82 2.33-3.04 4-5.67 4-3.31 0-6-2.69-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
-                  </svg>
-                </button>
+                
               </div>
             </div>
 
@@ -629,8 +619,7 @@ export default {
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&family=Inter:wght@300;400;500;600;700&display=swap');
 
 .page-title {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
+
   font-weight: 700;
   font-size: 2.5rem;
   letter-spacing: -1px;
@@ -638,8 +627,7 @@ export default {
 }
 
 h3 {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
+
   font-weight: 600;
   font-size: 1.25rem;
   letter-spacing: -0.5px;
@@ -762,7 +750,7 @@ h3 {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #3b82f6;
+  background: #000000;
   color: white;
   display: flex;
   align-items: center;
@@ -771,15 +759,15 @@ h3 {
 }
 
 .avatar-circle.seller {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: linear-gradient(135deg, #b05151 0%, #b05151 100%);
 }
 
 .avatar-circle.admin {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background: linear-gradient(135deg, #4e62b0 0%, #4e62b0 100%);
 }
 
 .avatar-circle.user {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #000000 0%, #000000 100%);
 }
 
 .role-badge {
@@ -787,9 +775,9 @@ h3 {
   bottom: -6px;
   left: 50%;
   transform: translateX(-50%);
-  background: #10b981;
+  background: #000000;
   color: white;
-  font-size: 10px;
+  font-size: 7px;
   padding: 2px 6px;
   border-radius: 8px;
   text-transform: uppercase;
@@ -820,7 +808,7 @@ h3 {
 
 .message-time {
   font-size: 12px;
-  color: #6b7280;
+  color: #000000;
 }
 
 .last-message {
@@ -910,7 +898,7 @@ h3 {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #3b82f6;
+  background: #000000;
   color: white;
   display: flex;
   align-items: center;
@@ -1259,8 +1247,7 @@ h3 {
 .seller-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #000000;
   color: white;
   display: flex;
   align-items: center;
