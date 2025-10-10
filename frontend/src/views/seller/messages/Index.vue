@@ -170,7 +170,6 @@
             <!-- Chat Header -->
             <div class="chat-header">
               <div class="chat-partner-info">
-                <div class="partner-avatar-large">{{ selectedPartnerName.charAt(0).toUpperCase() }}</div>
                 <div class="partner-details">
                   <h4>{{ selectedPartnerName }}</h4>
                   <span class="partner-role">Customer</span>
@@ -859,7 +858,7 @@ export default {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #4c81d0;
   color: white;
   display: flex;
   align-items: center;
@@ -873,9 +872,9 @@ export default {
   bottom: -6px;
   left: 50%;
   transform: translateX(-50%);
-  background: #10b981;
+  background: #000000;
   color: white;
-  font-size: 10px;
+  font-size: 7px;
   padding: 2px 6px;
   border-radius: 8px;
   text-transform: uppercase;
@@ -1195,7 +1194,7 @@ export default {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #4c81d0;
   color: white;
   display: flex;
   align-items: center;
