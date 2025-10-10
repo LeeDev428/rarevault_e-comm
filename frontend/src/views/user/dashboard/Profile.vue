@@ -1,46 +1,57 @@
 <template>
   <UserLayout>
     <div class="profile-container">
-      <div class="profile-content">
-        <!-- Profile Header -->
-        <div class="profile-header">
-          <div class="profile-avatar">
-            <div class="avatar-circle">
-              <span>{{ userInitials }}</span>
-            </div>
-            <button class="edit-avatar-btn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
-            </button>
+      <!-- Header -->
+      <div class="profile-header">
+        <h1 class="page-title">Profile</h1>
+        <p class="page-subtitle">Manage your personal information and preferences</p>
+      </div>
+
+      <!-- Profile Overview Card -->
+      <div class="profile-overview">
+        <div class="avatar-section">
+          <div class="avatar-circle">
+            <span>{{ userInitials }}</span>
           </div>
-          
-          <div class="profile-info">
-            <h1 class="profile-name">{{ userProfile.name }}</h1>
-            <p class="profile-email">{{ userProfile.email }}</p>
-            <div class="profile-stats">
-              <div class="stat-item">
-                <span class="stat-number">{{ userProfile.ordersCount }}</span>
-                <span class="stat-label">Orders</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-number">{{ userProfile.wishlistCount }}</span>
-                <span class="stat-label">Wishlist</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-number">{{ userProfile.joinedDays }}</span>
-                <span class="stat-label">Days Active</span>
-              </div>
-            </div>
+          <button class="edit-avatar-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="profile-meta">
+          <h2 class="profile-name">{{ userProfile.name }}</h2>
+          <p class="profile-email">{{ userProfile.email }}</p>
+        </div>
+        
+        <div class="profile-stats">
+          <div class="stat-item">
+            <span class="stat-number">{{ userProfile.ordersCount }}</span>
+            <span class="stat-label">Orders</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-number">{{ userProfile.wishlistCount }}</span>
+            <span class="stat-label">Wishlist</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-number">{{ userProfile.joinedDays }}</span>
+            <span class="stat-label">Days Active</span>
           </div>
         </div>
+      </div>
 
-        <!-- Profile Form -->
-        <div class="profile-form">
-          <h2 class="section-title">Personal Information</h2>
-          
-          <form @submit.prevent="updateProfile" class="form-grid">
+      <!-- Personal Information Card -->
+      <div class="info-card">
+        <div class="card-header">
+          <h3 class="card-title">Personal Information</h3>
+        </div>
+        
+        <form @submit.prevent="updateProfile" class="info-form">
+          <div class="form-row">
             <div class="form-group">
               <label for="name">Full Name</label>
               <input 
@@ -62,7 +73,9 @@
                 required
               />
             </div>
+          </div>
 
+          <div class="form-row">
             <div class="form-group">
               <label for="phone">Phone Number</label>
               <input 
@@ -70,17 +83,8 @@
                 id="phone" 
                 v-model="profileForm.phone"
                 class="form-input"
+                placeholder="+1 (555) 123-4567"
               />
-            </div>
-
-            <div class="form-group">
-              <label for="address">Address</label>
-              <textarea 
-                id="address" 
-                v-model="profileForm.address"
-                class="form-input"
-                rows="3"
-              ></textarea>
             </div>
 
             <div class="form-group">
@@ -90,9 +94,25 @@
                 id="city" 
                 v-model="profileForm.city"
                 class="form-input"
+                placeholder="Enter your city"
               />
             </div>
+          </div>
 
+          <div class="form-row">
+            <div class="form-group full-width">
+              <label for="address">Address</label>
+              <textarea 
+                id="address" 
+                v-model="profileForm.address"
+                class="form-input"
+                rows="2"
+                placeholder="Enter your full address"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="form-row">
             <div class="form-group">
               <label for="postalCode">Postal Code</label>
               <input 
@@ -100,19 +120,20 @@
                 id="postalCode" 
                 v-model="profileForm.postalCode"
                 class="form-input"
+                placeholder="10001"
               />
             </div>
+          </div>
 
-            <div class="form-actions">
-              <button type="submit" class="btn-primary" :disabled="saving">
-                {{ saving ? 'Saving...' : 'Save Changes' }}
-              </button>
-              <button type="button" class="btn-secondary" @click="resetForm">
-                Reset
-              </button>
-            </div>
-          </form>
-        </div>
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" @click="resetForm">
+              Reset
+            </button>
+            <button type="submit" class="btn-primary" :disabled="saving">
+              {{ saving ? 'Saving...' : 'Save Changes' }}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </UserLayout>
@@ -191,92 +212,114 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+  font-family: 'Inter', sans-serif;
+}
 
 .profile-container {
-  max-width: 1000px;
+  max-width: 900px;
   margin: 0 auto;
+  padding: 0;
 }
 
-.profile-content {
-  background: #ffffff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
-}
-
-/* Profile Header */
+/* Header */
 .profile-header {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  color: white;
-  padding: 40px;
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.025em;
+}
+
+.page-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Profile Overview Card */
+.profile-overview {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 2rem;
 }
 
-.profile-avatar {
+.avatar-section {
   position: relative;
+  flex-shrink: 0;
 }
 
 .avatar-circle {
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: #f3f4f6;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 36px;
-  font-weight: 700;
-  backdrop-filter: blur(10px);
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #374151;
+  border: 2px solid #e5e7eb;
 }
 
 .edit-avatar-btn {
   position: absolute;
-  bottom: -5px;
-  right: -5px;
-  width: 32px;
-  height: 32px;
+  bottom: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: #374151;
+  background: #111827;
   color: white;
-  border: none;
+  border: 2px solid white;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.15s ease;
 }
 
 .edit-avatar-btn:hover {
-  background: #1f2937;
+  background: #000000;
 }
 
-.profile-info {
+.profile-meta {
   flex: 1;
 }
 
 .profile-name {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-weight: 700;
-  font-size: 32px;
-  letter-spacing: -1px;
-  margin: 0 0 8px 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.25rem 0;
+  letter-spacing: -0.025em;
 }
 
 .profile-email {
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
-  opacity: 0.9;
-  margin: 0 0 24px 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
 }
 
 .profile-stats {
   display: flex;
-  gap: 40px;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0 1.5rem;
+  border-left: 1px solid #e5e7eb;
 }
 
 .stat-item {
@@ -285,39 +328,61 @@ export default {
 
 .stat-number {
   display: block;
-  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
   font-weight: 700;
-  font-size: 24px;
-  margin-bottom: 4px;
+  color: #111827;
+  margin-bottom: 0.25rem;
+  letter-spacing: -0.025em;
 }
 
 .stat-label {
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  opacity: 0.8;
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-/* Profile Form */
-.profile-form {
-  padding: 40px;
+.stat-divider {
+  width: 1px;
+  height: 2rem;
+  background: #e5e7eb;
 }
 
-.section-title {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-weight: 600;
-  font-size: 24px;
-  letter-spacing: -0.5px;
-  color: #1f2937;
-  margin: 0 0 32px 0;
-  padding-bottom: 16px;
+/* Info Card */
+.info-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 1.25rem 1.5rem;
   border-bottom: 1px solid #e5e7eb;
 }
 
-.form-grid {
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  letter-spacing: -0.025em;
+}
+
+/* Form */
+.info-form {
+  padding: 1.5rem;
+}
+
+.form-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 24px;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-row:last-of-type {
+  margin-bottom: 1.5rem;
 }
 
 .form-group {
@@ -325,101 +390,150 @@ export default {
   flex-direction: column;
 }
 
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
 .form-group label {
-  font-size: 14px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #374151;
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .form-input {
-  padding: 12px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 14px;
-  transition: all 0.2s ease;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: #111827;
+  transition: all 0.15s ease;
+  background: #ffffff;
+}
+
+.form-input::placeholder {
+  color: #9ca3af;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.form-input:invalid {
-  border-color: #ef4444;
+  border-color: #111827;
+  background: #ffffff;
 }
 
 textarea.form-input {
   resize: vertical;
-  min-height: 80px;
+  min-height: 60px;
+  line-height: 1.5;
 }
 
+/* Form Actions */
 .form-actions {
-  grid-column: 1 / -1;
   display: flex;
-  gap: 16px;
-  margin-top: 16px;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
 }
 
 .btn-primary,
 .btn-secondary {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
 }
 
 .btn-primary {
-  background: #3b82f6;
+  background: #111827;
   color: white;
+  border-color: #111827;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #2563eb;
+  background: #000000;
+  border-color: #000000;
 }
 
 .btn-primary:disabled {
-  background: #9ca3af;
+  background: #d1d5db;
+  border-color: #d1d5db;
+  color: #9ca3af;
   cursor: not-allowed;
 }
 
 .btn-secondary {
-  background: #f3f4f6;
+  background: white;
   color: #374151;
+  border-color: #e5e7eb;
 }
 
 .btn-secondary:hover {
-  background: #e5e7eb;
+  background: #f9fafb;
+  border-color: #d1d5db;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .profile-header {
+  .profile-overview {
     flex-direction: column;
-    text-align: center;
-    padding: 32px 24px;
-    gap: 24px;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding: 1.5rem;
   }
   
   .profile-stats {
-    gap: 24px;
+    width: 100%;
+    padding: 1rem 0 0 0;
+    border-left: none;
+    border-top: 1px solid #e5e7eb;
+    justify-content: space-around;
   }
   
-  .profile-form {
-    padding: 24px;
+  .stat-divider {
+    display: none;
   }
   
-  .form-grid {
+  .form-row {
     grid-template-columns: 1fr;
-    gap: 20px;
+  }
+  
+  .info-form {
+    padding: 1.25rem;
   }
   
   .form-actions {
-    flex-direction: column;
+    flex-direction: column-reverse;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 1.5rem;
+  }
+  
+  .profile-name {
+    font-size: 1.25rem;
+  }
+  
+  .avatar-circle {
+    width: 70px;
+    height: 70px;
+    font-size: 1.5rem;
+  }
+  
+  .stat-number {
+    font-size: 1.25rem;
   }
 }
 </style>
