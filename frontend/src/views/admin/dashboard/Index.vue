@@ -4,7 +4,9 @@
       <!-- Dashboard Header -->
       <div class="dashboard-header">
         <h2>Dashboard</h2>
-        <button class="delete-all-btn">Delete all</button>
+        <button class="delete-all-btn" @click="handleDeleteAll" :disabled="deleting">
+          {{ deleting ? 'Deleting...' : 'Delete all' }}
+        </button>
       </div>
 
       <!-- Tab Navigation -->
@@ -21,9 +23,21 @@
 
       <!-- Tab Content -->
       <div class="tab-content">
-        <TotalUsers v-if="activeTab === 'users'" />
-        <ItemsListed v-if="activeTab === 'items'" />
-        <AppraisalRequests v-if="activeTab === 'appraisals'" />
+        <TotalUsers 
+          v-if="activeTab === 'users'" 
+          :key="usersRefreshKey"
+          @refresh="refreshUsers"
+        />
+        <ItemsListed 
+          v-if="activeTab === 'items'" 
+          :key="itemsRefreshKey"
+          @refresh="refreshItems"
+        />
+        <AppraisalRequests 
+          v-if="activeTab === 'appraisals'" 
+          :key="appraisalsRefreshKey"
+          @refresh="refreshAppraisals"
+        />
       </div>
     </div>
   </AdminLayout>
@@ -46,6 +60,10 @@ export default {
   },
   setup() {
     const activeTab = ref('users')
+    const deleting = ref(false)
+    const usersRefreshKey = ref(0)
+    const itemsRefreshKey = ref(0)
+    const appraisalsRefreshKey = ref(0)
     
     const tabs = [
       { id: 'users', label: 'Total Users' },
@@ -53,9 +71,79 @@ export default {
       { id: 'appraisals', label: 'Appraisal Requests' }
     ]
 
+    const handleDeleteAll = async () => {
+      if (!confirm('Are you sure you want to delete all items in this section? This action cannot be undone.')) {
+        return
+      }
+
+      deleting.value = true
+      
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        let endpoint = ''
+        
+        if (activeTab.value === 'users') {
+          endpoint = 'http://localhost:5000/api/admin/users/delete-all'
+        } else if (activeTab.value === 'items') {
+          endpoint = 'http://localhost:5000/api/admin/items/delete-all'
+        } else if (activeTab.value === 'appraisals') {
+          endpoint = 'http://localhost:5000/api/admin/appraisals/delete-all'
+        }
+
+        const response = await fetch(endpoint, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        const data = await response.json()
+
+        if (response.ok && data.success) {
+          alert(data.message)
+          // Refresh the current tab
+          if (activeTab.value === 'users') {
+            usersRefreshKey.value++
+          } else if (activeTab.value === 'items') {
+            itemsRefreshKey.value++
+          } else if (activeTab.value === 'appraisals') {
+            appraisalsRefreshKey.value++
+          }
+        } else {
+          throw new Error(data.error || 'Failed to delete')
+        }
+      } catch (error) {
+        console.error('Delete all error:', error)
+        alert('Failed to delete: ' + error.message)
+      } finally {
+        deleting.value = false
+      }
+    }
+
+    const refreshUsers = () => {
+      usersRefreshKey.value++
+    }
+
+    const refreshItems = () => {
+      itemsRefreshKey.value++
+    }
+
+    const refreshAppraisals = () => {
+      appraisalsRefreshKey.value++
+    }
+
     return {
       activeTab,
-      tabs
+      tabs,
+      deleting,
+      usersRefreshKey,
+      itemsRefreshKey,
+      appraisalsRefreshKey,
+      handleDeleteAll,
+      refreshUsers,
+      refreshItems,
+      refreshAppraisals
     }
   }
 }
