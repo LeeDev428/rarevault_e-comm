@@ -11,131 +11,97 @@
       <div v-else-if="error" class="error-state">
         <div class="error-icon">⚠️</div>
         <h2>{{ error }}</h2>
-        <button @click="goBack" class="action-btn primary">Back to Orders</button>
+        <button @click="goBack" class="back-btn-primary">Back to Orders</button>
       </div>
 
       <!-- Order Content -->
       <div v-else-if="order" class="order-content-wrapper">
+        <!-- Back Button -->
+        <button @click="goBack" class="back-button">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          <span>Back to Orders</span>
+        </button>
+
         <!-- Order Header -->
         <div class="order-header">
-          <div class="header-top">
-            <button @click="goBack" class="back-btn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <polyline points="15,18 9,12 15,6"/>
-              </svg>
-              Back to Orders
-            </button>
-            
-            <div class="order-actions">
-           
-              <button v-if="order.status === 'pending' || order.status === 'processing'" @click="trackOrder" class="action-btn primary">
-                Track Order
-              </button>
-            </div>
-          </div>
-          
-          <div class="order-info">
+          <div class="header-left">
             <h1 class="order-title">Order #{{ order.id }}</h1>
             <div class="order-meta">
               <span class="order-date">{{ formatDate(order.created_at || order.orderDate) }}</span>
-              <span :class="['order-status', order.status]">{{ getStatusText(order.status) }}</span>
+              <span class="meta-separator">•</span>
+              <span :class="['order-status-badge', order.status]">{{ getStatusText(order.status) }}</span>
             </div>
           </div>
         </div>
 
-        <!-- Order Content -->
-        <div class="order-content">
-          <!-- Order Items -->
-          <div class="order-section">
-            <h2 class="section-title">Order Items</h2>
-            <div class="items-list">
-              <div class="order-item">
+        <!-- Main Grid Layout -->
+        <div class="order-grid">
+          <!-- Left Column -->
+          <div class="left-column">
+            <!-- Order Item Card -->
+            <div class="card order-item-card">
+              <h2 class="card-title">Order Items</h2>
               
+              <div class="item-wrapper">
+                <div class="item-image-container">
+                  <img 
+                    :src="getItemImage(order.item)" 
+                    :alt="order.item.title" 
+                    class="item-image"
+                    @error="handleImageError"
+                  />
+                </div>
                 
-                <img 
-                  :src="getItemImage(order.item)" 
-                  :alt="order.item.title" 
-                  class="item-image"
-                  @error="handleImageError"
-                  style="border: 2px solid red;"
-                />
-                
-                <div class="item-details">
-                  <h3 class="item-title">{{ order.item.title }}</h3>
+                <div class="item-info">
+                  <h3 class="item-name">{{ order.item.title }}</h3>
                   <p class="item-seller">Sold by {{ getSellerName(order.item) }}</p>
-                  <div class="item-specs">
-                    <span v-if="order.item.condition">Condition: {{ order.item.condition }}</span>
-                    <span v-if="order.item.category">Category: {{ order.item.category }}</span>
+                  
+                  <div class="item-meta">
+                    <span v-if="order.item.condition" class="meta-badge">{{ order.item.condition }}</span>
+                    <span v-if="order.item.category" class="meta-badge">{{ order.item.category }}</span>
+                  </div>
+                  
+                  <div class="item-bottom">
+                    <span class="item-quantity">Qty {{ order.quantity || 1 }}</span>
+                    <span class="item-price">₱{{ (order.total_amount || order.item.price).toFixed(2) }}</span>
                   </div>
                 </div>
-
-                <div class="item-pricing">
-                  <div class="quantity">Qty: {{ order.quantity || 1 }}</div>
-                  <div class="price">₱{{ (order.total_amount || order.item.price).toFixed(2) }}</div>
-                </div>
-
-                <div class="item-actions">
-            
-                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Order Summary -->
-          <div class="order-section">
-            <h2 class="section-title">Order Summary</h2>
-            <div class="summary-card">
-              <div class="summary-row">
-                <span>Item Price</span>
-                <span>₱{{ (order.item?.price || 0).toFixed(2) }}</span>
-              </div>
-              <div class="summary-row">
-                <span>Quantity</span>
-                <span>{{ order.quantity || 1 }}</span>
-              </div>
-              <div class="summary-row">
-                <span>Shipping</span>
-                <span>₱{{ (order.shipping_cost || 0).toFixed(2) }}</span>
-              </div>
-              <div class="summary-row total">
-                <span>Total</span>
-                <span>₱{{ (order.total_amount || 0).toFixed(2) }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Delivery Information -->
-          <div class="order-section">
-            <h2 class="section-title">Delivery Information</h2>
-            <div class="delivery-card">
-              <div class="delivery-address">
-                <h3>Shipping Address</h3>
-                <div class="address">
-                  <p>{{ order.shipping_address || 'Address not provided' }}</p>
-                </div>
+            <!-- Delivery Information Card -->
+            <div class="card delivery-card">
+              <h2 class="card-title">Delivery Information</h2>
+              
+              <div class="delivery-section">
+                <h3 class="subsection-title">SHIPPING ADDRESS</h3>
+                <p class="delivery-address-text">{{ order.shipping_address || 'Address not provided' }}</p>
               </div>
 
-              <div class="delivery-status">
-                <h3>Delivery Status</h3>
-                <div class="status-timeline">
+              <div class="delivery-section">
+                <h3 class="subsection-title">DELIVERY STATUS</h3>
+                <div class="timeline">
                   <div 
                     v-for="(step, index) in deliverySteps" 
                     :key="index"
-                    :class="['timeline-step', { 
+                    :class="['timeline-item', { 
                       completed: step.completed, 
-                      current: step.current,
-                      pending: !step.completed && !step.current
+                      active: step.current
                     }]"
                   >
-                    <div class="step-icon">
-                      <svg v-if="step.completed" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <polyline points="20,6 9,17 4,12"/>
-                      </svg>
-                      <span v-else class="step-number">{{ index + 1 }}</span>
+                    <div class="timeline-marker">
+                      <div class="marker-dot">
+                        <svg v-if="step.completed" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      </div>
+                      <div v-if="index < deliverySteps.length - 1" class="timeline-line"></div>
                     </div>
-                    <div class="step-details">
-                      <span class="step-title">{{ step.title }}</span>
-                      <span v-if="step.date" class="step-date">{{ formatDate(step.date) }}</span>
+                    <div class="timeline-content">
+                      <span class="timeline-title">{{ step.title }}</span>
+                      <span v-if="step.date" class="timeline-date">{{ formatDate(step.date) }}</span>
                     </div>
                   </div>
                 </div>
@@ -143,20 +109,56 @@
             </div>
           </div>
 
-          <!-- Payment Information -->
-          <div class="order-section">
-            <h2 class="section-title">Payment Information</h2>
-            <div class="payment-card">
-              <div class="payment-method">
-                <div class="method-info">
-                  <span class="method-type">{{ order.payment_method || 'Cash on Delivery' }}</span>
-                  <span class="method-details">{{ order.customer_notes || 'No additional details' }}</span>
-                </div>
-                <span class="payment-status">{{ order.status === 'delivered' ? 'Paid' : 'Pending' }}</span>
-              </div>
+          <!-- Right Column -->
+          <div class="right-column">
+            <!-- Order Summary Card -->
+            <div class="card summary-card">
+              <h2 class="card-title">Order Summary</h2>
               
-              <div class="payment-date">
-                Payment {{ order.status === 'delivered' ? 'completed' : 'pending' }} on {{ formatDate(order.created_at) }}
+              <div class="summary-rows">
+                <div class="summary-row">
+                  <span class="row-label">Item Price</span>
+                  <span class="row-value">₱{{ (order.item?.price || 0).toFixed(2) }}</span>
+                </div>
+                <div class="summary-row">
+                  <span class="row-label">Quantity</span>
+                  <span class="row-value">{{ order.quantity || 1 }}</span>
+                </div>
+                <div class="summary-row">
+                  <span class="row-label">Shipping</span>
+                  <span class="row-value">₱{{ (order.shipping_cost || 0).toFixed(2) }}</span>
+                </div>
+                
+                <div class="summary-divider"></div>
+                
+                <div class="summary-row summary-total">
+                  <span class="row-label">Total</span>
+                  <span class="row-value">₱{{ (order.total_amount || 0).toFixed(2) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Information Card -->
+            <div class="card payment-card">
+              <h2 class="card-title">Payment Information</h2>
+              
+              <div class="payment-method">
+                <div class="payment-row">
+                  <span class="payment-label">Method</span>
+                  <span class="payment-value">{{ order.payment_method || 'cash_on_delivery' }}</span>
+                </div>
+                
+                <div class="payment-row">
+                  <span class="payment-label">Status</span>
+                  <span :class="['payment-status-badge', order.status === 'delivered' ? 'paid' : 'pending']">
+                    {{ order.status === 'delivered' ? 'Paid' : 'Pending' }}
+                  </span>
+                </div>
+                
+                <div v-if="order.customer_notes" class="payment-notes">
+                  <span class="notes-label">Notes</span>
+                  <p class="notes-text">{{ order.customer_notes }}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -420,60 +422,38 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-.order-title {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-weight: 700;
-  font-size: 2rem;
-  letter-spacing: -1px;
-  color: #1f2937;
-}
-
-.section-title {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-weight: 600;
-  font-size: 1.5rem;
-  letter-spacing: -0.5px;
-  color: #1f2937;
-}
-
-.item-title {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-weight: 600;
-  font-size: 1.25rem;
-  letter-spacing: -0.5px;
-  color: #1f2937;
+* {
+  font-family: 'Inter', sans-serif;
 }
 
 .order-details-container {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 2rem 1rem;
 }
 
-/* Loading and Error States */
+/* Loading State */
 .loading-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 4rem 2rem;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
 }
 
 .loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f4f6;
-  border-top: 4px solid #3b82f6;
+  width: 48px;
+  height: 48px;
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #111827;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 1rem;
 }
 
 @keyframes spin {
@@ -483,35 +463,49 @@ export default {
 
 .loading-state p {
   color: #6b7280;
-  font-size: 16px;
+  font-size: 0.875rem;
   margin: 0;
 }
 
+/* Error State */
 .error-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 4rem 2rem;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
   text-align: center;
 }
 
 .error-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
+  font-size: 3rem;
+  margin-bottom: 1rem;
 }
 
 .error-state h2 {
-  color: #dc2626;
-  font-size: 20px;
-  margin: 0 0 24px 0;
+  color: #111827;
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 1.5rem 0;
 }
 
-.error-state .action-btn {
-  margin-top: 16px;
+.back-btn-primary {
+  padding: 0.75rem 1.5rem;
+  background: #111827;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-btn-primary:hover {
+  background: #000000;
 }
 
 /* Order Header */
