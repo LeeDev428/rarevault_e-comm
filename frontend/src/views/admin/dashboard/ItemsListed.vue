@@ -67,108 +67,121 @@ export default {
   data() {
     return {
       activeSubTab: 'total',
-      totalItems: [
-        {
-          id: 1,
-          photo: null,
-          title: '1950s Coca-Cola Metal Sign',
-          postedBy: 'RetroRelics',
-          category: 'Vintage Item',
-          datePosted: '2025-05-15'
-        },
-        {
-          id: 2,
-          photo: null,
-          title: 'Rare Mispinted 1921 Silver Dollar',
-          postedBy: 'CoinCollector',
-          category: 'Coins & Currency',
-          datePosted: '2025-05-14'
-        },
-        {
-          id: 3,
-          photo: null,
-          title: 'Antique Oak Writing Desk (Circa 1880)',
-          postedBy: 'HeritageFinds',
-          category: 'Antiques',
-          datePosted: '2025-05-14'
-        },
-        {
-          id: 4,
-          photo: null,
-          title: '1950s Coca-Cola Metal Sign',
-          postedBy: 'RetroRelics',
-          category: 'Vintage Item',
-          datePosted: '2025-05-15'
-        },
-        {
-          id: 5,
-          photo: null,
-          title: 'Rare Mispinted 1921 Silver Dollar',
-          postedBy: 'CoinCollector',
-          category: 'Coins & Currency',
-          datePosted: '2025-05-14'
-        },
-        {
-          id: 6,
-          photo: null,
-          title: 'Antique Oak Writing Desk (Circa 1880)',
-          postedBy: 'HeritageFinds',
-          category: 'Antiques',
-          datePosted: '2025-05-14'
+      totalItems: [],
+      soldItems: [],
+      pendingItems: [],
+      loading: true,
+      error: null
+    }
+  },
+  async mounted() {
+    await this.fetchAllItems()
+  },
+  watch: {
+    activeSubTab() {
+      this.fetchItems()
+    }
+  },
+  methods: {
+    async fetchAllItems() {
+      await this.fetchItems('all')
+      await this.fetchItems('sold')
+      await this.fetchItems('pending')
+    },
+    
+    async fetchItems(status = null) {
+      try {
+        this.loading = true
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        const statusParam = status || (this.activeSubTab === 'total' ? 'all' : this.activeSubTab === 'sold' ? 'sold' : 'pending')
+        
+        console.log('Fetching items with status:', statusParam)
+        
+        if (!token) {
+          throw new Error('No authentication token found. Please login again.')
         }
-      ],
-      soldItems: [
-        {
-          id: 7,
-          photo: null,
-          title: 'Antique Gold Pocket Watch',
-          postedBy: 'Time Traveler',
-          category: 'Timepieces',
-          datePosted: '2025-05-15'
-        },
-        {
-          id: 8,
-          photo: null,
-          title: 'Signed First Edition Poetry Book',
-          postedBy: 'LiteraryLeopard',
-          category: 'Books',
-          datePosted: '2025-05-14'
-        },
-        {
-          id: 9,
-          photo: null,
-          title: 'Vintage Baseball Card Collection',
-          postedBy: 'CardShark',
-          category: 'Sports Memorabilia',
-          datePosted: '2025-05-14'
-        },
-        {
-          id: 10,
-          photo: null,
-          title: 'Old Oil Painting (Unsigned)',
-          postedBy: 'ArtCurious',
-          category: 'Art',
-          datePosted: '2025-05-13'
+        
+        const response = await fetch(`http://localhost:5000/api/admin/items?status=${statusParam}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        const data = await response.json()
+        console.log('Items response:', response.status, data)
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to fetch items')
         }
-      ],
-      pendingItems: [
-        {
-          id: 11,
-          photo: null,
-          title: 'Ancient Roman Coin',
-          postedBy: 'HistoryBuff',
-          category: 'Historical Artifacts',
-          datePosted: '2025-05-13'
-        },
-        {
-          id: 12,
-          photo: null,
-          title: 'Retro Gaming Console (Sealed)',
-          postedBy: 'PixelPioneer',
-          category: 'Electronics',
-          datePosted: '2025-05-12'
+
+        if (data.items && Array.isArray(data.items)) {
+          const items = data.items.map(item => ({
+            id: item.id,
+            photo: item.primary_image?.url || item.images?.[0]?.url || null,
+            title: item.title,
+            postedBy: item.posted_by || 'Unknown',
+            category: item.category || 'N/A',
+            datePosted: new Date(item.created_at).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })
+          }))
+
+          if (statusParam === 'all') {
+            this.totalItems = items
+          } else if (statusParam === 'sold') {
+            this.soldItems = items
+          } else if (statusParam === 'pending') {
+            this.pendingItems = items
+          }
+          
+          console.log(`Loaded ${items.length} items for status: ${statusParam}`)
+        } else {
+          throw new Error('Invalid response format: items array not found')
         }
-      ]
+      } catch (error) {
+        console.error('Fetch items error:', error)
+        this.error = error.message
+        this.totalItems = []
+        this.soldItems = []
+        this.pendingItems = []
+        alert('Failed to fetch items: ' + error.message + '. Check console for details.')
+      } finally {
+        this.loading = false
+      }
+    },
+    
+    async deleteItem(itemId) {
+      if (!confirm('Are you sure you want to delete this item?')) {
+        return
+      }
+
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        
+        const response = await fetch(`http://localhost:5000/api/admin/items/${itemId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to delete item')
+        }
+
+        alert('Item deleted successfully')
+        await this.fetchItems()
+        this.$emit('refresh')
+      } catch (error) {
+        console.error('Delete item error:', error)
+        alert('Failed to delete item: ' + error.message)
+      }
+    },
+    
+    setActiveSubTab(tab) {
+      this.activeSubTab = tab
     }
   },
   computed: {
@@ -181,11 +194,6 @@ export default {
         default:
           return this.totalItems
       }
-    }
-  },
-  methods: {
-    setActiveSubTab(tab) {
-      this.activeSubTab = tab
     }
   }
 }
