@@ -38,104 +38,98 @@ export default {
   name: 'TotalUsers',
   data() {
     return {
-      users: [
-        {
-          id: 1,
-          name: 'Marta Sinchin',
-          shopName: 'Tea Market',
-          email: 'marta.sinchin@gmail.com',
-          role: 'Buyer',
-          status: 'Active'
-        },
-        {
-          id: 2,
-          name: "John's Dela Cruz",
-          shopName: 'D-Curios & Collectibles',
-          email: 'john.dc@email.com',
-          role: 'Seller',
-          status: 'Suspended'
-        },
-        {
-          id: 3,
-          name: 'Angela Reyes',
-          shopName: "Angela's Vintage Finds",
-          email: 'angela.reyes@gmail.com',
-          role: 'Buyer',
-          status: 'Active'
-        },
-        {
-          id: 4,
-          name: 'Carlos Tan',
-          shopName: "CT collector's Hub",
-          email: 'carlos.t@gmail.com',
-          role: 'Seller',
-          status: 'In Review'
-        },
-        {
-          id: 5,
-          name: 'Maria Santos',
-          shopName: 'Tea Market',
-          email: 'maria.santos@gmail.com',
-          role: 'Buyer',
-          status: 'Active'
-        },
-        {
-          id: 6,
-          name: "John's Dela Cruz",
-          shopName: 'D-Curios & Collectibles',
-          email: 'john.dc@email.com',
-          role: 'Seller',
-          status: 'Suspended'
-        },
-        {
-          id: 7,
-          name: 'Angela Reyes',
-          shopName: "Angela's Vintage Finds",
-          email: 'angela.reyes@gmail.com',
-          role: 'Buyer',
-          status: 'Active'
-        },
-        {
-          id: 8,
-          name: 'Carlos Tan',
-          shopName: "CT collector's Hub",
-          email: 'carlos.t@gmail.com',
-          role: 'Seller',
-          status: 'In Review'
-        },
-        {
-          id: 9,
-          name: 'Maria Santos',
-          shopName: 'Tea Market',
-          email: 'maria.santos@gmail.com',
-          role: 'Buyer',
-          status: 'Active'
-        },
-        {
-          id: 10,
-          name: "John's Dela Cruz",
-          shopName: 'D-Curios & Collectibles',
-          email: 'john.dc@email.com',
-          role: 'Seller',
-          status: 'Suspended'
-        },
-        {
-          id: 11,
-          name: 'Angela Reyes',
-          shopName: "Angela's Vintage Finds",
-          email: 'angela.reyes@gmail.com',
-          role: 'Buyer',
-          status: 'Active'
-        },
-        {
-          id: 12,
-          name: 'Maria Santos',
-          shopName: 'Tea Market',
-          email: 'maria.santos@gmail.com',
-          role: 'Buyer',
-          status: 'Active'
+      users: [],
+      loading: true,
+      error: null
+    }
+  },
+  async mounted() {
+    await this.fetchUsers()
+  },
+  methods: {
+    async fetchUsers() {
+      try {
+        this.loading = true
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        
+        console.log('Fetching users with token:', token ? 'Token exists' : 'No token found')
+        
+        if (!token) {
+          throw new Error('No authentication token found. Please login again.')
         }
-      ]
+        
+        const response = await fetch('http://localhost:5000/api/admin/users', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        const data = await response.json()
+        
+        console.log('Response status:', response.status)
+        console.log('Response data:', data)
+
+        if (!response.ok) {
+          console.error('API error response:', data)
+          throw new Error(data.error || data.message || 'Failed to fetch users')
+        }
+
+        if (data.users && Array.isArray(data.users)) {
+          // Map API data to component format
+          this.users = data.users.map(user => ({
+            id: user.id,
+            name: user.username,
+            shopName: user.shop_name || 'N/A',
+            email: user.email,
+            role: user.role.charAt(0).toUpperCase() + user.role.slice(1),
+            status: user.is_active ? 'Active' : 'Suspended'
+          }))
+          console.log('Successfully loaded', this.users.length, 'users')
+        } else {
+          throw new Error('Invalid response format: users array not found')
+        }
+      } catch (error) {
+        console.error('Fetch users error:', error)
+        console.error('Error name:', error.name)
+        console.error('Error message:', error.message)
+        this.error = error.message
+        this.users = []
+        alert('Failed to fetch users: ' + error.message + '. Check console for details.')
+      } finally {
+        this.loading = false
+      }
+    },
+    
+    async deleteUser(userId) {
+      if (!confirm('Are you sure you want to delete this user?')) {
+        return
+      }
+
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        
+        const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to delete user')
+        }
+
+        alert('User deleted successfully')
+        await this.fetchUsers()
+        this.$emit('refresh')
+      } catch (error) {
+        console.error('Delete user error:', error)
+        alert('Failed to delete user: ' + error.message)
+      }
     }
   }
 }
