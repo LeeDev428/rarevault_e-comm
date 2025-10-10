@@ -1,9 +1,10 @@
 <template>
-  <div class="reports-page">
-    <div class="page-header">
-      <h1>Reports & Logs</h1>
-      <p class="subtitle">Monitor system activity, sales reports, and user actions</p>
-    </div>
+  <AdminLayout>
+    <div class="reports-page">
+      <div class="page-header">
+        <h1>Reports & Logs</h1>
+        <p class="subtitle">Monitor system activity, sales reports, and user actions</p>
+      </div>
 
     <!-- Tabs Navigation -->
     <div class="tabs-navigation">
@@ -352,12 +353,18 @@
       <div class="spinner"></div>
       <p>Loading data...</p>
     </div>
-  </div>
+    </div>
+  </AdminLayout>
 </template>
 
 <script>
+import AdminLayout from '@/components/admin/AdminLayout.vue'
+
 export default {
   name: 'ReportsPage',
+  components: {
+    AdminLayout
+  },
   data() {
     return {
       activeTab: 'sales',
@@ -695,9 +702,8 @@ export default {
 
 <style scoped>
 .reports-page {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 32px 24px;
+  width: 100%;
+  padding: 0;
 }
 
 /* Page Header */
