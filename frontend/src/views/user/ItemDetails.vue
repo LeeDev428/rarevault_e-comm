@@ -183,6 +183,13 @@
               >
                 {{ isInWishlist ? 'REMOVE FROM WISHLIST' : 'ADD TO WISHLIST' }}
               </button>
+
+                <button 
+                class="action-btn primary"
+                @click.stop="messageSellerAction(order)"
+              >
+                Message Seller
+              </button>
             </div>
           </div>
         </div>
