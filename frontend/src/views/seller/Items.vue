@@ -79,12 +79,7 @@
                     <p v-else>
                       No items yet. Create your first item to get started!
                     </p>
-                    <ActionButton
-                      variant="primary"
-                      icon="➕"
-                      text="Create Item"
-                      @click="goToCreateItem"
-                    />
+                  
                   </div>
                 </td>
               </tr>
