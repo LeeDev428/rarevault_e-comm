@@ -1062,7 +1062,7 @@ export default {
 
 /* Item Header */
 .item-header {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
   padding: 16px 20px;
 }
@@ -1260,7 +1260,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: linear-gradient(180deg, #f9fafb 0%, #ffffff 100%);
+  background: #ffffff;
 }
 
 .message-bubble {
@@ -1296,7 +1296,7 @@ export default {
 }
 
 .own-message .message-content {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: #000000;
   color: white;
 }
 
@@ -1381,9 +1381,9 @@ export default {
 }
 
 .message-input:focus {
-  border-color: #3b82f6;
+  border-color: #000000;
   background: white;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
 .message-input:disabled {
@@ -1395,7 +1395,7 @@ export default {
   width: 44px;
   height: 44px;
   border: none;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: #000000;
   color: white;
   border-radius: 50%;
   cursor: pointer;
@@ -1403,12 +1403,12 @@ export default {
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .send-button:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .send-button:disabled {
