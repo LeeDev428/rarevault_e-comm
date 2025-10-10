@@ -508,94 +508,96 @@ export default {
   background: #000000;
 }
 
-/* Order Header */
-.order-header {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.header-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.back-btn {
+/* Back Button */
+.back-button {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   background: none;
   border: none;
   color: #6b7280;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 500;
+  padding: 0.5rem 0;
+  margin-bottom: 1.5rem;
   transition: color 0.2s ease;
 }
 
-.back-btn:hover {
-  color: #374151;
+.back-button:hover {
+  color: #111827;
 }
 
-.order-actions {
+.back-button svg {
+  stroke-width: 2;
+}
+
+/* Order Header */
+.order-header {
+  margin-bottom: 2rem;
+}
+
+.header-left {
   display: flex;
-  gap: 12px;
-}
-
-.order-info {
-  border-top: 1px solid #e5e7eb;
-  padding-top: 20px;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .order-title {
-  font-size: 28px;
+  font-size: 1.875rem;
   font-weight: 700;
   color: #111827;
-  margin: 0 0 8px 0;
+  margin: 0;
+  letter-spacing: -0.025em;
 }
 
 .order-meta {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 0.75rem;
+  font-size: 0.875rem;
 }
 
 .order-date {
   color: #6b7280;
-  font-size: 14px;
 }
 
-.order-status {
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
+.meta-separator {
+  color: #d1d5db;
+}
+
+.order-status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.05em;
 }
 
-.order-status.pending {
+.order-status-badge.pending {
   background: #fef3c7;
   color: #92400e;
 }
 
-.order-status.processing {
+.order-status-badge.processing {
   background: #dbeafe;
-  color: #1d4ed8;
+  color: #1e40af;
 }
 
-.order-status.shipped {
+.order-status-badge.shipped {
   background: #e0e7ff;
-  color: #3730a3;
+  color: #4338ca;
 }
 
-.order-status.delivered {
+.order-status-badge.delivered {
   background: #d1fae5;
   color: #065f46;
+}
+
+.order-status-badge.cancelled {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
 /* Order Content */
