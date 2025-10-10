@@ -74,43 +74,43 @@
     <!-- Features Section -->
     <section class="features">
       <div class="container">
-        <div class="features-grid">
-          <div class="feature-card">
-            <div class="feature-icon">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="#8b5a3c" stroke-width="2"/>
-                <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" stroke="#8b5a3c" stroke-width="2"/>
-              </svg>
-            </div>
-            <h3>Trusted Collectors</h3>
-            <p>Connect with verified collectors and antique enthusiasts</p>
-          </div>
-          
-          <div class="feature-card">
-            <div class="feature-icon">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21 16V8C20.9996 7.64928 20.9071 7.30481 20.7315 7.00116C20.556 6.69751 20.3037 6.44536 20 6.27L13 2.27C12.696 2.09446 12.3511 2.00205 12 2.00205C11.6489 2.00205 11.304 2.09446 11 2.27L4 6.27C3.69626 6.44536 3.44398 6.69751 3.26846 7.00116C3.09294 7.30481 3.00036 7.64928 3 8V16C3.00036 16.3507 3.09294 16.6952 3.26846 16.9988C3.44398 17.3025 3.69626 17.5546 4 17.73L11 21.73C11.304 21.9055 11.6489 21.9979 12 21.9979C12.3511 21.9979 12.696 21.9055 13 21.73L20 17.73C20.3037 17.5546 20.556 17.3025 20.7315 16.9988C20.9071 16.6952 20.9996 16.3507 21 16Z" stroke="#8b5a3c" stroke-width="2"/>
-                <path d="M7.5 4.21L12 6.81L16.5 4.21" stroke="#8b5a3c" stroke-width="2"/>
-                <path d="M7.5 19.79V14.6L3 12" stroke="#8b5a3c" stroke-width="2"/>
-                <path d="M21 12L16.5 14.6V19.79" stroke="#8b5a3c" stroke-width="2"/>
-                <path d="M12 22.81V17.81" stroke="#8b5a3c" stroke-width="2"/>
-                <path d="M12 6.81L21 12L12 17.81L3 12L12 6.81" stroke="#8b5a3c" stroke-width="2"/>
-              </svg>
-            </div>
-            <h3>Secure Trading</h3>
-            <p>Safe and secure platform for buying and selling antiques</p>
-          </div>
-          
-          <div class="feature-card">
-            <div class="feature-icon">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 11H15M9 15H15M17 21L20 18V7C20 5.89543 19.1046 5 18 5H6C4.89543 5 4 5.89543 4 7V18L7 21H17Z" stroke="#8b5a3c" stroke-width="2"/>
-              </svg>
-            </div>
-            <h3>Expert Authentication</h3>
-            <p>Get your items authenticated by certified experts</p>
-          </div>
+      <div class="features-grid">
+        <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="#000000" stroke-width="2"/>
+          <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" stroke="#000000" stroke-width="2"/>
+          </svg>
         </div>
+        <h3>Trusted Collectors</h3>
+        <p>Connect with verified collectors and antique enthusiasts</p>
+        </div>
+        
+        <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 16V8C20.9996 7.64928 20.9071 7.30481 20.7315 7.00116C20.556 6.69751 20.3037 6.44536 20 6.27L13 2.27C12.696 2.09446 12.3511 2.00205 12 2.00205C11.6489 2.00205 11.304 2.09446 11 2.27L4 6.27C3.69626 6.44536 3.44398 6.69751 3.26846 7.00116C3.09294 7.30481 3.00036 7.64928 3 8V16C3.00036 16.3507 3.09294 16.6952 3.26846 16.9988C3.44398 17.3025 3.69626 17.5546 4 17.73L11 21.73C11.304 21.9055 11.6489 21.9979 12 21.9979C12.3511 21.9979 12.696 21.9055 13 21.73L20 17.73C20.3037 17.5546 20.556 17.3025 20.7315 16.9988C20.9071 16.6952 20.9996 16.3507 21 16Z" stroke="#000000" stroke-width="2"/>
+          <path d="M7.5 4.21L12 6.81L16.5 4.21" stroke="#000000" stroke-width="2"/>
+          <path d="M7.5 19.79V14.6L3 12" stroke="#000000" stroke-width="2"/>
+          <path d="M21 12L16.5 14.6V19.79" stroke="#000000" stroke-width="2"/>
+          <path d="M12 22.81V17.81" stroke="#000000" stroke-width="2"/>
+          <path d="M12 6.81L21 12L12 17.81L3 12L12 6.81" stroke="#000000" stroke-width="2"/>
+          </svg>
+        </div>
+        <h3>Secure Trading</h3>
+        <p>Safe and secure platform for buying and selling antiques</p>
+        </div>
+        
+        <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 11H15M9 15H15M17 21L20 18V7C20 5.89543 19.1046 5 18 5H6C4.89543 5 4 5.89543 4 7V18L7 21H17Z" stroke="#000000" stroke-width="2"/>
+          </svg>
+        </div>
+        <h3>Expert Authentication</h3>
+        <p>Get your items authenticated by certified experts</p>
+        </div>
+      </div>
       </div>
     </section>
 
@@ -253,7 +253,61 @@ import Pagination from '../components/pagination.vue'
 export default {
   name: 'Landing',
   components: {
-    Pagination
+    Pagination,
+    // Icon components for categories - Lucide style
+    AllItemsIcon: {
+      template: `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"/>
+          <rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/>
+        </svg>
+      `
+    },
+    VintageIcon: {
+      template: `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+      `
+    },
+    CollectiblesIcon: {
+      template: `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+          <line x1="12" y1="22.08" x2="12" y2="12"/>
+        </svg>
+      `
+    },
+    AntiquesIcon: {
+      template: `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
+      `
+    },
+    CoinsIcon: {
+      template: `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      `
+    },
+    OthersIcon: {
+      template: `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="1"/>
+          <circle cx="19" cy="12" r="1"/>
+          <circle cx="5" cy="12" r="1"/>
+        </svg>
+      `
+    }
   },
   data() {
     return {
@@ -394,59 +448,6 @@ export default {
     handleImageError(event) {
       event.target.src = '/placeholder.svg';
     }
-  },
-  components: {
-    // Icon components for categories
-    AllItemsIcon: {
-      template: `
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M3 3H21V21H3V3Z" stroke="currentColor" stroke-width="2" fill="none"/>
-          <path d="M9 9H15V15H9V9Z" stroke="currentColor" stroke-width="2" fill="none"/>
-        </svg>
-      `
-    },
-    VintageIcon: {
-      template: `
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M12 2L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 2Z" fill="currentColor"/>
-        </svg>
-      `
-    },
-    CollectiblesIcon: {
-      template: `
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M21 16V8C20.9996 7.64928 20.9071 7.30481 20.7315 7.00116C20.556 6.69751 20.3037 6.44536 20 6.27L13 2.27C12.696 2.09446 12.3511 2.00205 12 2.00205C11.6489 2.00205 11.304 2.09446 11 2.27L4 6.27C3.69626 6.44536 3.44398 6.69751 3.26846 7.00116C3.09294 7.30481 3.00036 7.64928 3 8V16C3.00036 16.3507 3.09294 16.6952 3.26846 16.9988C3.44398 17.3025 3.69626 17.5546 4 17.73L11 21.73C11.304 21.9055 11.6489 21.9979 12 21.9979C12.3511 21.9979 12.696 21.9055 13 21.73L20 17.73C20.3037 17.5546 20.556 17.3025 20.7315 16.9988C20.9071 16.6952 20.9996 16.3507 21 16Z" stroke="currentColor" stroke-width="2"/>
-        </svg>
-      `
-    },
-    AntiquesIcon: {
-      template: `
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M7 21C7 21 3 17 3 13C3 10.79 4.79 9 7 9S11 10.79 11 13C11 17 7 21 7 21Z" stroke="currentColor" stroke-width="2"/>
-          <path d="M17 21C17 21 13 17 13 13C13 10.79 14.79 9 17 9S21 10.79 21 13C21 17 17 21 17 21Z" stroke="currentColor" stroke-width="2"/>
-          <path d="M7 3V9" stroke="currentColor" stroke-width="2"/>
-          <path d="M17 3V9" stroke="currentColor" stroke-width="2"/>
-        </svg>
-      `
-    },
-    CoinsIcon: {
-      template: `
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2"/>
-          <path d="M18.09 10.37A6 6 0 1 1 10.37 18.09" stroke="currentColor" stroke-width="2"/>
-          <path d="M7 6H9V10H7" stroke="currentColor" stroke-width="2"/>
-          <path d="M13 16H15V20H13" stroke="currentColor" stroke-width="2"/>
-        </svg>
-      `
-    },
-    OthersIcon: {
-      template: `
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M12 3V21M3 12H21" stroke="currentColor" stroke-width="2"/>
-          <circle cx="12" cy="12" r="2" fill="currentColor"/>
-        </svg>
-      `
-    }
   }
 }
 </script>
@@ -475,11 +476,7 @@ export default {
 .logo-text {
   font-size: 1.75rem;
   font-weight: 600;
-  color: var(--text-primary);
-  background: var(--gradient-vintage);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+
 }
 
 .nav-links {
