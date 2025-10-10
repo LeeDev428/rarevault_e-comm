@@ -137,7 +137,10 @@
             <div class="photo-container">
               <div class="profile-photo">
                 <div v-if="!profile.photo" class="photo-placeholder">
-                  <i class="photo-icon">👤</i>
+                    <svg class="photo-icon" xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                    </svg>
                 </div>
                 <img v-else :src="profile.photo" alt="Profile Photo" class="photo-image">
               </div>
@@ -164,31 +167,51 @@
                   class="meetup-checkbox"
                 >
                 <div class="option-content">
-                  <i class="option-icon">🏢</i>
+                  <svg class="option-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/>
+                  <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>
+                  <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/>
+                  <path d="M10 6h4"/>
+                  <path d="M10 10h4"/>
+                  <path d="M10 14h4"/>
+                  <path d="M10 18h4"/>
+                  </svg>
                   <span class="option-text">Public meetup</span>
                 </div>
-              </label>
+                </label>
 
-              <label class="meetup-option">
+                <label class="meetup-option">
                 <input 
                   type="checkbox" 
                   v-model="meetupPreferences.doorPickup"
                   class="meetup-checkbox"
                 >
                 <div class="option-content">
-                  <i class="option-icon">🚪</i>
+                  <svg class="option-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M13 4h3a2 2 0 0 1 2 2v14"/>
+                  <path d="M2 20h3"/>
+                  <path d="M13 20h9"/>
+                  <path d="M10 12v.01"/>
+                  <path d="M13 4.562v16.157a1 1 0 0 1-1.242.97L5 20V5.562a2 2 0 0 1 1.515-1.94l4-1A2 2 0 0 1 13 4.561Z"/>
+                  </svg>
                   <span class="option-text">Door pickup</span>
                 </div>
-              </label>
+                </label>
 
-              <label class="meetup-option">
+                <label class="meetup-option">
                 <input 
                   type="checkbox" 
                   v-model="meetupPreferences.doorDelivery"
                   class="meetup-checkbox"
                 >
                 <div class="option-content">
-                  <i class="option-icon">🚚</i>
+                  <svg class="option-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/>
+                  <path d="M15 18H9"/>
+                  <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/>
+                  <circle cx="17" cy="18" r="2"/>
+                  <circle cx="7" cy="18" r="2"/>
+                  </svg>
                   <span class="option-text">Door delivery</span>
                 </div>
               </label>
@@ -506,17 +529,17 @@ export default {
 }
 
 .radio-option:hover {
-  background: rgba(139, 90, 60, 0.05);
+  background: #f9fafb;
 }
 
 .radio-option input[type="radio"] {
   margin: 0;
-  accent-color: #8b5a3c;
+  accent-color: #000000;
 }
 
 .radio-label {
   font-size: 14px;
-  color: #8b5a3c;
+  color: #111827;
   font-weight: 500;
 }
 
@@ -527,27 +550,27 @@ export default {
 
 .date-select {
   flex: 1;
-  padding: 16px;
-  border: 1px solid #d4af94;
-  border-radius: 12px;
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   font-size: 14px;
-  background: rgba(248, 246, 241, 0.7);
-  color: #8b5a3c;
-  transition: all 0.3s ease;
+  background: #ffffff;
+  color: #111827;
+  transition: all 0.2s ease;
   font-family: 'Inter', sans-serif;
 }
 
 .date-select:focus {
   outline: none;
-  border-color: #8b5a3c;
-  box-shadow: 0 0 0 3px rgba(139, 90, 60, 0.1);
-  background: rgba(248, 246, 241, 1);
+  border-color: #000000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+  background: #ffffff;
 }
 
 .form-actions {
   margin-top: 32px;
   padding-top: 24px;
-  border-top: 1px solid #d4af94;
+  border-top: 1px solid #f3f4f6;
 }
 
 /* Profile Sidebar */
@@ -558,11 +581,11 @@ export default {
 }
 
 .photo-section {
-  background: linear-gradient(135deg, #f8f6f1 0%, #e8ddd4 100%);
-  border-radius: 24px;
-  border: 1px solid #d4af94;
-  padding: 32px;
-  box-shadow: 0 8px 25px rgba(139, 90, 60, 0.1);
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .photo-container {
@@ -578,14 +601,14 @@ export default {
   height: 140px;
   border-radius: 50%;
   overflow: hidden;
-  border: 4px solid #d4af94;
-  box-shadow: 0 4px 15px rgba(139, 90, 60, 0.15);
+  border: 4px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .photo-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #e8ddd4 0%, #d4af94 100%);
+  background: #f3f4f6;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -593,8 +616,8 @@ export default {
 
 .photo-icon {
   font-size: 52px;
-  color: #8b5a3c;
-  opacity: 0.7;
+  color: #9ca3af;
+  opacity: 1;
 }
 
 .photo-image {
@@ -604,22 +627,23 @@ export default {
 }
 
 .select-image-btn {
-  padding: 12px 20px;
-  border: 1px solid #8b5a3c;
-  background: linear-gradient(135deg, #f8f6f1 0%, #e8ddd4 100%);
-  color: #8b5a3c;
-  border-radius: 12px;
+  padding: 10px 20px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #000000;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(139, 90, 60, 0.1);
+  transition: all 0.2s ease;
+  font-family: 'Inter', sans-serif;
 }
 
 .select-image-btn:hover {
-  background: linear-gradient(135deg, #e8ddd4 0%, #d4af94 100%);
+  background: #ffffff;
+  border-color: #000000;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(139, 90, 60, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .photo-info {
@@ -629,31 +653,31 @@ export default {
 .info-text {
   margin: 4px 0;
   font-size: 12px;
-  color: #8b5a3c;
-  opacity: 0.7;
+  color: #6b7280;
+  opacity: 1;
 }
 
 .meetup-section {
-  background: linear-gradient(135deg, #f8f6f1 0%, #e8ddd4 100%);
-  border-radius: 24px;
-  border: 1px solid #d4af94;
-  padding: 32px;
-  box-shadow: 0 8px 25px rgba(139, 90, 60, 0.1);
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .meetup-title {
   margin: 0 0 8px 0;
-  font-family: 'Playfair Display', serif;
-  font-size: 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
   font-weight: 600;
-  color: #8b5a3c;
+  color: #111827;
 }
 
 .meetup-subtitle {
-  margin: 0 0 24px 0;
+  margin: 0 0 20px 0;
   font-size: 14px;
-  color: #8b5a3c;
-  opacity: 0.8;
+  color: #6b7280;
+  opacity: 1;
   line-height: 1.5;
 }
 
@@ -666,25 +690,25 @@ export default {
 .meetup-option {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   cursor: pointer;
-  padding: 16px;
-  border-radius: 16px;
-  transition: all 0.3s ease;
-  background: rgba(248, 246, 241, 0.5);
-  border: 1px solid rgba(212, 175, 148, 0.3);
+  padding: 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
 }
 
 .meetup-option:hover {
-  background: rgba(212, 175, 148, 0.2);
-  border-color: #d4af94;
+  background: #ffffff;
+  border-color: #d1d5db;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(139, 90, 60, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .meetup-checkbox {
   margin: 0;
-  accent-color: #8b5a3c;
+  accent-color: #000000;
 }
 
 .option-content {
@@ -694,13 +718,13 @@ export default {
 }
 
 .option-icon {
-  font-size: 20px;
-  color: #8b5a3c;
+  font-size: 18px;
+  color: #374151;
 }
 
 .option-text {
   font-size: 14px;
-  color: #8b5a3c;
+  color: #111827;
   font-weight: 500;
 }
 
