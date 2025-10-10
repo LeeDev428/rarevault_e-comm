@@ -13,20 +13,20 @@
         <!-- Settings Navigation -->
         <div class="settings-nav">
           <div class="nav-item" :class="{ active: activeTab === 'account' }" @click="activeTab = 'account'">
-            <i class="nav-icon">👤</i>
-            <span>Account Settings</span>
+        <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Account Settings</span>
           </div>
           <div class="nav-item" :class="{ active: activeTab === 'notifications' }" @click="activeTab = 'notifications'">
-            <i class="nav-icon">🔔</i>
-            <span>Notifications</span>
+        <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        <span>Notifications</span>
           </div>
           <div class="nav-item" :class="{ active: activeTab === 'privacy' }" @click="activeTab = 'privacy'">
-            <i class="nav-icon">🔒</i>
-            <span>Privacy & Security</span>
+        <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Privacy & Security</span>
           </div>
           <div class="nav-item" :class="{ active: activeTab === 'payment' }" @click="activeTab = 'payment'">
-            <i class="nav-icon">💳</i>
-            <span>Payment Settings</span>
+        <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+        <span>Payment Settings</span>
           </div>
         </div>
 
@@ -34,249 +34,251 @@
         <div class="settings-content">
           <!-- Account Settings -->
           <div v-show="activeTab === 'account'" class="settings-section">
-            <h2 class="section-title">Account Settings</h2>
-            
-            <div class="setting-group">
-              <h3 class="group-title">Business Address</h3>
-              <div class="setting-item">
-                <label class="setting-label">Business Address</label>
-                <textarea v-model="settings.account.address" class="setting-textarea" rows="3" placeholder="Enter your business address..."></textarea>
-                <small class="setting-help">Physical address for your business (optional)</small>
-              </div>
-            </div>
+        <h2 class="section-title">Account Settings</h2>
+        
+        <div class="setting-group">
+          <h3 class="group-title">Business Address</h3>
+          <div class="setting-item">
+            <label class="setting-label">Business Address</label>
+            <textarea v-model="settings.account.address" class="setting-textarea" rows="3" placeholder="Enter your business address..."></textarea>
+            <small class="setting-help">Physical address for your business (optional)</small>
+          </div>
+        </div>
 
-            <div class="setting-group">
-              <h3 class="group-title">Online Presence</h3>
-              <div class="setting-item">
-                <label class="setting-label">Website URL</label>
-                <input v-model="settings.account.website" type="url" class="setting-input" placeholder="https://your-website.com">
-                <small class="setting-help">Your business website or online portfolio</small>
-              </div>
-            </div>
+        <div class="setting-group">
+          <h3 class="group-title">Online Presence</h3>
+          <div class="setting-item">
+            <label class="setting-label">Website URL</label>
+            <input v-model="settings.account.website" type="url" class="setting-input" placeholder="https://your-website.com">
+            <small class="setting-help">Your business website or online portfolio</small>
+          </div>
+        </div>
 
-            <div class="setting-group">
-              <h3 class="group-title">Social Media Links</h3>
-              <div class="setting-item">
-                <label class="setting-label">Facebook</label>
-                <input v-model="settings.account.socialMedia.facebook" type="url" class="setting-input" placeholder="https://facebook.com/yourpage">
-              </div>
-              
-              <div class="setting-item">
-                <label class="setting-label">Instagram</label>
-                <input v-model="settings.account.socialMedia.instagram" type="url" class="setting-input" placeholder="https://instagram.com/youraccount">
-              </div>
-              
-              <div class="setting-item">
-                <label class="setting-label">Twitter</label>
-                <input v-model="settings.account.socialMedia.twitter" type="url" class="setting-input" placeholder="https://twitter.com/youraccount">
-              </div>
+        <div class="setting-group">
+          <h3 class="group-title">Social Media Links</h3>
+          <div class="setting-item">
+            <label class="setting-label">Facebook</label>
+            <input v-model="settings.account.socialMedia.facebook" type="url" class="setting-input" placeholder="https://facebook.com/yourpage">
+          </div>
+          
+          <div class="setting-item">
+            <label class="setting-label">Instagram</label>
+            <input v-model="settings.account.socialMedia.instagram" type="url" class="setting-input" placeholder="https://instagram.com/youraccount">
+          </div>
+          
+          <div class="setting-item">
+            <label class="setting-label">Twitter</label>
+            <input v-model="settings.account.socialMedia.twitter" type="url" class="setting-input" placeholder="https://twitter.com/youraccount">
+          </div>
 
-              <div class="setting-item">
-                <label class="setting-label">LinkedIn</label>
-                <input v-model="settings.account.socialMedia.linkedin" type="url" class="setting-input" placeholder="https://linkedin.com/in/yourprofile">
-              </div>
-            </div>
+          <div class="setting-item">
+            <label class="setting-label">LinkedIn</label>
+            <input v-model="settings.account.socialMedia.linkedin" type="url" class="setting-input" placeholder="https://linkedin.com/in/yourprofile">
+          </div>
+        </div>
 
-            <div class="setting-group">
-              <h3 class="group-title">Account Status</h3>
-              <div class="setting-item read-only-item">
-                <label class="setting-label">Verification Status</label>
-                <div class="status-badge" :class="settings.account.verificationStatus">
-                  <span class="status-icon">{{ getVerificationIcon(settings.account.verificationStatus) }}</span>
-                  <span class="status-text">{{ getVerificationText(settings.account.verificationStatus) }}</span>
-                </div>
-                <small class="setting-help">Contact support to update your verification status</small>
-              </div>
-              
-              <div class="setting-item read-only-item">
-                <label class="setting-label">Seller Rating</label>
-                <div class="rating-display">
-                  <div class="stars">
-                    <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= Math.floor(settings.account.rating) }">⭐</span>
-                  </div>
-                  <span class="rating-value">{{ settings.account.rating.toFixed(1) }}/5.0</span>
-                </div>
-                <small class="setting-help">Based on buyer reviews and feedback</small>
-              </div>
-              
-              <div class="setting-item read-only-item">
-                <label class="setting-label">Total Sales</label>
-                <div class="sales-display">
-                  <span class="sales-number">{{ settings.account.totalSales.toLocaleString() }}</span>
-                  <span class="sales-text">items sold</span>
-                </div>
-                <small class="setting-help">Total number of successful sales</small>
-              </div>
+        <div class="setting-group">
+          <h3 class="group-title">Account Status</h3>
+          <div class="setting-item read-only-item">
+            <label class="setting-label">Verification Status</label>
+            <div class="status-badge" :class="settings.account.verificationStatus">
+          <svg v-if="settings.account.verificationStatus === 'verified'" class="status-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <svg v-else-if="settings.account.verificationStatus === 'pending'" class="status-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <svg v-else class="status-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg>
+          <span class="status-text">{{ getVerificationText(settings.account.verificationStatus) }}</span>
             </div>
+            <small class="setting-help">Contact support to update your verification status</small>
+          </div>
+          
+          <div class="setting-item read-only-item">
+            <label class="setting-label">Seller Rating</label>
+            <div class="rating-display">
+          <div class="stars">
+            <svg v-for="i in 5" :key="i" class="star" :class="{ filled: i <= Math.floor(settings.account.rating) }" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <span class="rating-value">{{ settings.account.rating.toFixed(1) }}/5.0</span>
+            </div>
+            <small class="setting-help">Based on buyer reviews and feedback</small>
+          </div>
+          
+          <div class="setting-item read-only-item">
+            <label class="setting-label">Total Sales</label>
+            <div class="sales-display">
+          <span class="sales-number">{{ settings.account.totalSales.toLocaleString() }}</span>
+          <span class="sales-text">items sold</span>
+            </div>
+            <small class="setting-help">Total number of successful sales</small>
+          </div>
+        </div>
 
-            <div class="setting-actions">
-              <ActionButton
-                variant="primary"
-                icon="💾"
-                text="Save Changes"
-                :loading="saveLoading.account"
-                @click="saveAccountSettings"
-              />
-            </div>
+        <div class="setting-actions">
+          <ActionButton
+            variant="primary"
+            icon="save"
+            text="Save Changes"
+            :loading="saveLoading.account"
+            @click="saveAccountSettings"
+          />
+        </div>
           </div>
 
           <!-- Notifications -->
           <div v-show="activeTab === 'notifications'" class="settings-section">
-            <h2 class="section-title">Notification Preferences</h2>
-            
-            <div class="setting-group">
-              <h3 class="group-title">Email Notifications</h3>
-              <div class="setting-item toggle-item">
-                <div class="toggle-content">
-                  <label class="setting-label">New Messages</label>
-                  <small class="setting-help">Get notified when buyers send you messages</small>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" v-model="settings.notifications.newMessages">
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              
-              <div class="setting-item toggle-item">
-                <div class="toggle-content">
-                  <label class="setting-label">Item Views</label>
-                  <small class="setting-help">Weekly summary of item views and engagement</small>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" v-model="settings.notifications.itemViews">
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              
-              <div class="setting-item toggle-item">
-                <div class="toggle-content">
-                  <label class="setting-label">Price Alerts</label>
-                  <small class="setting-help">Notifications about market price changes</small>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" v-model="settings.notifications.priceAlerts">
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
+        <h2 class="section-title">Notification Preferences</h2>
+        
+        <div class="setting-group">
+          <h3 class="group-title">Email Notifications</h3>
+          <div class="setting-item toggle-item">
+            <div class="toggle-content">
+          <label class="setting-label">New Messages</label>
+          <small class="setting-help">Get notified when buyers send you messages</small>
             </div>
+            <label class="toggle-switch">
+          <input type="checkbox" v-model="settings.notifications.newMessages">
+          <span class="toggle-slider"></span>
+            </label>
+          </div>
+          
+          <div class="setting-item toggle-item">
+            <div class="toggle-content">
+          <label class="setting-label">Item Views</label>
+          <small class="setting-help">Weekly summary of item views and engagement</small>
+            </div>
+            <label class="toggle-switch">
+          <input type="checkbox" v-model="settings.notifications.itemViews">
+          <span class="toggle-slider"></span>
+            </label>
+          </div>
+          
+          <div class="setting-item toggle-item">
+            <div class="toggle-content">
+          <label class="setting-label">Price Alerts</label>
+          <small class="setting-help">Notifications about market price changes</small>
+            </div>
+            <label class="toggle-switch">
+          <input type="checkbox" v-model="settings.notifications.priceAlerts">
+          <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
 
-            <div class="setting-group">
-              <h3 class="group-title">Push Notifications</h3>
-              <div class="setting-item toggle-item">
-                <div class="toggle-content">
-                  <label class="setting-label">Instant Messages</label>
-                  <small class="setting-help">Immediate push notifications for messages</small>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" v-model="settings.notifications.pushMessages">
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              
-              <div class="setting-item toggle-item">
-                <div class="toggle-content">
-                  <label class="setting-label">Order Updates</label>
-                  <small class="setting-help">Notifications about order status changes</small>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" v-model="settings.notifications.orderUpdates">
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
+        <div class="setting-group">
+          <h3 class="group-title">Push Notifications</h3>
+          <div class="setting-item toggle-item">
+            <div class="toggle-content">
+          <label class="setting-label">Instant Messages</label>
+          <small class="setting-help">Immediate push notifications for messages</small>
             </div>
+            <label class="toggle-switch">
+          <input type="checkbox" v-model="settings.notifications.pushMessages">
+          <span class="toggle-slider"></span>
+            </label>
+          </div>
+          
+          <div class="setting-item toggle-item">
+            <div class="toggle-content">
+          <label class="setting-label">Order Updates</label>
+          <small class="setting-help">Notifications about order status changes</small>
+            </div>
+            <label class="toggle-switch">
+          <input type="checkbox" v-model="settings.notifications.orderUpdates">
+          <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
 
-            <div class="setting-actions">
-              <ActionButton
-                variant="primary"
-                icon="💾"
-                text="Save Preferences"
-                :loading="saveLoading.notifications"
-                @click="saveNotificationSettings"
-              />
-            </div>
+        <div class="setting-actions">
+          <ActionButton
+            variant="primary"
+            icon="save"
+            text="Save Preferences"
+            :loading="saveLoading.notifications"
+            @click="saveNotificationSettings"
+          />
+        </div>
           </div>
 
           <!-- Privacy & Security -->
           <div v-show="activeTab === 'privacy'" class="settings-section">
-            <h2 class="section-title">Privacy & Security</h2>
-            
-            <div class="setting-group">
-              <h3 class="group-title">Privacy Settings</h3>
-              <div class="setting-item toggle-item">
-                <div class="toggle-content">
-                  <label class="setting-label">Public Profile</label>
-                  <small class="setting-help">Allow other users to view your profile</small>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" v-model="settings.privacy.publicProfile">
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              
-              <div class="setting-item toggle-item">
-                <div class="toggle-content">
-                  <label class="setting-label">Show Online Status</label>
-                  <small class="setting-help">Let buyers see when you're online</small>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" v-model="settings.privacy.showOnlineStatus">
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
+        <h2 class="section-title">Privacy & Security</h2>
+        
+        <div class="setting-group">
+          <h3 class="group-title">Privacy Settings</h3>
+          <div class="setting-item toggle-item">
+            <div class="toggle-content">
+          <label class="setting-label">Public Profile</label>
+          <small class="setting-help">Allow other users to view your profile</small>
             </div>
+            <label class="toggle-switch">
+          <input type="checkbox" v-model="settings.privacy.publicProfile">
+          <span class="toggle-slider"></span>
+            </label>
+          </div>
+          
+          <div class="setting-item toggle-item">
+            <div class="toggle-content">
+          <label class="setting-label">Show Online Status</label>
+          <small class="setting-help">Let buyers see when you're online</small>
+            </div>
+            <label class="toggle-switch">
+          <input type="checkbox" v-model="settings.privacy.showOnlineStatus">
+          <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
 
-            <div class="setting-group">
-              <h3 class="group-title">Security</h3>
-              <div class="setting-item">
-                <label class="setting-label">Change Password</label>
-                <ActionButton
-                  variant="secondary"
-                  icon="🔒"
-                  text="Update Password"
-                  @click="changePassword"
-                />
-              </div>
-              
-              <div class="setting-item toggle-item">
-                <div class="toggle-content">
-                  <label class="setting-label">Two-Factor Authentication</label>
-                  <small class="setting-help">Add an extra layer of security to your account</small>
-                </div>
-                <ActionButton
-                  variant="info"
-                  icon="🔐"
-                  text="Enable 2FA"
-                  @click="setup2FA"
-                />
-              </div>
+        <div class="setting-group">
+          <h3 class="group-title">Security</h3>
+          <div class="setting-item">
+            <label class="setting-label">Change Password</label>
+            <ActionButton
+          variant="secondary"
+          icon="lock"
+          text="Update Password"
+          @click="changePassword"
+            />
+          </div>
+          
+          <div class="setting-item toggle-item">
+            <div class="toggle-content">
+          <label class="setting-label">Two-Factor Authentication</label>
+          <small class="setting-help">Add an extra layer of security to your account</small>
             </div>
+            <ActionButton
+          variant="info"
+          icon="shield"
+          text="Enable 2FA"
+          @click="setup2FA"
+            />
+          </div>
+        </div>
 
-            <div class="setting-actions">
-              <ActionButton
-                variant="primary"
-                icon="💾"
-                text="Save Privacy Settings"
-                :loading="saveLoading.privacy"
-                @click="savePrivacySettings"
-              />
-            </div>
+        <div class="setting-actions">
+          <ActionButton
+            variant="primary"
+            icon="save"
+            text="Save Privacy Settings"
+            :loading="saveLoading.privacy"
+            @click="savePrivacySettings"
+          />
+        </div>
           </div>
 
           <!-- Payment Settings -->
           <div v-show="activeTab === 'payment'" class="settings-section">
-            <h2 class="section-title">Payment Settings</h2>
-            
-            <div class="coming-soon-card">
-              <div class="coming-soon-icon">💳</div>
-              <h3>Payment Integration Coming Soon</h3>
-              <p>We're working on integrating secure payment processing for your transactions. This will include:</p>
-              <ul class="feature-list">
-                <li>Multiple payment method support</li>
-                <li>Secure transaction processing</li>
-                <li>Automatic payout management</li>
-                <li>Transaction history and reporting</li>
-              </ul>
-            </div>
+        <h2 class="section-title">Payment Settings</h2>
+        
+        <div class="coming-soon-card">
+          <svg class="coming-soon-icon" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+          <h3>Payment Integration Coming Soon</h3>
+          <p>We're working on integrating secure payment processing for your transactions. This will include:</p>
+          <ul class="feature-list">
+            <li>Multiple payment method support</li>
+            <li>Secure transaction processing</li>
+            <li>Automatic payout management</li>
+            <li>Transaction history and reporting</li>
+          </ul>
+        </div>
           </div>
         </div>
       </div>
@@ -697,29 +699,29 @@ export default {
 .setting-input,
 .setting-textarea {
   width: 100%;
-  padding: 16px;
-  border: 1px solid #d4af94;
-  border-radius: 12px;
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   font-size: 14px;
   font-family: 'Inter', sans-serif;
-  background: rgba(248, 246, 241, 0.7);
-  color: #8b5a3c;
+  background: #ffffff;
+  color: #000000;
   margin-bottom: 8px;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .setting-input:focus,
 .setting-textarea:focus {
   outline: none;
-  border-color: #8b5a3c;
-  box-shadow: 0 0 0 3px rgba(139, 90, 60, 0.1);
-  background: rgba(248, 246, 241, 1);
+  border-color: #000000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+  background: #ffffff;
 }
 
 .setting-input::placeholder,
 .setting-textarea::placeholder {
-  color: #8b5a3c;
-  opacity: 0.6;
+  color: #9ca3af;
+  opacity: 1;
 }
 
 .setting-textarea {
@@ -730,8 +732,8 @@ export default {
 .setting-help {
   display: block;
   font-size: 12px;
-  color: #8b5a3c;
-  opacity: 0.7;
+  color: #6b7280;
+  opacity: 1;
   margin-top: 4px;
 }
 
@@ -767,10 +769,9 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #d4af94 0%, #c19a7a 100%);
+  background: #d1d5db;
   border-radius: 28px;
-  transition: all 0.3s ease;
-  box-shadow: inset 0 2px 4px rgba(139, 90, 60, 0.2);
+  transition: all 0.2s ease;
 }
 
 .toggle-slider:before {
@@ -782,12 +783,12 @@ export default {
   bottom: 3px;
   background: white;
   border-radius: 50%;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(139, 90, 60, 0.3);
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .toggle-switch input:checked + .toggle-slider {
-  background: linear-gradient(135deg, #8b5a3c 0%, #a06749 100%);
+  background: #000000;
 }
 
 .toggle-switch input:checked + .toggle-slider:before {
@@ -795,53 +796,56 @@ export default {
 }
 
 .setting-actions {
-  margin-top: 40px;
-  padding-top: 32px;
-  border-top: 1px solid #d4af94;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #f3f4f6;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
 }
 
 .coming-soon-card {
   text-align: center;
-  padding: 64px 48px;
-  background: linear-gradient(135deg, #f8f6f1 0%, #e8ddd4 100%);
-  border-radius: 24px;
-  border: 1px solid #d4af94;
-  box-shadow: 0 8px 25px rgba(139, 90, 60, 0.1);
+  padding: 48px 32px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .coming-soon-icon {
-  font-size: 72px;
-  margin-bottom: 32px;
-  opacity: 0.7;
+  font-size: 64px;
+  margin-bottom: 24px;
+  opacity: 0.5;
 }
 
 .coming-soon-card h3 {
-  margin: 0 0 20px 0;
-  font-family: 'Playfair Display', serif;
-  font-size: 28px;
+  margin: 0 0 16px 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 20px;
   font-weight: 600;
-  color: #8b5a3c;
+  color: #000000;
 }
 
 .coming-soon-card p {
-  margin: 0 0 24px 0;
-  color: #8b5a3c;
-  font-size: 16px;
+  margin: 0 0 20px 0;
+  color: #6b7280;
+  font-size: 14px;
   line-height: 1.6;
-  opacity: 0.8;
+  opacity: 1;
 }
 
 .feature-list {
   text-align: left;
   max-width: 320px;
   margin: 0 auto;
-  color: #8b5a3c;
+  color: #374151;
 }
 
 .feature-list li {
   margin-bottom: 8px;
   font-size: 14px;
-  opacity: 0.9;
+  opacity: 1;
 }
 
 /* Responsive */
@@ -987,7 +991,7 @@ export default {
 .sales-number {
   font-size: 24px;
   font-weight: 700;
-  color: #8b5a3c;
+  color: #000000;
 }
 
 .sales-text {
@@ -998,14 +1002,14 @@ export default {
 /* Enhanced styles for social media inputs */
 .setting-item input[type="url"] {
   background: #f9fafb;
-  border: 2px solid #e5e7eb;
-  transition: all 0.3s ease;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
 }
 
 .setting-item input[type="url"]:focus {
   background: #ffffff;
-  border-color: #8b5a3c;
-  box-shadow: 0 0 0 3px rgba(139, 90, 60, 0.1);
+  border-color: #000000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
 /* Textarea enhancements */
