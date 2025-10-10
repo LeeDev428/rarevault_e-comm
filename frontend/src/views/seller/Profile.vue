@@ -333,7 +333,7 @@ export default {
 
 <style scoped>
 /* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Crimson+Text:wght@400;600;700&family=Libre+Baskerville:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 .seller-profile {
   max-width: 1200px;
@@ -344,122 +344,120 @@ export default {
 }
 
 .page-header {
-  margin-bottom: 48px;
-  padding: 32px;
-  background: #ffffff;
-  border-radius: 24px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 32px;
+  padding: 0 0 24px;
+  background: transparent;
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: none;
 }
 
 .page-title {
-  margin: 0 0 8px 0;
-  font-family: 'Playfair Display', serif;
-  font-size: 42px;
-  font-weight: 800;
-  color: #1f2937;
-  letter-spacing: -1px;
-  font-style: italic;
+  margin: 0 0 4px 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: -0.5px;
+  font-style: normal;
 }
 
 .page-subtitle {
   margin: 0;
   color: #6b7280;
-  font-size: 16px;
-  opacity: 1;
+  font-size: 14px;
+  font-weight: 400;
 }
 
 .profile-container {
   display: grid;
   grid-template-columns: 1fr 350px;
-  gap: 48px;
+  gap: 32px;
   align-items: start;
 }
 
 .profile-form {
   background: #ffffff;
-  border-radius: 24px;
+  border-radius: 12px;
   border: 1px solid #e5e7eb;
   padding: 32px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .section-title {
   margin: 0 0 24px 0;
-  font-family: 'Playfair Display', serif;
-  font-size: 24px;
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
   font-weight: 600;
-  color: #1f2937;
+  color: #000000;
 }
 
 .form-group {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .form-label {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #8b5a3c;
+  color: #000000;
   font-size: 14px;
 }
 
 .form-input {
   width: 100%;
-  padding: 16px;
-  border: 1px solid #d4af94;
-  border-radius: 12px;
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   font-size: 14px;
-  background: rgba(248, 246, 241, 0.7);
-  color: #8b5a3c;
-  transition: all 0.3s ease;
+  background: #ffffff;
+  color: #111827;
+  transition: all 0.2s ease;
   font-family: 'Inter', sans-serif;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #000000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
   background: #ffffff;
 }
 
 .form-input::placeholder {
-  color: #8b5a3c;
-  opacity: 0.6;
+  color: #9ca3af;
 }
 
 .form-textarea {
   width: 100%;
-  padding: 16px;
-  border: 1px solid #d4af94;
-  border-radius: 12px;
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   font-size: 14px;
   font-family: 'Inter', sans-serif;
   resize: vertical;
   min-height: 120px;
-  background: rgba(248, 246, 241, 0.7);
-  color: #8b5a3c;
-  transition: all 0.3s ease;
+  background: #ffffff;
+  color: #111827;
+  transition: all 0.2s ease;
 }
 
 .form-textarea:focus {
   outline: none;
-  border-color: #8b5a3c;
-  box-shadow: 0 0 0 3px rgba(139, 90, 60, 0.1);
-  background: rgba(248, 246, 241, 1);
+  border-color: #000000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+  background: #ffffff;
 }
 
 .form-textarea::placeholder {
-  color: #8b5a3c;
-  opacity: 0.6;
+  color: #9ca3af;
 }
 
 .form-help {
   display: block;
-  margin-top: 4px;
+  margin-top: 6px;
   font-size: 12px;
-  color: #8b5a3c;
-  opacity: 0.7;
+  color: #6b7280;
 }
 
 .email-input-group,
@@ -475,23 +473,21 @@ export default {
 
 .change-btn,
 .add-btn {
-  padding: 12px 20px;
-  border: 1px solid #8b5a3c;
-  background: linear-gradient(135deg, #8b5a3c 0%, #a06749 100%);
+  padding: 10px 20px;
+  border: none;
+  background: #000000;
   color: white;
-  border-radius: 12px;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(139, 90, 60, 0.2);
+  transition: all 0.2s ease;
+  font-family: 'Inter', sans-serif;
 }
 
 .change-btn:hover,
 .add-btn:hover {
-  background: linear-gradient(135deg, #744a32 0%, #8b5a3c 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(139, 90, 60, 0.3);
+  background: #111827;
 }
 
 .radio-group {
