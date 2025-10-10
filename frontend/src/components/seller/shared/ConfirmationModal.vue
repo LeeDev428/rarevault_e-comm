@@ -75,10 +75,10 @@ export default {
   computed: {
     icon() {
       const icons = {
-        warning: '⚠️',
-        danger: '🗑️',
-        info: 'ℹ️',
-        success: '✅'
+      warning: '!',
+      danger: '×',
+      info: 'i',
+      success: '✓'
       };
       return icons[this.type] || icons.warning;
     },
