@@ -540,7 +540,7 @@ export default {
 }
 
 .logo:hover .logo-text {
-  color: #3b82f6;
+  color: #848c99;
 }
 
 /* Search */
@@ -663,8 +663,6 @@ export default {
 
 .notification-header h3 {
   margin: 0;
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
   font-weight: 600;
   font-size: 1.125rem;
   letter-spacing: -0.5px;
@@ -841,7 +839,7 @@ export default {
 }
 
 .view-all-btn:hover {
-  background: #2563eb;
+  background: #808288;
 }
 
 .chat-btn {
@@ -895,7 +893,7 @@ export default {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  background: linear-gradient(135deg, #000000, #2a2b2d);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -996,7 +994,7 @@ export default {
 
 .category-item.active {
   background: #eff6ff;
-  color: #2563eb;
+  color: #808288;
 }
 
 .category-item span {
