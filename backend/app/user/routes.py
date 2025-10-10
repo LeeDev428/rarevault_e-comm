@@ -371,6 +371,26 @@ def get_wishlist():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@user_bp.route('/wishlist/check/<int:item_id>', methods=['GET'])
+@jwt_required()
+def check_wishlist_status(item_id):
+    """Check if item is in user's wishlist"""
+    try:
+        user_id = get_jwt_identity()
+        if isinstance(user_id, str):
+            user_id = int(user_id)
+        
+        # Check if item exists in user's wishlist
+        wishlist_item = Wishlist.query.filter_by(user_id=user_id, item_id=item_id).first()
+        
+        return jsonify({
+            'inWishlist': wishlist_item is not None,
+            'wishlist_id': wishlist_item.id if wishlist_item else None
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @user_bp.route('/wishlist/<int:item_id>', methods=['POST'])
 @jwt_required()
 def add_to_wishlist(item_id):
