@@ -644,9 +644,12 @@ export default {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 .edit-item {
   max-width: 1400px;
   margin: 0 auto;
+  font-family: 'Inter', sans-serif;
 }
 
 .page-header {
@@ -655,20 +658,23 @@ export default {
   align-items: flex-start;
   margin-bottom: 32px;
   padding-bottom: 24px;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .page-title {
-  margin: 0 0 8px 0;
-  font-size: 32px;
+  margin: 0 0 4px 0;
+  font-size: 28px;
   font-weight: 700;
-  color: #343a40;
+  color: #000000;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.5px;
 }
 
 .page-subtitle {
   margin: 0;
-  color: #6c757d;
-  font-size: 16px;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 400;
 }
 
 .edit-container {
@@ -679,16 +685,17 @@ export default {
 }
 
 .item-form {
-  background: white;
+  background: #ffffff;
   border-radius: 12px;
-  border: 1px solid #e9ecef;
+  border: 1px solid #e5e7eb;
   padding: 32px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .form-section {
   margin-bottom: 32px;
   padding-bottom: 24px;
-  border-bottom: 1px solid #f1f3f4;
+  border-bottom: 1px solid #f3f4f6;
 }
 
 .form-section:last-child {
@@ -699,14 +706,15 @@ export default {
 
 .section-title {
   margin: 0 0 8px 0;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
-  color: #343a40;
+  color: #000000;
+  font-family: 'Inter', sans-serif;
 }
 
 .section-subtitle {
   margin: 0 0 20px 0;
-  color: #6c757d;
+  color: #6b7280;
   font-size: 14px;
 }
 
@@ -722,10 +730,11 @@ export default {
 
 .form-label {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   font-weight: 500;
-  color: #495057;
+  color: #000000;
   font-size: 14px;
+  font-family: 'Inter', sans-serif;
 }
 
 .form-label.required::after {
@@ -736,48 +745,57 @@ export default {
 .form-input {
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid #dee2e6;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   font-size: 14px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: #ffffff;
+  color: #111827;
+  transition: all 0.2s ease;
+  font-family: 'Inter', sans-serif;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: #000000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
 .form-textarea {
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid #dee2e6;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   font-size: 14px;
-  font-family: inherit;
+  font-family: 'Inter', sans-serif;
   resize: vertical;
   min-height: 120px;
+  background: #ffffff;
+  color: #111827;
+  transition: all 0.2s ease;
 }
 
 .form-textarea:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: #000000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
 .form-select {
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid #dee2e6;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   font-size: 14px;
-  background: white;
+  background: #ffffff;
+  color: #111827;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s ease;
 }
 
 .form-select:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: #000000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
 .price-input {
@@ -789,8 +807,9 @@ export default {
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #6c757d;
+  color: #6b7280;
   font-weight: 500;
+  font-family: 'Inter', sans-serif;
 }
 
 .price-input .form-input {
@@ -808,18 +827,21 @@ export default {
   align-items: center;
   gap: 12px;
   padding: 12px;
-  border: 1px solid #dee2e6;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   cursor: pointer;
-  transition: border-color 0.2s ease;
+  transition: all 0.2s ease;
+  background: #ffffff;
 }
 
 .condition-option:hover {
-  border-color: #007bff;
+  border-color: #000000;
+  background: #f9fafb;
 }
 
 .condition-option input[type="radio"] {
   margin: 0;
+  accent-color: #000000;
 }
 
 .condition-content {
@@ -829,12 +851,13 @@ export default {
 
 .condition-name {
   font-weight: 500;
-  color: #343a40;
+  color: #000000;
+  font-family: 'Inter', sans-serif;
 }
 
 .condition-desc {
   font-size: 12px;
-  color: #6c757d;
+  color: #6b7280;
 }
 
 /* Images Upload */
@@ -886,8 +909,8 @@ export default {
   position: absolute;
   top: 4px;
   right: 4px;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
+  background: rgba(0, 0, 0, 0.8);
+  color: #ffffff;
   border: none;
   border-radius: 50%;
   width: 24px;
@@ -897,6 +920,11 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.remove-image:hover {
+  background: #000000;
 }
 
 .image-controls {
@@ -904,61 +932,71 @@ export default {
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 4px;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 6px 4px;
   text-align: center;
 }
 
 .set-primary-btn {
   background: none;
   border: none;
-  color: white;
+  color: #ffffff;
   font-size: 10px;
   cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: opacity 0.2s ease;
+}
+
+.set-primary-btn:hover {
+  opacity: 0.8;
 }
 
 .primary-badge {
-  color: white;
+  color: #ffffff;
   font-size: 10px;
-  font-weight: 500;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
 }
 
 .upload-slot {
   aspect-ratio: 1;
-  border: 2px dashed #dee2e6;
+  border: 2px dashed #e5e7eb;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: border-color 0.2s ease;
+  transition: all 0.2s ease;
+  background: #f9fafb;
 }
 
 .upload-slot:hover {
-  border-color: #007bff;
+  border-color: #000000;
+  background: #ffffff;
 }
 
 .upload-icon {
   font-size: 32px;
-  color: #6c757d;
+  color: #9ca3af;
   margin-bottom: 8px;
 }
 
 .upload-text {
   font-size: 14px;
-  color: #6c757d;
+  color: #000000;
   font-weight: 500;
+  font-family: 'Inter', sans-serif;
 }
 
 .upload-limit {
   font-size: 12px;
-  color: #6c757d;
+  color: #6b7280;
 }
 
 .upload-info {
   font-size: 12px;
-  color: #6c757d;
+  color: #6b7280;
   line-height: 1.5;
 }
 
@@ -981,21 +1019,28 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #e3f2fd;
-  color: #1976d2;
-  padding: 4px 8px;
-  border-radius: 16px;
+  background: #f3f4f6;
+  color: #111827;
+  padding: 6px 12px;
+  border-radius: 6px;
   font-size: 12px;
   font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  border: 1px solid #e5e7eb;
 }
 
 .tag button {
   background: none;
   border: none;
-  color: inherit;
+  color: #6b7280;
   cursor: pointer;
   font-size: 14px;
   line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.tag button:hover {
+  color: #000000;
 }
 
 /* Form Actions */
@@ -1005,7 +1050,7 @@ export default {
   justify-content: flex-end;
   margin-top: 32px;
   padding-top: 24px;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid #f3f4f6;
 }
 
 /* Preview Section */
@@ -1015,21 +1060,23 @@ export default {
 }
 
 .preview-card {
-  background: white;
+  background: #ffffff;
   border-radius: 12px;
-  border: 1px solid #e9ecef;
+  border: 1px solid #e5e7eb;
   padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .preview-title {
   margin: 0 0 20px 0;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
-  color: #343a40;
+  color: #000000;
+  font-family: 'Inter', sans-serif;
 }
 
 .item-preview {
-  border: 1px solid #e9ecef;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   overflow: hidden;
   margin-bottom: 20px;
@@ -1037,7 +1084,7 @@ export default {
 
 .preview-image {
   aspect-ratio: 1;
-  background: #f8f9fa;
+  background: #f9fafb;
 }
 
 .preview-img img {
@@ -1053,12 +1100,13 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #6c757d;
+  color: #9ca3af;
 }
 
 .placeholder-icon {
   font-size: 48px;
   margin-bottom: 8px;
+  color: #d1d5db;
 }
 
 .preview-content {
@@ -1069,19 +1117,21 @@ export default {
   margin: 0 0 8px 0;
   font-size: 16px;
   font-weight: 600;
-  color: #343a40;
+  color: #000000;
+  font-family: 'Inter', sans-serif;
 }
 
 .preview-price {
   margin: 0 0 8px 0;
   font-size: 20px;
   font-weight: 700;
-  color: #28a745;
+  color: #111827;
+  font-family: 'Inter', sans-serif;
 }
 
 .negotiable {
   font-size: 12px;
-  color: #6c757d;
+  color: #6b7280;
   font-weight: 400;
 }
 
@@ -1090,65 +1140,71 @@ export default {
 .preview-status {
   margin: 0 0 8px 0;
   font-size: 14px;
-  color: #6c757d;
+  color: #6b7280;
+  font-family: 'Inter', sans-serif;
 }
 
 .status-badge {
   display: inline-block;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 500;
   text-transform: capitalize;
+  font-family: 'Inter', sans-serif;
 }
 
 .status-active {
-  background: #d4edda;
-  color: #155724;
+  background: #d1fae5;
+  color: #065f46;
 }
 
 .status-paused {
-  background: #fff3cd;
-  color: #856404;
+  background: #fef3c7;
+  color: #92400e;
 }
 
 .status-sold {
-  background: #d1ecf1;
-  color: #0c5460;
+  background: #dbeafe;
+  color: #1e40af;
 }
 
 .preview-description {
   margin: 0 0 12px 0;
   font-size: 14px;
-  color: #495057;
-  line-height: 1.4;
+  color: #374151;
+  line-height: 1.5;
 }
 
 .preview-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 6px;
 }
 
 .preview-tag {
-  background: #f8f9fa;
-  color: #495057;
-  padding: 2px 6px;
-  border-radius: 12px;
-  font-size: 10px;
+  background: #f3f4f6;
+  color: #111827;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
   font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  border: 1px solid #e5e7eb;
 }
 
 .more-tags {
-  background: #e9ecef;
-  color: #6c757d;
-  padding: 2px 6px;
-  border-radius: 12px;
-  font-size: 10px;
+  background: #f3f4f6;
+  color: #6b7280;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: 'Inter', sans-serif;
+  border: 1px solid #e5e7eb;
 }
 
 .changes-summary {
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid #f3f4f6;
   padding-top: 16px;
 }
 
@@ -1156,14 +1212,16 @@ export default {
   margin: 0 0 8px 0;
   font-size: 14px;
   font-weight: 600;
-  color: #343a40;
+  color: #000000;
+  font-family: 'Inter', sans-serif;
 }
 
 .changes-list {
   margin: 0;
   padding: 0 0 0 16px;
   font-size: 12px;
-  color: #6c757d;
+  color: #6b7280;
+  font-family: 'Inter', sans-serif;
 }
 
 .changes-list li {
