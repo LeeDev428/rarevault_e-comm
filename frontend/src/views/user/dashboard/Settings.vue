@@ -1,34 +1,34 @@
 <template>
   <UserLayout>
     <div class="settings-container">
+      <!-- Header -->
       <div class="settings-header">
-        <h1 class="page-title">Account Settings</h1>
-        <p class="page-description">Manage your account preferences and security settings</p>
+        <h1 class="page-title">Settings</h1>
+        <p class="page-subtitle">Manage your account preferences and security</p>
       </div>
 
-      <div class="settings-content">
-        <!-- Settings Navigation -->
-        <div class="settings-nav">
-          <div class="nav-item" 
-               v-for="section in settingSections" 
-               :key="section.id"
-               :class="{ active: activeSection === section.id }"
-               @click="activeSection = section.id"
-          >
-            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <component :is="section.icon" />
-            </svg>
-            <span>{{ section.label }}</span>
-          </div>
-        </div>
+      <!-- Settings Navigation Tabs -->
+      <div class="settings-tabs">
+        <button 
+          v-for="section in settingSections" 
+          :key="section.id"
+          :class="['tab-button', { active: activeSection === section.id }]"
+          @click="activeSection = section.id"
+        >
+          {{ section.label }}
+        </button>
+      </div>
 
-        <!-- Settings Panels -->
-        <div class="settings-panel">
-          <!-- Account Settings -->
-          <div v-if="activeSection === 'account'" class="panel-content">
-            <h2 class="panel-title">Account Information</h2>
-            
-            <form @submit.prevent="updateAccount" class="settings-form">
+      <!-- Settings Content -->
+      <div class="settings-content">
+        <!-- Account Settings -->
+        <div v-if="activeSection === 'account'" class="settings-card">
+          <div class="card-header">
+            <h2 class="card-title">Account Information</h2>
+          </div>
+          
+          <form @submit.prevent="updateAccount" class="card-content">
+            <div class="form-row">
               <div class="form-group">
                 <label for="username">Username</label>
                 <input 
@@ -50,7 +50,9 @@
                   required
                 />
               </div>
+            </div>
 
+            <div class="form-row">
               <div class="form-group">
                 <label for="phone">Phone Number</label>
                 <input 
@@ -58,34 +60,43 @@
                   id="phone" 
                   v-model="accountSettings.phone"
                   class="form-input"
+                  placeholder="+1 (555) 123-4567"
                 />
               </div>
+            </div>
 
-              <div class="form-group">
+            <div class="form-row">
+              <div class="form-group full-width">
                 <label for="bio">Bio</label>
                 <textarea 
                   id="bio" 
                   v-model="accountSettings.bio"
                   class="form-input"
-                  rows="4"
+                  rows="3"
                   placeholder="Tell us about yourself..."
                 ></textarea>
               </div>
+            </div>
 
+            <div class="form-actions">
               <button type="submit" class="btn-primary" :disabled="saving">
                 {{ saving ? 'Saving...' : 'Save Changes' }}
               </button>
-            </form>
-          </div>
+            </div>
+          </form>
+        </div>
 
-          <!-- Security Settings -->
-          <div v-if="activeSection === 'security'" class="panel-content">
-            <h2 class="panel-title">Security & Privacy</h2>
-            
+        <!-- Security Settings -->
+        <div v-if="activeSection === 'security'" class="settings-card">
+          <div class="card-header">
+            <h2 class="card-title">Security</h2>
+          </div>
+          
+          <div class="card-content">
             <!-- Password Change -->
-            <div class="security-section">
-              <h3>Change Password</h3>
-              <form @submit.prevent="changePassword" class="settings-form">
+            <div class="setting-section">
+              <h3 class="section-subtitle">Change Password</h3>
+              <form @submit.prevent="changePassword" class="setting-form">
                 <div class="form-group">
                   <label for="currentPassword">Current Password</label>
                   <input 
@@ -120,17 +131,17 @@
                 </div>
 
                 <button type="submit" class="btn-primary" :disabled="saving">
-                  Update Password
+                  {{ saving ? 'Updating...' : 'Update Password' }}
                 </button>
               </form>
             </div>
 
             <!-- Two-Factor Authentication -->
-            <div class="security-section">
-              <h3>Two-Factor Authentication</h3>
-              <div class="security-option">
+            <div class="setting-section">
+              <h3 class="section-subtitle">Two-Factor Authentication</h3>
+              <div class="setting-option">
                 <div class="option-info">
-                  <p>Add an extra layer of security to your account</p>
+                  <p class="option-text">Add an extra layer of security to your account</p>
                   <span class="status-badge" :class="twoFactorEnabled ? 'enabled' : 'disabled'">
                     {{ twoFactorEnabled ? 'Enabled' : 'Disabled' }}
                   </span>
@@ -144,127 +155,149 @@
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Notifications Settings -->
-          <div v-if="activeSection === 'notifications'" class="panel-content">
-            <h2 class="panel-title">Notification Preferences</h2>
-            
-            <div class="notification-section">
-              <h3>Email Notifications</h3>
-              <div class="notification-options">
-                <label class="notification-option">
+        <!-- Notifications Settings -->
+        <div v-if="activeSection === 'notifications'" class="settings-card">
+          <div class="card-header">
+            <h2 class="card-title">Notifications</h2>
+          </div>
+          
+          <div class="card-content">
+            <div class="setting-section">
+              <h3 class="section-subtitle">Email Notifications</h3>
+              <div class="checkbox-group">
+                <label class="checkbox-label">
                   <input 
                     type="checkbox" 
                     v-model="notificationSettings.orderUpdates"
+                    class="checkbox-input"
                   />
                   <span>Order updates and shipping notifications</span>
                 </label>
                 
-                <label class="notification-option">
+                <label class="checkbox-label">
                   <input 
                     type="checkbox" 
                     v-model="notificationSettings.promotions"
+                    class="checkbox-input"
                   />
                   <span>Promotions and special offers</span>
                 </label>
                 
-                <label class="notification-option">
+                <label class="checkbox-label">
                   <input 
                     type="checkbox" 
                     v-model="notificationSettings.newItems"
+                    class="checkbox-input"
                   />
                   <span>New items from followed sellers</span>
                 </label>
                 
-                <label class="notification-option">
+                <label class="checkbox-label">
                   <input 
                     type="checkbox" 
                     v-model="notificationSettings.priceDrops"
+                    class="checkbox-input"
                   />
                   <span>Price drops on wishlist items</span>
                 </label>
               </div>
             </div>
 
-            <div class="notification-section">
-              <h3>Push Notifications</h3>
-              <div class="notification-options">
-                <label class="notification-option">
+            <div class="setting-section">
+              <h3 class="section-subtitle">Push Notifications</h3>
+              <div class="checkbox-group">
+                <label class="checkbox-label">
                   <input 
                     type="checkbox" 
                     v-model="notificationSettings.messages"
+                    class="checkbox-input"
                   />
                   <span>Messages from sellers</span>
                 </label>
                 
-                <label class="notification-option">
+                <label class="checkbox-label">
                   <input 
                     type="checkbox" 
                     v-model="notificationSettings.bidding"
+                    class="checkbox-input"
                   />
                   <span>Bidding and auction updates</span>
                 </label>
               </div>
             </div>
 
-            <button @click="saveNotifications" class="btn-primary" :disabled="saving">
-              {{ saving ? 'Saving...' : 'Save Preferences' }}
-            </button>
+            <div class="form-actions">
+              <button @click="saveNotifications" class="btn-primary" :disabled="saving">
+                {{ saving ? 'Saving...' : 'Save Preferences' }}
+              </button>
+            </div>
           </div>
+        </div>
 
-          <!-- Privacy Settings -->
-          <div v-if="activeSection === 'privacy'" class="panel-content">
-            <h2 class="panel-title">Privacy Settings</h2>
-            
-            <div class="privacy-section">
-              <h3>Profile Visibility</h3>
-              <div class="privacy-options">
-                <label class="privacy-option">
+        <!-- Privacy Settings -->
+        <div v-if="activeSection === 'privacy'" class="settings-card">
+          <div class="card-header">
+            <h2 class="card-title">Privacy</h2>
+          </div>
+          
+          <div class="card-content">
+            <div class="setting-section">
+              <h3 class="section-subtitle">Profile Visibility</h3>
+              <div class="radio-group">
+                <label class="radio-label">
                   <input 
                     type="radio" 
                     v-model="privacySettings.profileVisibility"
                     value="public"
                     name="profileVisibility"
+                    class="radio-input"
                   />
                   <span>Public - Anyone can see your profile</span>
                 </label>
                 
-                <label class="privacy-option">
+                <label class="radio-label">
                   <input 
                     type="radio" 
                     v-model="privacySettings.profileVisibility"
                     value="private"
                     name="profileVisibility"
+                    class="radio-input"
                   />
                   <span>Private - Only you can see your profile</span>
                 </label>
               </div>
             </div>
 
-            <div class="privacy-section">
-              <h3>Data & Analytics</h3>
-              <div class="privacy-options">
-                <label class="privacy-option">
+            <div class="setting-section">
+              <h3 class="section-subtitle">Data & Analytics</h3>
+              <div class="checkbox-group">
+                <label class="checkbox-label">
                   <input 
                     type="checkbox" 
                     v-model="privacySettings.analytics"
+                    class="checkbox-input"
                   />
                   <span>Allow analytics to improve your experience</span>
                 </label>
                 
-                <label class="privacy-option">
+                <label class="checkbox-label">
                   <input 
                     type="checkbox" 
                     v-model="privacySettings.marketing"
+                    class="checkbox-input"
                   />
                   <span>Allow marketing communications</span>
                 </label>
               </div>
             </div>
 
-            <button @click="savePrivacy" class="btn-primary" :disabled="saving">
-              {{ saving ? 'Saving...' : 'Save Settings' }}
-            </button>
+            <div class="form-actions">
+              <button @click="savePrivacy" class="btn-primary" :disabled="saving">
+                {{ saving ? 'Saving...' : 'Save Settings' }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -411,124 +444,133 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-.page-title {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-weight: 700;
-  font-size: 2.5rem;
-  letter-spacing: -1px;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-}
-
-.panel-title {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-weight: 600;
-  font-size: 1.5rem;
-  letter-spacing: -0.5px;
-  color: #1f2937;
-}
-
-.section-title {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-weight: 600;
-  font-size: 1.25rem;
-  letter-spacing: -0.5px;
-  color: #1f2937;
+* {
+  font-family: 'Inter', sans-serif;
 }
 
 .settings-container {
-  max-width: 1200px;
+  max-width: 900px;
   margin: 0 auto;
+  padding: 0;
 }
 
-/* Settings Header */
+/* Header */
 .settings-header {
-  margin-bottom: 32px;
+  margin-bottom: 2rem;
 }
 
 .page-title {
-  font-size: 32px;
+  font-size: 1.875rem;
   font-weight: 700;
   color: #111827;
-  margin: 0 0 8px 0;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.025em;
 }
 
-.page-description {
-  font-size: 16px;
+.page-subtitle {
+  font-size: 0.875rem;
   color: #6b7280;
   margin: 0;
+  line-height: 1.5;
+}
+
+/* Settings Tabs */
+.settings-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0;
+}
+
+.tab-button {
+  padding: 0.75rem 1.25rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+  bottom: -1px;
+}
+
+.tab-button:hover {
+  color: #111827;
+}
+
+.tab-button.active {
+  color: #111827;
+  border-bottom-color: #111827;
 }
 
 /* Settings Content */
 .settings-content {
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 32px;
+  display: block;
 }
 
-/* Settings Navigation */
-.settings-nav {
-  background: white;
-  border-radius: 12px;
-  padding: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  height: fit-content;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+/* Settings Card */
+.settings-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: #6b7280;
-  font-weight: 500;
+  overflow: hidden;
 }
 
-.nav-item:hover {
-  background: #f3f4f6;
-  color: #374151;
+.card-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.nav-item.active {
-  background: #eff6ff;
-  color: #2563eb;
-}
-
-.nav-icon {
-  flex-shrink: 0;
-}
-
-/* Settings Panel */
-.settings-panel {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.panel-content {
-  padding: 32px;
-}
-
-.panel-title {
-  font-size: 24px;
+.card-title {
+  font-size: 1rem;
   font-weight: 600;
   color: #111827;
-  margin: 0 0 24px 0;
+  margin: 0;
+  letter-spacing: -0.025em;
 }
 
-/* Form Styles */
-.settings-form {
+.card-content {
+  padding: 1.5rem;
+}
+
+/* Setting Sections */
+.setting-section {
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.setting-section:last-child {
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+.section-subtitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Forms */
+.setting-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 1rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
 }
 
 .form-group {
@@ -536,72 +578,74 @@ export default {
   flex-direction: column;
 }
 
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
 .form-group label {
-  font-size: 14px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #374151;
-  margin-bottom: 6px;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .form-input {
-  padding: 12px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 14px;
-  transition: all 0.2s ease;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: #111827;
+  transition: all 0.15s ease;
+  background: #ffffff;
+}
+
+.form-input::placeholder {
+  color: #9ca3af;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #111827;
 }
 
 textarea.form-input {
   resize: vertical;
-  min-height: 100px;
+  min-height: 60px;
+  line-height: 1.5;
 }
 
-/* Security Sections */
-.security-section {
-  margin-bottom: 32px;
-  padding-bottom: 32px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.security-section:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-  padding-bottom: 0;
-}
-
-.security-section h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
-  margin: 0 0 16px 0;
-}
-
-.security-option {
+/* Setting Option (2FA) */
+.setting-option {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  padding: 1rem;
   background: #f9fafb;
-  border-radius: 8px;
+  border-radius: 6px;
+  gap: 1rem;
 }
 
-.option-info p {
-  margin: 0 0 4px 0;
+.option-info {
+  flex: 1;
+}
+
+.option-text {
+  margin: 0 0 0.5rem 0;
   color: #374151;
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
 .status-badge {
-  padding: 2px 8px;
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 0.625rem;
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .status-badge.enabled {
@@ -614,144 +658,160 @@ textarea.form-input {
   color: #991b1b;
 }
 
-/* Notification Sections */
-.notification-section {
-  margin-bottom: 32px;
-}
-
-.notification-section h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
-  margin: 0 0 16px 0;
-}
-
-.notification-options {
+/* Checkbox Group */
+.checkbox-group {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
-.notification-option {
+.checkbox-label {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
   cursor: pointer;
-  padding: 8px 0;
+  padding: 0.5rem 0;
+  transition: opacity 0.15s ease;
 }
 
-.notification-option input[type="checkbox"] {
+.checkbox-label:hover {
+  opacity: 0.8;
+}
+
+.checkbox-input {
   width: 18px;
   height: 18px;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
-.notification-option span {
+.checkbox-label span {
   color: #374151;
-  font-size: 14px;
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
-/* Privacy Sections */
-.privacy-section {
-  margin-bottom: 32px;
-}
-
-.privacy-section h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
-  margin: 0 0 16px 0;
-}
-
-.privacy-options {
+/* Radio Group */
+.radio-group {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
-.privacy-option {
+.radio-label {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 0.75rem;
   cursor: pointer;
-  padding: 8px 0;
+  padding: 0.5rem 0;
+  transition: opacity 0.15s ease;
 }
 
-.privacy-option input[type="radio"],
-.privacy-option input[type="checkbox"] {
+.radio-label:hover {
+  opacity: 0.8;
+}
+
+.radio-input {
   width: 18px;
   height: 18px;
+  cursor: pointer;
+  flex-shrink: 0;
   margin-top: 2px;
 }
 
-.privacy-option span {
+.radio-label span {
   color: #374151;
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.5;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
 }
 
 /* Buttons */
 .btn-primary,
 .btn-secondary {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
 }
 
 .btn-primary {
-  background: #3b82f6;
+  background: #111827;
   color: white;
+  border-color: #111827;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #2563eb;
+  background: #000000;
+  border-color: #000000;
 }
 
 .btn-primary:disabled {
-  background: #9ca3af;
+  background: #d1d5db;
+  border-color: #d1d5db;
+  color: #9ca3af;
   cursor: not-allowed;
 }
 
 .btn-secondary {
-  background: #f3f4f6;
+  background: white;
   color: #374151;
+  border-color: #e5e7eb;
 }
 
 .btn-secondary:hover {
-  background: #e5e7eb;
+  background: #f9fafb;
+  border-color: #d1d5db;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .settings-content {
+  .settings-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .tab-button {
+    white-space: nowrap;
+  }
+  
+  .card-content {
+    padding: 1.25rem;
+  }
+  
+  .form-row {
     grid-template-columns: 1fr;
-    gap: 24px;
   }
   
-  .settings-nav {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 8px;
-  }
-  
-  .nav-item {
-    flex-direction: column;
-    text-align: center;
-    gap: 8px;
-    padding: 12px 8px;
-  }
-  
-  .panel-content {
-    padding: 24px;
-  }
-  
-  .security-option {
+  .setting-option {
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+  }
+  
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 1.5rem;
   }
 }
 </style>
