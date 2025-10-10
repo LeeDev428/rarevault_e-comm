@@ -555,7 +555,7 @@ export default {
 
 <style scoped>
 /* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700;1,800&family=Inter:wght@300;400;500;600;700&family=Crimson+Text:wght@400;600;700&family=Libre+Baskerville:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 .seller-settings {
   max-width: 1200px;
@@ -566,84 +566,84 @@ export default {
 }
 
 .page-header {
-  margin-bottom: 48px;
-  padding: 32px;
-  background: #ffffff;
-  border-radius: 24px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 32px;
+  padding: 0 0 24px;
+  background: transparent;
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: none;
 }
 
 .page-title {
-  margin: 0 0 8px 0;
-  font-family: 'Playfair Display', serif;
-  font-size: 42px;
-  font-weight: 800;
-  color: #1f2937;
-  letter-spacing: -1px;
-  font-style: italic;
+  margin: 0 0 4px 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: -0.5px;
+  font-style: normal;
 }
 
 .page-subtitle {
   margin: 0;
-  color: #8b5a3c;
-  font-size: 16px;
-  opacity: 0.8;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 400;
 }
 
 .settings-container {
   display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 48px;
+  grid-template-columns: 240px 1fr;
+  gap: 32px;
   align-items: start;
 }
 
 .settings-nav {
   background: #ffffff;
-  border-radius: 24px;
+  border-radius: 12px;
   border: 1px solid #e5e7eb;
-  padding: 16px;
+  padding: 12px;
   position: sticky;
   top: 32px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px 20px;
-  border-radius: 16px;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  margin-bottom: 8px;
+  transition: all 0.2s ease;
+  margin-bottom: 4px;
   font-weight: 500;
-  color: #8b5a3c;
+  color: #374151;
+  font-size: 14px;
 }
 
 .nav-item:hover {
-  background: rgba(139, 90, 60, 0.1);
-  transform: translateX(4px);
+  background: #f9fafb;
 }
 
 .nav-item.active {
-  background: linear-gradient(135deg, #8b5a3c 0%, #a06749 100%);
+  background: #000000;
   color: white;
-  box-shadow: 0 4px 15px rgba(139, 90, 60, 0.3);
 }
 
 .nav-icon {
-  font-size: 20px;
-  width: 24px;
+  font-size: 18px;
+  width: 20px;
   text-align: center;
 }
 
 .settings-content {
-  background: linear-gradient(135deg, #f8f6f1 0%, #e8ddd4 100%);
-  border-radius: 24px;
-  border: 1px solid #d4af94;
-  padding: 48px;
-  box-shadow: 0 8px 25px rgba(139, 90, 60, 0.1);
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 32px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .settings-section {
@@ -651,17 +651,17 @@ export default {
 }
 
 .section-title {
-  margin: 0 0 40px 0;
-  font-family: 'Playfair Display', serif;
-  font-size: 28px;
+  margin: 0 0 32px 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 20px;
   font-weight: 600;
-  color: #8b5a3c;
+  color: #000000;
 }
 
 .setting-group {
-  margin-bottom: 40px;
-  padding-bottom: 32px;
-  border-bottom: 1px solid #d4af94;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #f3f4f6;
 }
 
 .setting-group:last-child {
@@ -671,15 +671,15 @@ export default {
 }
 
 .group-title {
-  margin: 0 0 24px 0;
-  font-family: 'Playfair Display', serif;
-  font-size: 20px;
+  margin: 0 0 20px 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
   font-weight: 600;
-  color: #8b5a3c;
+  color: #000000;
 }
 
 .setting-item {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .setting-item:last-child {
@@ -690,7 +690,7 @@ export default {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #8b5a3c;
+  color: #000000;
   font-size: 14px;
 }
 
