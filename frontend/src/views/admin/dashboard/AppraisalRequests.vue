@@ -25,11 +25,11 @@
       </button>
       
       <div class="sub-actions">
-        <button class="approve-all-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <button class="approve-all-btn" @click="approveAll" :disabled="approving || pendingRequests.length === 0">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="20,6 9,17 4,12"></polyline>
           </svg>
-          Approved All
+          {{ approving ? 'Approving...' : 'Approve All' }}
         </button>
       </div>
     </div>
@@ -71,89 +71,151 @@ export default {
   data() {
     return {
       activeSubTab: 'pending',
-      totalRequests: [
-        {
-          id: 1,
-          itemTitle: 'Antique Gold Pocket Watch',
-          postedBy: 'Time Traveler',
-          dateRequested: '2025-05-15',
-          status: 'Pending'
-        },
-        {
-          id: 2,
-          itemTitle: 'Signed First Edition Poetry Book',
-          postedBy: 'LiteraryLeopard',
-          dateRequested: '2025-05-14',
-          status: 'Approved'
-        },
-        {
-          id: 3,
-          itemTitle: 'Vintage Baseball Card Collection',
-          postedBy: 'CardShark',
-          dateRequested: '2025-05-14',
-          status: 'Rejected'
-        },
-        {
-          id: 4,
-          itemTitle: 'Old Oil Painting (Unsigned)',
-          postedBy: 'ArtCurious',
-          dateRequested: '2025-05-13',
-          status: 'Rejected'
-        },
-        {
-          id: 5,
-          itemTitle: 'Ancient Roman Coin',
-          postedBy: 'HistoryBuff',
-          dateRequested: '2025-05-13',
-          status: 'Pending'
-        },
-        {
-          id: 6,
-          itemTitle: 'Retro Gaming Console (Sealed)',
-          postedBy: 'PixelPioneer',
-          dateRequested: '2025-05-12',
-          status: 'Pending'
+      totalRequests: [],
+      soldRequests: [],
+      pendingRequests: [],
+      loading: true,
+      error: null,
+      approving: false
+    }
+  },
+  async mounted() {
+    await this.fetchAllAppraisals()
+  },
+  watch: {
+    activeSubTab() {
+      this.fetchAppraisals()
+    }
+  },
+  methods: {
+    async fetchAllAppraisals() {
+      await this.fetchAppraisals('all')
+      await this.fetchAppraisals('approved')
+      await this.fetchAppraisals('pending')
+    },
+    
+    async fetchAppraisals(status = null) {
+      try {
+        this.loading = true
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        const statusParam = status || (this.activeSubTab === 'total' ? 'all' : this.activeSubTab === 'sold' ? 'approved' : 'pending')
+        
+        console.log('Fetching appraisals with status:', statusParam)
+        
+        if (!token) {
+          throw new Error('No authentication token found. Please login again.')
         }
-      ],
-      soldRequests: [
-        {
-          id: 7,
-          itemTitle: 'Victorian Silver Tea Set',
-          postedBy: 'AntiqueDealer',
-          dateRequested: '2025-05-10',
-          status: 'Approved'
-        },
-        {
-          id: 8,
-          itemTitle: 'Rare Stamp Collection',
-          postedBy: 'PhilatelistPro',
-          dateRequested: '2025-05-09',
-          status: 'Approved'
+        
+        const response = await fetch(`http://localhost:5000/api/admin/appraisals?status=${statusParam}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        const data = await response.json()
+        console.log('Appraisals response:', response.status, data)
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to fetch appraisals')
         }
-      ],
-      pendingRequests: [
-        {
-          id: 9,
-          itemTitle: 'Antique Gold Pocket Watch',
-          postedBy: 'Time Traveler',
-          dateRequested: '2025-05-15',
-          status: 'Pending'
-        },
-        {
-          id: 10,
-          itemTitle: 'Ancient Roman Coin',
-          postedBy: 'HistoryBuff',
-          dateRequested: '2025-05-13',
-          status: 'Pending'
-        },
-        {
-          id: 11,
-          itemTitle: 'Retro Gaming Console (Sealed)',
-          postedBy: 'PixelPioneer',
-          dateRequested: '2025-05-12',
-          status: 'Pending'
+
+        if (data.appraisals && Array.isArray(data.appraisals)) {
+          const appraisals = data.appraisals.map(appraisal => ({
+            id: appraisal.id,
+            itemTitle: appraisal.title,
+            postedBy: appraisal.posted_by || 'Unknown',
+            dateRequested: new Date(appraisal.created_at).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }),
+            status: appraisal.appraisal_status.charAt(0).toUpperCase() + appraisal.appraisal_status.slice(1)
+          }))
+
+          if (statusParam === 'all') {
+            this.totalRequests = appraisals
+          } else if (statusParam === 'approved') {
+            this.soldRequests = appraisals
+          } else if (statusParam === 'pending') {
+            this.pendingRequests = appraisals
+          }
+          
+          console.log(`Loaded ${appraisals.length} appraisals for status: ${statusParam}`)
+        } else {
+          throw new Error('Invalid response format: appraisals array not found')
         }
-      ]
+      } catch (error) {
+        console.error('Fetch appraisals error:', error)
+        this.error = error.message
+        this.totalRequests = []
+        this.soldRequests = []
+        this.pendingRequests = []
+        alert('Failed to fetch appraisals: ' + error.message + '. Check console for details.')
+      } finally {
+        this.loading = false
+      }
+    },
+    
+    async approveItem(itemId) {
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        
+        const response = await fetch(`http://localhost:5000/api/admin/appraisals/${itemId}/approve`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to approve appraisal')
+        }
+
+        alert('Appraisal approved successfully')
+        await this.fetchAppraisals()
+        this.$emit('refresh')
+      } catch (error) {
+        console.error('Approve appraisal error:', error)
+        alert('Failed to approve appraisal: ' + error.message)
+      }
+    },
+    
+    async approveAll() {
+      if (!confirm('Are you sure you want to approve all pending appraisals?')) {
+        return
+      }
+
+      try {
+        this.approving = true
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        
+        const response = await fetch('http://localhost:5000/api/admin/appraisals/approve-all', {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to approve all appraisals')
+        }
+
+        alert(data.message || 'All appraisals approved successfully')
+        await this.fetchAllAppraisals()
+        this.$emit('refresh')
+      } catch (error) {
+        console.error('Approve all appraisals error:', error)
+        alert('Failed to approve all: ' + error.message)
+      } finally {
+        this.approving = false
+      }
+    },
+    
+    setActiveSubTab(tab) {
+      this.activeSubTab = tab
     }
   },
   computed: {
@@ -166,11 +228,6 @@ export default {
         default:
           return this.totalRequests
       }
-    }
-  },
-  methods: {
-    setActiveSubTab(tab) {
-      this.activeSubTab = tab
     }
   }
 }
