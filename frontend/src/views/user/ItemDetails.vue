@@ -43,7 +43,7 @@
               >
             </div>
             
-            <!-- Image Thumbnails -->
+            <!-- Image Thumbnails - Compact -->
             <div v-if="itemImages.length > 1" class="image-thumbnails">
               <div 
                 v-for="(image, index) in itemImages" 
@@ -60,34 +60,34 @@
               </div>
             </div>
 
-            <!-- Condition Badge -->
-            <div class="condition-badge">
-              <h4 class="badge-title">Condition</h4>
-              <div class="badge-value">
-                <span class="condition-indicator"></span>
-                {{ formatCondition(item.condition || item.condition_status) }}
+            <!-- Condition & Statistics Combined Card -->
+            <div class="info-card-compact">
+              <!-- Condition Row -->
+              <div class="compact-row">
+                <span class="compact-label">CONDITION</span>
+                <div class="compact-value">
+                  <span class="status-dot"></span>
+                  {{ formatCondition(item.condition || item.condition_status) }}
+                </div>
               </div>
-            </div>
 
-            <!-- Item Statistics -->
-            <div class="stats-card">
-              <h4 class="card-title">Item Statistics</h4>
-              <div class="stats-grid">
-                <div class="stat-item">
-                  <div class="stat-number">{{ item.views || 0 }}</div>
-                  <div class="stat-label">VIEWS</div>
+              <!-- Statistics Grid - Compact -->
+              <div class="stats-grid-compact">
+                <div class="stat-item-compact">
+                  <div class="stat-value">{{ item.views || 0 }}</div>
+                  <div class="stat-name">Views</div>
                 </div>
-                <div class="stat-item">
-                  <div class="stat-number">{{ item.favorites || 0 }}</div>
-                  <div class="stat-label">FAVORITES</div>
+                <div class="stat-item-compact">
+                  <div class="stat-value">{{ item.favorites || 0 }}</div>
+                  <div class="stat-name">Favorites</div>
                 </div>
-                <div class="stat-item">
-                  <div class="stat-number">{{ item.inquiries || 0 }}</div>
-                  <div class="stat-label">INQUIRIES</div>
+                <div class="stat-item-compact">
+                  <div class="stat-value">{{ item.inquiries || 0 }}</div>
+                  <div class="stat-name">Inquiries</div>
                 </div>
-                <div class="stat-item">
-                  <div class="stat-number">{{ formatEngagement(item.engagement) }}%</div>
-                  <div class="stat-label">ENGAGEMENT</div>
+                <div class="stat-item-compact">
+                  <div class="stat-value">{{ formatEngagement(item.engagement) }}%</div>
+                  <div class="stat-name">Engagement</div>
                 </div>
               </div>
             </div>
@@ -95,111 +95,97 @@
 
           <!-- Right Side - Item Information -->
           <div class="info-section">
-            <!-- Price Card -->
-            <div class="price-card">
-              <div class="price-header">
-                <h1 class="item-title">{{ item.title }}</h1>
-              </div>
-              <div class="price-amount">₱{{ formatPrice(item.price || 0) }}</div>
+            <!-- Title & Price - Clean Header -->
+            <div class="product-header">
+              <h1 class="product-title">{{ item.title }}</h1>
+              <div class="product-price">₱{{ formatPrice(item.price || 0) }}</div>
+              <div v-if="item.isNegotiable" class="negotiable-tag">Price Negotiable</div>
             </div>
 
-            <!-- Description Card -->
-            <div class="info-card">
-              <h3 class="card-title">Description</h3>
-              <div class="card-content">
-                <p v-if="item.description" class="description-text">{{ item.description }}</p>
-                <p v-else class="no-data">No description provided for this item.</p>
-              </div>
+            <!-- Description - Minimal Card -->
+            <div class="detail-card">
+              <div class="card-label">DESCRIPTION</div>
+              <p v-if="item.description" class="detail-text">{{ item.description }}</p>
+              <p v-else class="detail-text muted">No description provided.</p>
             </div>
 
-            <!-- Details Card -->
-            <div class="info-card">
-              <h3 class="card-title">Details</h3>
-              <div class="details-grid">
-                <div class="detail-row">
-                  <span class="detail-label">CATEGORY</span>
-                  <span class="detail-value">{{ formatCategoryName(item.category) }}</span>
+            <!-- Details - Clean List -->
+            <div class="detail-card">
+              <div class="card-label">DETAILS</div>
+              <div class="detail-list">
+                <div class="detail-item">
+                  <span class="item-label">Category</span>
+                  <span class="item-value">{{ formatCategoryName(item.category) }}</span>
                 </div>
-                <div class="detail-row">
-                  <span class="detail-label">AUTHENTICATION</span>
-                  <span class="detail-value" :class="{ 'verified': item.isAuthenticated }">
-                    {{ item.isAuthenticated ? 'Verified' : 'Not verified' }}
+                <div class="detail-item">
+                  <span class="item-label">Authentication</span>
+                  <span class="item-value" :class="{ 'verified-text': item.isAuthenticated }">
+                    {{ item.isAuthenticated ? '✓ Verified' : 'Not verified' }}
                   </span>
                 </div>
-                <div class="detail-row">
-                  <span class="detail-label">YEAR</span>
-                  <span class="detail-value">{{ item.year || 'Not specified' }}</span>
+                <div class="detail-item">
+                  <span class="item-label">Year</span>
+                  <span class="item-value">{{ item.year || 'Not specified' }}</span>
                 </div>
-                <div class="detail-row">
-                  <span class="detail-label">STOCK</span>
-                  <span class="detail-value" :class="{ 'low-stock': (item.stock || 0) < 5, 'out-stock': (item.stock || 0) === 0 }">
+                <div class="detail-item">
+                  <span class="item-label">Stock</span>
+                  <span class="item-value" :class="{ 'warning-text': (item.stock || 0) < 5, 'error-text': (item.stock || 0) === 0 }">
                     {{ (item.stock || 0) > 0 ? `${item.stock} available` : 'Out of stock' }}
                   </span>
                 </div>
-                <div v-if="item.isNegotiable" class="detail-row">
-                  <span class="detail-label">PRICE</span>
-                  <span class="detail-value negotiable-badge">Negotiable</span>
-                </div>
               </div>
               
-              <!-- Tags -->
-              <div v-if="item.tags && parseTags(item.tags).length > 0" class="tags-wrapper">
+              <!-- Tags - Minimal Pills -->
+              <div v-if="item.tags && parseTags(item.tags).length > 0" class="tags-row">
                 <span 
                   v-for="tag in parseTags(item.tags)" 
                   :key="tag"
-                  class="tag-badge"
+                  class="tag-pill"
                 >
                   {{ tag }}
                 </span>
               </div>
-              
-              <!-- Listing Info -->
-              <div class="listing-meta">
-                <div class="meta-item">
-                  <span class="meta-label">Listed:</span>
-                  <span class="meta-value">{{ formatDateShort(item.created_at) }}</span>
-                </div>
-                <div class="meta-item">
-                  <span class="meta-label">Updated:</span>
-                  <span class="meta-value">{{ formatDateShort(item.updated_at) }}</span>
-                </div>
-              </div>
             </div>
 
-            <!-- Location Card -->
-            <div class="info-card">
-              <h3 class="card-title">Location</h3>
-              <div class="map-wrapper">
-                <div id="seller-map" class="seller-map"></div>
+            <!-- Location - Compact Card -->
+            <div class="detail-card">
+              <div class="card-label">LOCATION</div>
+              <div class="map-compact">
+                <div id="seller-map" class="map-embed"></div>
               </div>
-              <p class="location-address">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <div class="location-text">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                   <circle cx="12" cy="10" r="3"></circle>
                 </svg>
                 {{ sellerProfile?.address || 'Silangan, Calauan, Laguna' }}
-              </p>
+              </div>
+              <div class="meta-row">
+                <span class="meta-text">Listed {{ formatDateShort(item.created_at) }}</span>
+                <span class="meta-separator">•</span>
+                <span class="meta-text">Updated {{ formatDateShort(item.updated_at) }}</span>
+              </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="action-buttons">
+            <!-- Action Buttons - Minimalist -->
+            <div class="action-bar">
               <button 
                 @click="toggleWishlist"
                 :disabled="isAddingToWishlist"
-                class="btn btn-wishlist"
+                class="action-btn btn-outline"
                 :class="{ 'active': isInWishlist }"
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" :fill="isInWishlist ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
+                <svg width="18" height="18" viewBox="0 0 24 24" :fill="isInWishlist ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                 </svg>
-                {{ isInWishlist ? 'In Wishlist' : 'Add to Wishlist' }}
+                {{ isInWishlist ? 'Saved' : 'Save' }}
               </button>
 
               <button 
-                class="btn btn-message"
+                class="action-btn btn-primary"
                 @click="messageSellerAction"
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
                 Message Seller
@@ -387,15 +373,27 @@ export default {
     
     async checkWishlistStatus() {
       try {
-        const response = await axios.get(`http://localhost:5000/api/wishlist/check/${this.item.id}`, {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+        if (!token) {
+          console.log('No token, skipping wishlist check');
+          this.isInWishlist = false;
+          return;
+        }
+        
+        console.log('🔍 Checking wishlist status for item:', this.item.id);
+        const response = await axios.get(`http://localhost:5000/api/user/wishlist/check/${this.item.id}`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('access_token') || localStorage.getItem('token')}`
+            'Authorization': `Bearer ${token}`
           }
         });
+        
+        console.log('Wishlist check response:', response.data);
         this.isInWishlist = response.data.inWishlist;
+        console.log('Is in wishlist:', this.isInWishlist);
       } catch (error) {
         console.error('Error checking wishlist status:', error);
         // Don't show error, wishlist status is not critical
+        this.isInWishlist = false;
       }
     },
     
@@ -606,34 +604,76 @@ export default {
 
     async toggleWishlist() {
       try {
+        console.log('🔄 toggleWishlist called');
+        console.log('Current item:', this.item);
+        console.log('Item ID:', this.item.id);
+        console.log('Is in wishlist:', this.isInWishlist);
+        
         this.isAddingToWishlist = true;
+        
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+        console.log('Token found:', token ? 'Yes' : 'No');
+        
+        if (!token) {
+          console.log('❌ No token found, redirecting to login');
+          this.showToast('error', 'Please login to save items');
+          this.$router.push('/login');
+          return;
+        }
         
         if (this.isInWishlist) {
           // Remove from wishlist
-          await axios.delete(`http://localhost:5000/api/wishlist/${this.item.id}`, {
+          console.log('🗑️ Removing from wishlist...');
+          const response = await fetch(`http://localhost:5000/api/user/wishlist/${this.item.id}`, {
+            method: 'DELETE',
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('access_token') || localStorage.getItem('token')}`
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
             }
           });
+          
+          console.log('Remove response status:', response.status);
+          const responseData = await response.json();
+          console.log('Remove response data:', responseData);
+          
+          if (!response.ok) {
+            throw new Error(responseData.error || 'Failed to remove from wishlist');
+          }
+          
           this.isInWishlist = false;
-          this.showToast('success', 'Removed from wishlist');
+          this.showToast('success', responseData.message || 'Removed from wishlist');
+          console.log('✅ Successfully removed from wishlist');
         } else {
           // Add to wishlist
-          await axios.post(`http://localhost:5000/api/wishlist`, {
-            item_id: this.item.id
-          }, {
+          console.log('💾 Adding to wishlist...');
+          const response = await fetch(`http://localhost:5000/api/user/wishlist/${this.item.id}`, {
+            method: 'POST',
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('access_token') || localStorage.getItem('token')}`
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
             }
           });
+          
+          console.log('Add response status:', response.status);
+          const responseData = await response.json();
+          console.log('Add response data:', responseData);
+          
+          if (!response.ok) {
+            throw new Error(responseData.error || 'Failed to add to wishlist');
+          }
+          
           this.isInWishlist = true;
-          this.showToast('success', 'Added to wishlist');
+          this.showToast('success', responseData.message || 'Added to wishlist');
+          console.log('✅ Successfully added to wishlist');
+          console.log('Wishlist ID:', responseData.wishlist_id);
         }
       } catch (error) {
-        console.error('Error toggling wishlist:', error);
-        this.showToast('error', 'Failed to update wishlist');
+        console.error('❌ Error toggling wishlist:', error);
+        console.error('Error details:', error.message);
+        this.showToast('error', error.message || 'Failed to update wishlist');
       } finally {
         this.isAddingToWishlist = false;
+        console.log('🏁 toggleWishlist finished');
       }
     },
 
@@ -722,38 +762,57 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 .item-details-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 2rem 1.5rem;
+  background: #f9fafb;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Breadcrumb */
+/* Breadcrumb - Modern minimalist style */
 .breadcrumb {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 20px;
-  font-size: 14px;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  font-size: 0.875rem;
+  color: #6b7280;
 }
 
 .breadcrumb-link {
-  color: #3b82f6;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: #111827;
   text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
 }
 
 .breadcrumb-link:hover {
-  text-decoration: underline;
+  color: #000;
+}
+
+.breadcrumb-link svg {
+  width: 16px;
+  height: 16px;
 }
 
 .breadcrumb-separator {
-  color: #9ca3af;
+  color: #d1d5db;
+  font-weight: 300;
 }
 
 .breadcrumb-current {
   color: #6b7280;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 300px;
 }
 
 /* Loading and Error States */
@@ -762,17 +821,17 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
-  gap: 20px;
+  min-height: 500px;
+  gap: 1.25rem;
 }
 
 .loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f4f6;
-  border-top: 4px solid #3b82f6;
+  width: 48px;
+  height: 48px;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #111827;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
@@ -784,463 +843,396 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 400px;
+  min-height: 500px;
+  padding: 2rem;
 }
 
 .error-message {
   text-align: center;
-  padding: 40px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  color: #dc2626;
+  padding: 3rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  color: #111827;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .retry-btn {
-  margin-top: 20px;
-  padding: 10px 20px;
-  background: #3b82f6;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #111827;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s;
 }
 
-/* Main Layout - Matches the image exactly */
-.main-layout {
+.retry-btn:hover {
+  background: #000;
+}
+
+/* Modern Layout - Two Column Grid */
+.modern-layout {
   display: grid;
-  grid-template-columns: 1fr 350px;
-  gap: 30px;
-  max-width: 1200px;
-  margin: 0 auto;
+  grid-template-columns: 1.2fr 400px;
+  gap: 1.5rem;
+  align-items: start;
 }
 
-/* Left Side - Image Gallery */
-.image-gallery-section {
+/* Gallery Section - Left Side */
+.gallery-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Main Image - Clean Minimal */
+.main-image-wrapper {
   background: white;
   border-radius: 8px;
   overflow: hidden;
-}
-
-.item-title-header {
-  padding: 20px 20px 15px 20px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.item-title {
-  font-size: 24px;
-  font-weight: 600;
-  color: #1f2937;
-  margin: 0;
-  line-height: 1.3;
-}
-
-.main-image-container {
-  background: #f8f9fa;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 400px;
+  border: 1px solid #e5e7eb;
 }
 
 .main-image {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  border-radius: 4px;
+  width: 100%;
+  height: 450px;
+  object-fit: cover;
+  display: block;
 }
 
+/* Image Thumbnails - Compact */
 .image-thumbnails {
   display: flex;
-  gap: 8px;
-  padding: 15px 20px;
-  background: #f8f9fa;
-  border-top: 1px solid #e5e7eb;
+  gap: 0.5rem;
+  overflow-x: auto;
 }
 
-.thumbnail-container {
+.thumbnail-item {
+  flex-shrink: 0;
   width: 60px;
   height: 60px;
   border-radius: 4px;
   overflow: hidden;
   cursor: pointer;
-  border: 2px solid transparent;
-  transition: border-color 0.2s;
+  border: 2px solid #e5e7eb;
+  transition: all 0.15s;
+  background: white;
 }
 
-.thumbnail-container:hover,
-.thumbnail-container.active {
-  border-color: #3b82f6;
+.thumbnail-item:hover {
+  border-color: #9ca3af;
 }
 
-.thumbnail-image {
+.thumbnail-item.active {
+  border-color: #111827;
+}
+
+.thumbnail-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-/* Condition Section */
-.condition-section {
+/* Info Card Compact - Combined Condition & Stats */
+.info-card-compact {
   background: white;
   border-radius: 8px;
-  padding: 20px;
-  border: 1px solid #e5e7eb;
-  margin-top: 15px;
-}
-
-.condition-rating {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.condition-text {
-  font-size: 16px;
-  font-weight: 600;
-  color: #059669;
-  padding: 8px 16px;
-  background: #ecfdf5;
-  border-radius: 20px;
-  border: 1px solid #d1fae5;
-}
-
-.no-ratings {
-  text-align: center;
-  padding: 20px;
-}
-
-.no-ratings-text {
-  color: #9ca3af;
-  font-style: italic;
-  font-size: 14px;
-}
-
-/* Item Statistics Section */
-.item-statistics {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  border: 1px solid #e5e7eb;
-  margin-top: 15px;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-}
-
-.stat-box {
-  background: #f8f9fa;
-  padding: 15px;
-  border-radius: 8px;
-  text-align: center;
-  border: 1px solid #e9ecef;
-}
-
-.stat-number {
-  display: block;
-  font-size: 24px;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 4px;
-}
-
-.stat-text {
-  font-size: 12px;
-  font-weight: 600;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Right Side - Item Information */
-.item-info-section {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* Price and Description Section */
-.price-description-section {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
+  padding: 1rem;
   border: 1px solid #e5e7eb;
 }
 
-.item-price {
-  font-size: 32px;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 20px;
-}
-
-.section-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1f2937;
-  margin: 0 0 15px 0;
-}
-
-.description-content {
-  color: #374151;
-  line-height: 1.6;
-}
-
-.description-content p {
-  margin: 0;
-}
-
-.no-description {
-  color: #9ca3af;
-  font-style: italic;
-}
-
-/* Details Section - Professional Box Layout */
-.details-section {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  border: 1px solid #e5e7eb;
-}
-
-.details-box-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.detail-box {
-  background: #fafbfc;
-  padding: 16px;
-  border-radius: 8px;
-  border: 1px solid #e1e5e9;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  transition: all 0.2s ease;
-}
-
-.detail-box:hover {
-  background: #f0f4f8;
-  border-color: #cbd5e1;
-}
-
-.detail-box.negotiable-box {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
-}
-
-.detail-box.negotiable-box:hover {
-  background: #ecfdf5;
-  border-color: #86efac;
-}
-
-.detail-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin-bottom: 2px;
-}
-
-.detail-value {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1e293b;
-  line-height: 1.3;
-}
-
-.detail-value.negotiable {
-  color: #059669;
-  font-weight: 700;
-}
-
-.detail-value.low-stock {
-  color: #f59e0b;
-}
-
-.detail-value.out-of-stock {
-  color: #dc2626;
-}
-
-.detail-value.authenticated {
-  color: #059669;
-}
-
-.detail-value.not-authenticated {
-  color: #f59e0b;
-}
-
-/* Tags Section */
-.tags-section {
-  margin-bottom: 20px;
-  padding: 16px;
-  background: #fafbfc;
-  border-radius: 8px;
-  border: 1px solid #e1e5e9;
-}
-
-.tags-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #64748b;
-  margin-bottom: 10px;
-  display: block;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.tags-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.tag-item {
-  padding: 6px 12px;
-  background: #e0f2fe;
-  color: #0369a1;
-  border-radius: 16px;
-  font-size: 13px;
-  font-weight: 500;
-  border: 1px solid #bae6fd;
-  transition: all 0.2s ease;
-}
-
-.tag-item:hover {
-  background: #0284c7;
-  color: white;
-  transform: translateY(-1px);
-}
-
-/* Listing Info */
-.listing-info {
+.compact-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  background: #f8fafc;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  padding-bottom: 0.875rem;
+  margin-bottom: 0.875rem;
+  border-bottom: 1px solid #f3f4f6;
 }
 
-.info-item {
+.compact-label {
+  font-size: 0.688rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.compact-value {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+}
+
+/* Stats Grid - Compact */
+.stats-grid-compact {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+}
+
+.stat-item-compact {
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.125rem;
+}
+
+.stat-name {
+  font-size: 0.688rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+/* Info Section - Right Side */
+.info-section {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  text-align: center;
+  gap: 0.75rem;
 }
 
-.info-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-}
-
-.info-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: #334155;
-}
-
-/* Map Section */
-.map-section {
+/* Product Header - Clean & Minimal */
+.product-header {
   background: white;
   border-radius: 8px;
-  padding: 20px;
+  padding: 1.25rem;
   border: 1px solid #e5e7eb;
 }
 
-.map-container {
-  height: 200px;
-  width: 100%;
-  margin-bottom: 10px;
-}
-
-.seller-map {
-  height: 100%;
-  width: 100%;
-  border-radius: 6px;
-}
-
-.address-text {
-  margin: 10px 0 0 0;
-  font-size: 14px;
-  color: #6b7280;
-  text-align: center;
-}
-
-.no-map-container {
-  padding: 40px 20px;
-  text-align: center;
-  background: #f9fafb;
-  border-radius: 6px;
-}
-
-.no-map-text {
-  margin: 0 0 10px 0;
-  color: #6b7280;
-  font-size: 14px;
-}
-
-.debug-info {
-  margin: 0;
-  font-size: 12px;
-  color: #9ca3af;
-  font-family: monospace;
-}
-
-/* Wishlist Section */
-.wishlist-section {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  border: 1px solid #e5e7eb;
-}
-
-.wishlist-btn {
-  width: 100%;
-  padding: 15px 20px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
+.product-title {
+  font-size: 0.9rem;
   font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  color: #111827;
+  margin: 0 0 0.75rem 0;
+  line-height: 1.3;
+}
+
+.product-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+.negotiable-tag {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.625rem;
+  background: #ecfdf5;
+  color: #10b981;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Detail Cards - Minimalist */
+.detail-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1.25rem;
+  border: 1px solid #e5e7eb;
+}
+
+.card-label {
+  font-size: 0.688rem;
+  font-weight: 600;
+  color: #6b7280;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  background: #3b82f6;
-  color: white;
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.875rem;
 }
 
-.wishlist-btn:hover:not(:disabled) {
-  background: #2563eb;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+.detail-text {
+  color: #374151;
+  line-height: 1.6;
+  font-size: 0.875rem;
+  margin: 0;
 }
 
-.wishlist-btn.in-wishlist {
-  background: #dc2626;
-  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+.detail-text.muted {
+  color: #9ca3af;
+  font-style: italic;
 }
 
-.wishlist-btn.in-wishlist:hover:not(:disabled) {
-  background: #b91c1c;
-  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+/* Detail List - Clean Rows */
+.detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
 }
 
-.wishlist-btn:disabled {
-  opacity: 0.6;
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+}
+
+.item-label {
+  font-size: 0.813rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.item-value {
+  font-size: 0.813rem;
+  color: #111827;
+  font-weight: 600;
+  text-align: right;
+}
+
+.item-value.verified-text {
+  color: #10b981;
+}
+
+.item-value.warning-text {
+  color: #f59e0b;
+}
+
+.item-value.error-text {
+  color: #ef4444;
+}
+
+/* Tags Row - Minimal Pills */
+.tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 0.875rem;
+  padding-top: 0.875rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.tag-pill {
+  padding: 0.25rem 0.625rem;
+  background: #f9fafb;
+  color: #6b7280;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Map Compact */
+.map-compact {
+  border-radius: 6px;
+  overflow: hidden;
+  height: 180px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 0.625rem;
+}
+
+.map-embed {
+  width: 100%;
+  height: 100%;
+}
+
+.location-text {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0 0 0.625rem 0;
+  font-size: 0.813rem;
+  color: #374151;
+}
+
+.location-text svg {
+  flex-shrink: 0;
+  color: #9ca3af;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 0.625rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.meta-text {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.meta-separator {
+  color: #d1d5db;
+}
+
+/* Action Bar - Minimalist Buttons */
+.action-bar {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.875rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+}
+
+.action-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-outline {
+  background: white;
+  color: #111827;
+  border: 1.5px solid #e5e7eb;
+}
+
+.btn-outline:hover {
+  border-color: #9ca3af;
+}
+
+.btn-outline.active {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.btn-outline:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+}
+
+.btn-primary {
+  background: #111827;
+  color: white;
+  border: 1.5px solid #111827;
+}
+
+.btn-primary:hover {
+  background: #000;
+  border-color: #000;
 }
 
 /* Toast notifications */
@@ -1257,11 +1249,11 @@ export default {
 }
 
 .toast.success {
-  background: #059669;
+  background: #10b981;
 }
 
 .toast.error {
-  background: #dc2626;
+  background: #ef4444;
 }
 
 @keyframes slideIn {
@@ -1276,52 +1268,90 @@ export default {
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
-  .main-layout {
+@media (max-width: 1024px) {
+  .modern-layout {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 1rem;
   }
   
-  .item-details-container {
-    padding: 15px;
+  .main-image {
+    height: 400px;
   }
   
-  .wishlist-btn {
-    font-size: 14px;
-    padding: 12px 16px;
-  }
-  
-  .details-box-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-  
-  .stats-grid {
+  .stats-grid-compact {
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .item-details-container {
+    padding: 1rem;
   }
   
-  .listing-info {
+  .breadcrumb-current {
+    max-width: 180px;
+  }
+  
+  .main-image {
+    height: 320px;
+  }
+  
+  .product-title {
+    font-size: 0.8rem;
+  }
+  
+  .product-price {
+    font-size: 1.625rem;
+  }
+  
+  .action-bar {
     flex-direction: column;
-    gap: 10px;
-    align-items: flex-start;
   }
   
-  .image-thumbnails {
-    flex-wrap: wrap;
+  .action-btn {
+    width: 100%;
   }
   
-  .tags-container {
-    gap: 4px;
+  .detail-card,
+  .product-header,
+  .info-card-compact {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .item-details-container {
+    padding: 0.75rem;
   }
   
-  .tag-item {
-    font-size: 10px;
-    padding: 3px 8px;
+  .main-image {
+    height: 280px;
   }
   
-  .item-price {
-    font-size: 24px;
+  .product-title {
+    font-size: 1rem;
+  }
+  
+  .product-price {
+    font-size: 1.5rem;
+  }
+  
+  .stat-value {
+    font-size: 1rem;
+  }
+  
+  .stat-name {
+    font-size: 0.625rem;
+  }
+  
+  .thumbnail-item {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .action-btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.813rem;
   }
 }
 </style>
