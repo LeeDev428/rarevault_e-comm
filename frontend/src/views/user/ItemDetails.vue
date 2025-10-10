@@ -20,20 +20,21 @@
       <div v-else-if="item" class="item-details-content">
         <!-- Breadcrumb Navigation -->
         <nav class="breadcrumb">
-          <router-link to="/user/dashboard" class="breadcrumb-link">Home</router-link>
-          <span class="breadcrumb-separator">></span>
+          <router-link to="/user/dashboard" class="breadcrumb-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            </svg>
+            Home
+          </router-link>
+          <span class="breadcrumb-separator">/</span>
           <span class="breadcrumb-current">{{ item.title }}</span>
         </nav>
 
-        <div class="main-layout">
+        <div class="modern-layout">
           <!-- Left Side - Image Gallery -->
-          <div class="image-gallery-section">
-            <div class="item-title-header">
-              <h1 class="item-title">{{ item.title }}</h1>
-            </div>
-            
-            <!-- Main Image -->
-            <div class="main-image-container">
+          <div class="gallery-section">
+            <!-- Main Image with Modern Frame -->
+            <div class="main-image-wrapper">
               <img 
                 :src="selectedImage || getItemImage(item)" 
                 :alt="item.title"
@@ -47,147 +48,160 @@
               <div 
                 v-for="(image, index) in itemImages" 
                 :key="image.id || index"
-                class="thumbnail-container"
-                :class="{ active: selectedImage === image.url }"
+                class="thumbnail-item"
+                :class="{ 'active': selectedImage === image.url }"
                 @click="selectedImage = image.url"
               >
                 <img 
                   :src="image.url" 
-                  :alt="`${item.title} ${index + 1}`"
-                  class="thumbnail-image"
+                  :alt="`View ${index + 1}`"
+                  class="thumbnail-img"
                 >
               </div>
             </div>
-            
-            <!-- Condition Section -->
-            <div class="condition-section">
-              <h3 class="section-title">Condition</h3>
-              <div v-if="item.condition" class="condition-rating">
-                <span class="condition-text">{{ formatCondition(item.condition || item.condition_status) }}</span>
-              </div>
-              <div v-else class="no-ratings">
-                <span class="no-ratings-text">No condition specified</span>
+
+            <!-- Condition Badge -->
+            <div class="condition-badge">
+              <h4 class="badge-title">Condition</h4>
+              <div class="badge-value">
+                <span class="condition-indicator"></span>
+                {{ formatCondition(item.condition || item.condition_status) }}
               </div>
             </div>
 
-            <!-- Item Statistics Section - Box Layout -->
-            <div class="item-statistics">
-              <h3 class="section-title">Item Statistics</h3>
+            <!-- Item Statistics -->
+            <div class="stats-card">
+              <h4 class="card-title">Item Statistics</h4>
               <div class="stats-grid">
-                <div class="stat-box">
-                  <span class="stat-number">{{ item.views || 0 }}</span>
-                  <span class="stat-text">Views</span>
+                <div class="stat-item">
+                  <div class="stat-number">{{ item.views || 0 }}</div>
+                  <div class="stat-label">VIEWS</div>
                 </div>
-                <div class="stat-box">
-                  <span class="stat-number">{{ item.favorites || 0 }}</span>
-                  <span class="stat-text">Favorites</span>
+                <div class="stat-item">
+                  <div class="stat-number">{{ item.favorites || 0 }}</div>
+                  <div class="stat-label">FAVORITES</div>
                 </div>
-                <div class="stat-box">
-                  <span class="stat-number">{{ item.inquiries || 0 }}</span>
-                  <span class="stat-text">Inquiries</span>
+                <div class="stat-item">
+                  <div class="stat-number">{{ item.inquiries || 0 }}</div>
+                  <div class="stat-label">INQUIRIES</div>
                 </div>
-                <div class="stat-box">
-                  <span class="stat-number">{{ formatEngagement(item.engagement) }}%</span>
-                  <span class="stat-text">Engagement</span>
+                <div class="stat-item">
+                  <div class="stat-number">{{ formatEngagement(item.engagement) }}%</div>
+                  <div class="stat-label">ENGAGEMENT</div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Right Side - Item Information -->
-          <div class="item-info-section">
-            <!-- Price and Description Section -->
-            <div class="price-description-section">
-              <div class="item-price">₱{{ formatPrice(item.price || 0) }}</div>
-              <h3 class="section-title">Description</h3>
-              <div class="description-content">
-                <p v-if="item.description">{{ item.description }}</p>
-                <p v-else class="no-description">No description provided for this item.</p>
+          <div class="info-section">
+            <!-- Price Card -->
+            <div class="price-card">
+              <div class="price-header">
+                <h1 class="item-title">{{ item.title }}</h1>
+              </div>
+              <div class="price-amount">₱{{ formatPrice(item.price || 0) }}</div>
+            </div>
+
+            <!-- Description Card -->
+            <div class="info-card">
+              <h3 class="card-title">Description</h3>
+              <div class="card-content">
+                <p v-if="item.description" class="description-text">{{ item.description }}</p>
+                <p v-else class="no-data">No description provided for this item.</p>
               </div>
             </div>
 
-            <!-- Details Section - Compact Box Layout -->
-            <div class="details-section">
-              <h3 class="section-title">Details</h3>
-              <div class="details-box-grid">
-                <div class="detail-box">
-                  <span class="detail-label">Category</span>
+            <!-- Details Card -->
+            <div class="info-card">
+              <h3 class="card-title">Details</h3>
+              <div class="details-grid">
+                <div class="detail-row">
+                  <span class="detail-label">CATEGORY</span>
                   <span class="detail-value">{{ formatCategoryName(item.category) }}</span>
                 </div>
-                <div class="detail-box">
-                  <span class="detail-label">Authentication</span>
-                  <span class="detail-value" :class="{ 'authenticated': item.isAuthenticated, 'not-authenticated': !item.isAuthenticated }">
+                <div class="detail-row">
+                  <span class="detail-label">AUTHENTICATION</span>
+                  <span class="detail-value" :class="{ 'verified': item.isAuthenticated }">
                     {{ item.isAuthenticated ? 'Verified' : 'Not verified' }}
                   </span>
                 </div>
-                <div class="detail-box">
-                  <span class="detail-label">Year</span>
+                <div class="detail-row">
+                  <span class="detail-label">YEAR</span>
                   <span class="detail-value">{{ item.year || 'Not specified' }}</span>
                 </div>
-                <div class="detail-box">
-                  <span class="detail-label">Stock</span>
-                  <span class="detail-value" :class="{ 'low-stock': (item.stock || 0) < 5, 'out-of-stock': (item.stock || 0) === 0 }">
+                <div class="detail-row">
+                  <span class="detail-label">STOCK</span>
+                  <span class="detail-value" :class="{ 'low-stock': (item.stock || 0) < 5, 'out-stock': (item.stock || 0) === 0 }">
                     {{ (item.stock || 0) > 0 ? `${item.stock} available` : 'Out of stock' }}
                   </span>
                 </div>
-                <div v-if="item.isNegotiable" class="detail-box negotiable-box">
-                  <span class="detail-label">Price</span>
-                  <span class="detail-value negotiable">Negotiable</span>
+                <div v-if="item.isNegotiable" class="detail-row">
+                  <span class="detail-label">PRICE</span>
+                  <span class="detail-value negotiable-badge">Negotiable</span>
                 </div>
               </div>
               
-              <!-- Tags Section -->
-              <div v-if="item.tags && parseTags(item.tags).length > 0" class="tags-section">
-                <span class="tags-label">Tags:</span>
-                <div class="tags-container">
-                  <span 
-                    v-for="tag in parseTags(item.tags)" 
-                    :key="tag"
-                    class="tag-item"
-                  >
-                    {{ tag }}
-                  </span>
-                </div>
+              <!-- Tags -->
+              <div v-if="item.tags && parseTags(item.tags).length > 0" class="tags-wrapper">
+                <span 
+                  v-for="tag in parseTags(item.tags)" 
+                  :key="tag"
+                  class="tag-badge"
+                >
+                  {{ tag }}
+                </span>
               </div>
               
               <!-- Listing Info -->
-              <div class="listing-info">
-                <div class="info-item">
-                  <span class="info-label">Listed:</span>
-                  <span class="info-value">{{ formatDateShort(item.created_at) }}</span>
+              <div class="listing-meta">
+                <div class="meta-item">
+                  <span class="meta-label">Listed:</span>
+                  <span class="meta-value">{{ formatDateShort(item.created_at) }}</span>
                 </div>
-                <div class="info-item">
-                  <span class="info-label">Updated:</span>
-                  <span class="info-value">{{ formatDateShort(item.updated_at) }}</span>
+                <div class="meta-item">
+                  <span class="meta-label">Updated:</span>
+                  <span class="meta-value">{{ formatDateShort(item.updated_at) }}</span>
                 </div>
               </div>
             </div>
 
-            <!-- Map Section -->
-            <div class="map-section">
-              <h3 class="section-title">Location</h3>
-              <div class="map-container">
+            <!-- Location Card -->
+            <div class="info-card">
+              <h3 class="card-title">Location</h3>
+              <div class="map-wrapper">
                 <div id="seller-map" class="seller-map"></div>
-                <p v-if="sellerProfile?.address" class="address-text">{{ sellerProfile.address }}</p>
-                <p v-else class="address-text">Silangan, Calauan, Laguna</p>
               </div>
+              <p class="location-address">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                {{ sellerProfile?.address || 'Silangan, Calauan, Laguna' }}
+              </p>
             </div>
 
-            <!-- Wishlist Section -->
-            <div class="wishlist-section">
+            <!-- Action Buttons -->
+            <div class="action-buttons">
               <button 
                 @click="toggleWishlist"
                 :disabled="isAddingToWishlist"
-                class="wishlist-btn"
-                :class="{ 'in-wishlist': isInWishlist }"
+                class="btn btn-wishlist"
+                :class="{ 'active': isInWishlist }"
               >
-                {{ isInWishlist ? 'REMOVE FROM WISHLIST' : 'ADD TO WISHLIST' }}
+                <svg width="20" height="20" viewBox="0 0 24 24" :fill="isInWishlist ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+                {{ isInWishlist ? 'In Wishlist' : 'Add to Wishlist' }}
               </button>
 
-                <button 
-                class="action-btn primary"
-                @click.stop="messageSellerAction(order)"
+              <button 
+                class="btn btn-message"
+                @click="messageSellerAction"
               >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
                 Message Seller
               </button>
             </div>
@@ -572,6 +586,22 @@ export default {
       } finally {
         this.isSendingMessage = false;
       }
+    },
+
+    messageSellerAction() {
+      // Navigate to messages page with seller context
+      if (!this.item?.seller_id) {
+        this.showToast('error', 'Seller information not available');
+        return;
+      }
+      
+      this.$router.push({
+        path: '/user/messages',
+        query: { 
+          sellerId: this.item.seller_id,
+          itemId: this.item.id 
+        }
+      });
     },
 
     async toggleWishlist() {
